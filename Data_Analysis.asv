@@ -26,7 +26,7 @@ label.DBDB2 = [];
 label.DBDB4 = [];
 
 % Group,Animal, recording, Layer/layer
-scores = NaN(4,7,2,3);
+slowing_score = NaN(4,7,2,3);
 
 % Begin parsing data
 %%%%%%
@@ -43,10 +43,10 @@ for group = 1:4
     end
     counter = 0;
     
-    SpecPyr = [];
-    SpecSLM = [];
-    SpecCtx = [];
-    Csd = [];
+    spec_pyr = [];
+    spec_slm = [];
+    spec_ctx = [];
+    csd = [];
     
     for cur_animal = grouping
         cd(animal_list(cur_animal).name)
@@ -66,7 +66,7 @@ for group = 1:4
             high_freq = BPfilter(single_channel, 1250, 9, 30);
             
             % Group, Band, recording, Animal, Layer/layer
-            scores(group,count,k,layer) = SignalPower( low_freq,1250) ./ SignalPower(high_freq,1250);
+            slowing_score(group,counter,k,layer) = SignalPower(low_freq,1250) ./ SignalPower(high_freq,1250);
         end % layer
         % Check Data fidelity
         %%%%%%
@@ -81,35 +81,35 @@ for group = 1:4
                 % Preprocess signal
                 %%%%%%
                 LFP = BPfilter(LFP,1250,30,60); % isolate gamma frequency band
-                LTDevents = SWRevents(SWRLTDIdx(k).R,1); % grab SWRs that occur during this period
-                LTDevents = LTDevents(LTDevents >= 625); % Exclude SWRs that clip beginning window
-                LTDevents = LTDevents(LTDevents <= length(LFP)-1250);% Exclude SWRs that exclude final window
+                LTD_events = SWRevents(SWRLTDIdx(k).R,1); % grab SWRs that occur during this period
+                LTD_events = LTD_events(LTD_events >= 625); % Exclude SWRs that clip beginning window
+                LTD_events = LTD_events(LTD_events <= length(LFP)-1250);% Exclude SWRs that exclude final window
                 
                 % initialize temp storage variables
-                tempSpecCtx = zeros(50,28,length(LTDevents));
-                tempSpecPyr = zeros(50,28,length(LTDevents));
-                tempSpecSlm = zeros(50,28,length(LTDevents));
+                temp_spec_ctx = zeros(50,28,length(LTD_events));
+                temp_spec_pyr = zeros(50,28,length(LTD_events));
+                temp_spec_slm = zeros(50,28,length(LTD_events));
                 
-                temp_CSD = zeros(1876,12,length(LTDevents));
+                temp_CSD = zeros(1876,12,length(LTD_events));
                 % For each event, create a spectrogram and store it in the
                 % temp variable
-                for r = 1:length(LTDevents)
-                    [~,~,~,tempSpecCtx(:,:,r)] = spectrogram(LFP(LTDevents(r)-625:LTDevents(r)+1250,chans(1,cur_animal)),hamming(125),[],[5:5:250],1250);
-                    [~,~,~,tempSpecPyr(:,:,r)] = spectrogram(LFP(LTDevents(r)-625:LTDevents(r)+1250,chans(2,cur_animal)),hamming(125),[],[5:5:250],1250);
-                    [~,freqs,time,tempSpecSlm(:,:,r)] = spectrogram(LFP(LTDevents(r)-625:LTDevents(r)+1250,chans(3,cur_animal)),hamming(125),[],[5:5:250],1250);
+                for r = 1:length(LTD_events)
+                    [~,~,~,tempSpecCtxtemp_spec_ctx(:,:,r)] = spectrogram(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),hamming(125),[],[5:5:250],1250);
+                    [~,~,~,temp_spec_pyr(:,:,r)] = spectrogram(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),hamming(125),[],[5:5:250],1250);
+                    [~,freqs,time,temp_spec_slm(:,:,r)] = spectrogram(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),hamming(125),[],[5:5:250],1250);
                     
-                    temp_CSD(:,:,r) = CSDlite(LFP(LTDevents(r)-625:LTDevents(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
+                    temp_CSD(:,:,r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
                 end
                 % Isolate Spectral Power
-                Ctx_spec_power = squeeze(mean(mean(tempSpecCtx(5:12,:,:),2),1));
-                Pyr_spec_power = squeeze(mean(mean(tempSpecPyr(5:12,:,:),2),1));
-                Slm_spec_power = squeeze(mean(mean(tempSpecSlm(5:12,:,:),2),1));
+                Ctx_spec_power = squeeze(mean(mean(tempSpecCtxtemp_spec_ctx(5:12,:,:),2),1));
+                Pyr_spec_power = squeeze(mean(mean(temp_spec_pyr(5:12,:,:),2),1));
+                Slm_spec_power = squeeze(mean(mean(temp_spec_slm(5:12,:,:),2),1));
                 % Concatenate temp variable to storage variable
-                SpecCtx = [SpecCtx; Ctx_spec_power];
-                SpecPyr = [SpecPyr; Pyr_spec_power];
-                SpecSLM = [SpecSLM; Slm_spec_power];
+                spec_ctx = [spec_ctx; Ctx_spec_power];
+                spec_pyr = [spec_pyr; Pyr_spec_power];
+                spec_slm = [spec_slm; Slm_spec_power];
                 
-                Csd = save_check(Csd,temp_CSD);
+                csd = save_check(csd,temp_CSD);
                 
                 if group ==1
                     [rip.DB2,label.DB2] = label_ripples(rip.DB2,label.DB2,SWRevents,SWRLTDIdx,k,counter);
@@ -127,29 +127,30 @@ for group = 1:4
         
     end % animal
     if group ==1
-        Spec.DB2Ctx = SpecCtx;
-        Spec.DB2Pyr = SpecPyr;
-        Spec.DB2SLM = SpecSLM;
-        CSD.DB2 = Csd;
+        Spec.DB2Ctx = spec_ctx;
+        Spec.DB2Pyr = spec_pyr;
+        Spec.DB2SLM = spec_slm;
+        CSD.DB2 = csd;
     elseif group ==2
-        Spec.DB4Ctx = SpecCtx;
-        Spec.DB4Pyr = SpecPyr;
-        Spec.DB4SLM = SpecSLM;
-        CSD.DB4 = Csd;
+        Spec.DB4Ctx = spec_ctx;
+        Spec.DB4Pyr = spec_pyr;
+        Spec.DB4SLM = spec_slm;
+        CSD.DB4 = csd;
     elseif group ==3
-        Spec.DBDB2Ctx = SpecCtx;
-        Spec.DBDB2Pyr = SpecPyr;
-        Spec.DBDB2SLM = SpecSLM;
-        CSD.DBDB2 = Csd;
+        Spec.DBDB2Ctx = spec_ctx;
+        Spec.DBDB2Pyr = spec_pyr;
+        Spec.DBDB2SLM = spec_slm;
+        CSD.DBDB2 = csd;
     elseif group ==4
-        Spec.DBDB4Ctx = SpecCtx;
-        Spec.DBDB4Pyr = SpecPyr;
-        Spec.DBDB4SLM = SpecSLM;
-        CSD.DBDB4 = Csd;
+        Spec.DBDB4Ctx = spec_ctx;
+        Spec.DBDB4Pyr = spec_pyr;
+        Spec.DBDB4SLM = spec_slm;
+        CSD.DBDB4 = csd;
     end % if
 end % group
 time = time -0.5; % adjust for SWR event initiation
+scores_combine = squeeze(nanmean(slowing_score,3)); % Combine both recordings of each animal
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Spec','rip','labels','CSD')
+save('LFP Measures','Spec','rip','labels','CSD','slowing_score')
 
