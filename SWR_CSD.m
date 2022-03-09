@@ -59,7 +59,7 @@ for i = 2% :4
         end % j grouping
         cd ..
         
-    end
+    end % j 
     if i ==1
         CSD.DB2 = SwrFullCsd;
     elseif i ==2

@@ -1,0 +1,68 @@
+disp('Initializing Files')
+cd('C:\Users\ipzach\Documents\dbdb electrophy\General_Scripts')
+load('SpkInfo.mat')
+load('chans.mat')
+load('PyramChans.mat')
+filepath = 'C:\Users\ipzach\Documents\dbdb electrophy';
+cd(filepath)
+animalList = dir;
+Fs = 1250; 
+scores = NaN(4,7,2,3);
+hotcold = redblue();
+voltConv = 0.000000091555527603759401;
+
+
+rip.DB2 = [];
+rip.DB4 = [];
+rip.DBDB2 = [];
+rip.DBDB4 = [];
+
+label.DB2a = [];
+label.DB4a = [];
+label.DBDB2a = [];
+label.DBDB4a = [];
+
+for group = 1:4
+    % 1.Load the right and left side signals
+    %load H/L TD indexes
+    
+    if group ==1
+        grouping = 3:9; % DB+ 200D
+    elseif group ==2
+        grouping = [15:18 20 21]; % DBDB 200D
+    elseif group ==3
+        grouping = 10:14; % DB+ 400D
+    elseif group ==4
+        grouping = [22 24:27]; % DBDB 400D
+    end
+    
+    count = 0;
+    for animal = grouping
+        count = count +1;
+        disp(animal)
+        cd(animalList(animal).name)
+        load('SWR_Index.mat');
+        
+        % Find and load Full SWR files
+        r_files = dir('SWR_R_*');
+        r_files = {r_files.name};
+        for i = 1:2
+            try
+                load(['LFP_' num2str(i) '.mat'])
+                disp(['loaded ' pwd '\LFP_' num2str(i) '.mat'])
+            catch
+                disp(['could not load ' pwd '\LFP_' num2str(i) '.mat'])
+                continue
+            end
+            LFP = LFPs{1,2};
+            for layer = 1:3
+                single_channel = LFP(:, chans(layer,animal));
+                low_freq = BPfilter(single_channel, 1250, 1, 8);
+                high_freq = BPfilter(single_channel, 1250, 9, 30);
+                scores(group,count,i,layer) = SignalPower( low_freq,1250) ./ SignalPower(high_freq,1250);
+            end % layer
+        end % recording
+        
+        cd ..
+    end % animal
+end  % group
