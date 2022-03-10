@@ -3,9 +3,8 @@
 % the onset of a ripple (max duration recorded 1237ms) then perform CSD on
 % that file, save the file to a 3D matrix, and create an average CSD
 
-clear all, close all, clc
 
-cd('C:\Users\ipzach\Documents\dbdb electrophy\General_Scripts')
+cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
 load('PyramChans.mat')
 cd('C:\Users\ipzach\Documents\dbdb electrophy');
 animals = dir;

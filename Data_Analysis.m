@@ -4,17 +4,16 @@
 
 
 % Load in initializing variables
+voltConv = 0.000000091555527603759401; % Neurolynx saves data in a unitless value, we need this to convert it to volts
+Fs = 1250;
 %%%%%%
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
 load('SpkInfo.mat')
 load('chans.mat')
-%load('PyramChans.mat')
-
 cd('C:\Users\ipzach\Documents\dbdb electrophy'); % here is the data
 animal_list = dir; % create a list of every folder (each one is one animal)
 
-voltConv = 0.000000091555527603759401; % Neurolynx saves data in a unitless value, we need this to convert it to volts
-Fs = 1250;
+
 rip.DB2 = [];
 rip.DB4 = [];
 rip.DBDB2 = [];
@@ -25,8 +24,8 @@ label.DB4 = [];
 label.DBDB2 = [];
 label.DBDB4 = [];
 
-% Group,Animal, recording, Layer/layer
 slowing_score = NaN(4,7,2,3);
+% Group,Animal, recording, Layer/layer
 
 % Begin parsing data
 %%%%%%
@@ -80,7 +79,7 @@ for group = 1:4
                 end % layer
                 % Preprocess signal
                 %%%%%%
-                LFP = BPfilter(LFP,1250,30,60); % isolate gamma frequency band
+                gamma_LFP = BPfilter(LFP,1250,30,60); % isolate gamma frequency band
                 LTD_events = SWRevents(SWRLTDIdx(k).R,1); % grab SWRs that occur during this period
                 LTD_events = LTD_events(LTD_events >= 625); % Exclude SWRs that clip beginning window
                 LTD_events = LTD_events(LTD_events <= length(LFP)-1250);% Exclude SWRs that exclude final window
@@ -94,16 +93,16 @@ for group = 1:4
                 % For each event, create a spectrogram and store it in the
                 % temp variable
                 for r = 1:length(LTD_events)
-                    [~,~,~,temp_spec_ctx(:,:,r)] = spectrogram(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),hamming(125),[],[5:5:250],1250);
-                    [~,~,~,temp_spec_pyr(:,:,r)] = spectrogram(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),hamming(125),[],[5:5:250],1250);
-                    [~,freqs,time,temp_spec_slm(:,:,r)] = spectrogram(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),hamming(125),[],[5:5:250],1250);
+                    [~,~,~,temp_spec_ctx(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),hamming(125),[],[5:5:250],1250);
+                    [~,~,~,temp_spec_pyr(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),hamming(125),[],[5:5:250],1250);
+                    [~,freqs,time,temp_spec_slm(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),hamming(125),[],[5:5:250],1250);
                     
                     temp_CSD(:,:,r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
                 end
                 % Isolate Spectral Power
-                Ctx_spec_power = squeeze(mean(mean(temp_spec_ctx(5:12,:,:),2),1));
-                Pyr_spec_power = squeeze(mean(mean(temp_spec_pyr(5:12,:,:),2),1));
-                Slm_spec_power = squeeze(mean(mean(temp_spec_slm(5:12,:,:),2),1));
+                Ctx_spec_power = squeeze(mean(temp_spec_ctx(5:12,:,:),[1,2]));
+                Pyr_spec_power = squeeze(mean(temp_spec_pyr(5:12,:,:),[1,2]));
+                Slm_spec_power = squeeze(mean(temp_spec_slm(5:12,:,:),[1,2]));
                 % Concatenate temp variable to storage variable
                 spec_ctx = [spec_ctx; Ctx_spec_power];
                 spec_pyr = [spec_pyr; Pyr_spec_power];
@@ -127,24 +126,24 @@ for group = 1:4
         
     end % animal
     if group ==1
-        Spec.DB2Ctx = spec_ctx;
-        Spec.DB2Pyr = spec_pyr;
-        Spec.DB2SLM = spec_slm;
+        Spec.DB2_Ctx = spec_ctx;
+        Spec.DB2_Pyr = spec_pyr;
+        Spec.DB2_SLM = spec_slm;
         CSD.DB2 = csd;
     elseif group ==2
-        Spec.DB4Ctx = spec_ctx;
-        Spec.DB4Pyr = spec_pyr;
-        Spec.DB4SLM = spec_slm;
+        Spec.DB4_Ctx = spec_ctx;
+        Spec.DB4_Pyr = spec_pyr;
+        Spec.DB4_SLM = spec_slm;
         CSD.DB4 = csd;
     elseif group ==3
-        Spec.DBDB2Ctx = spec_ctx;
-        Spec.DBDB2Pyr = spec_pyr;
-        Spec.DBDB2SLM = spec_slm;
+        Spec.DBDB2_Ctx = spec_ctx;
+        Spec.DBDB2_Pyr = spec_pyr;
+        Spec.DBDB2_SLM = spec_slm;
         CSD.DBDB2 = csd;
     elseif group ==4
-        Spec.DBDB4Ctx = spec_ctx;
-        Spec.DBDB4Pyr = spec_pyr;
-        Spec.DBDB4SLM = spec_slm;
+        Spec.DBDB4_Ctx = spec_ctx;
+        Spec.DBDB4_Pyr = spec_pyr;
+        Spec.DBDB4_SLM = spec_slm;
         CSD.DBDB4 = csd;
     end % if
 end % group
