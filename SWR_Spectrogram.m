@@ -184,33 +184,7 @@ h12 = heatmap(time,flipud(freqs), flipud(Spec.DBDB4SLMM));
 h12.GridVisible = 'off';
 caxis([0 maxVal])
 
-%% Make labels for stats
-% We need two labels for a 2-way anova test, one for each variable we are
-% testing
-label.DB2age = cell(size(Spec.DB2Pyr,3),1);
-label.DB2treat = cell(size(Spec.DB2Pyr,3),1);
-label.DB2age(:) = {'200'};
-label.DB2treat(:) = {'Control'};
 
-label.DB4age = cell(size(Spec.DB4Pyr,3),1);
-label.DB4treat = cell(size(Spec.DB4Pyr,3),1);
-label.DB4age(:) = {'400'};
-label.DB4treat(:) = {'Control'};
-
-label.DBDB2age = cell(size(Spec.DBDB2Pyr,3),1);
-label.DBDB2treat = cell(size(Spec.DBDB2Pyr,3),1);
-label.DBDB2age(:) = {'200'};
-label.DBDB2treat(:) = {'DBDB'};
-
-label.DBDB4age = cell(size(Spec.DBDB4Pyr,3),1);
-label.DBDB4treat = cell(size(Spec.DBDB4Pyr,3),1);
-label.DBDB4age(:) = {'400'};
-label.DBDB4treat(:) = {'DBDB'};
-
-%% stats
-ctxVals = [Spec.DB2CtxVals; Spec.DBDB2CtxVals;Spec.DB4CtxVals; Spec.DBDB4CtxVals];
-pyrVals = [Spec.DB2PyrVals; Spec.DBDB2PyrVals;Spec.DB4PyrVals; Spec.DBDB4PyrVals];
-slmVals = [Spec.DB2SLMVals; Spec.DBDB2SLMVals;Spec.DB4SLMVals; Spec.DBDB4SLMVals];
 
 ageLabs = [label.DB2age; label.DBDB2age; label.DB4age; label.DBDB4age];
 treatLabs = [label.DB2treat; label.DBDB2treat; label.DB4treat; label.DBDB4treat];

@@ -38,12 +38,12 @@ label.cDB4treat(:) = {'Control'};
 label.cDBDB2age = cell(size(CSD.DBDB2,3),1);
 label.cDBDB2treat = cell(size(CSD.DBDB2,3),1);
 label.cDBDB2age(:) = {'200'};
-label.cDBDB2treat(:) = {'DBDB'};
+label.DBDB2treat(:) = {'DBDB'};
 
-label.cDBDB4age = cell(size(CSD.DBDB4,3),1);
-label.cDBDB4treat = cell(size(CSD.DBDB4,3),1);
-label.cDBDB4age(:) = {'400'};
-label.cDBDB4treat(:) = {'DBDB'};
+label.DBDB4age = cell(size(CSD.DBDB4,3),1);
+label.DBDB4treat = cell(size(CSD.DBDB4,3),1);
+label.DBDB4age(:) = {'400'};
+label.DBDB4treat(:) = {'DBDB'};
 
 % Final set of labels for groups without removed values for windowing
 label.rDB2age = cell(length(rip.DB2),1);
@@ -72,10 +72,6 @@ treatLabs = [label.DB2treat; label.DBDB2treat; label.DB4treat; label.DBDB4treat]
 r_ageLabs = [label.rDB2age; label.rDBDB2age; label.rDB4age; label.rDBDB4age];
 r_treatLabs = [label.rDB2treat; label.rDBDB2treat; label.rDB4treat; label.rDBDB4treat];
 
-c_ageLabs = [label.cDB2age; label.cDBDB2age; label.rDB4age; label.rDBDB4age];
-c_treatLabs = [label.cDB2treat; label.cDBDB2treat; label.rDB4treat; label.rDBDB4treat];
-
-
 % CSD
 CSD.DB2max = squeeze(max(max(CSD.DB2,[],1),[],2)); %squeeze(CSD.DB2(625:1500,4,:));
 CSD.DB4max = squeeze(max(max(CSD.DB4,[],1),[],2)); %squeeze(CSD.DB4(625:1500,4,:));
@@ -94,7 +90,7 @@ CSD.DBDB4i = CSD.DBDB4max - CSD.DBDB4min;
 
 CSD_vals = [CSD.DB2i; CSD.DBDB2i; CSD.DB4i; CSD.DBDB4i];
 
-[csdP,csdTable,CSD_stats] = anovan(CSD_vals,{c_treatLabs c_ageLabs},'model','interaction');
+[csdP,csdTable,CSD_stats] = anovan(CSD_vals,{treatLabs ageLabs},'model','interaction');
 [csdC,csdM,~,csdNames] = multcompare(CSD_stats,'Dimension',[1 2],'CType','bonferroni');
 
 % Spectrogram
@@ -102,13 +98,13 @@ ctxVals = [Spec.DB2CtxVals; Spec.DBDB2CtxVals;Spec.DB4CtxVals; Spec.DBDB4CtxVals
 pyrVals = [Spec.DB2PyrVals; Spec.DBDB2PyrVals;Spec.DB4PyrVals; Spec.DBDB4PyrVals];
 slmVals = [Spec.DB2SLMVals; Spec.DBDB2SLMVals;Spec.DB4SLMVals; Spec.DBDB4SLMVals];
 
-[ctxP,ctxT,ctxStats] = anovan(ctxVals,{treatLabs ageLabs},'model','interaction');
+[ctxP,ctxT,ctxStats] = anovan(ctxVals,{ treatLabs ageLabs},'model','interaction');
 [ctxC,ctxM,~,ctxN] = multcompare(ctxStats,'Dimension',[1 2],'CType','bonferroni');
 
-[pyrP,pyrT,pyrStats] = anovan(pyrVals,{treatLabs ageLabs},'model','interaction');
+[pyrP,pyrT,pyrStats] = anovan(pyrVals,{ treatLabs ageLabs},'model','interaction');
 [pyrC,pyrM,~,pyrN] = multcompare(pyrStats,'Dimension',[1 2],'CType','bonferroni');
 
-[slmP,slmT,slmStats] = anovan(slmVals,{treatLabs ageLabs},'model','interaction');
+[slmP,slmT,slmStats] = anovan(slmVals,{ treatLabs ageLabs},'model','interaction');
 [slmC,slmM,~,slmN] = multcompare(slmStats,'Dimension',[1 2],'CType','bonferroni');
 
 

@@ -110,6 +110,15 @@ label.DBDB4treat(:) = {'DBDB'};
 % 8: mid energy
 % 9: max threshold
 
+% Power
+power_vals = [rip.DB2(:,7); rip.DB4(:,7); rip.DBDB2(:,7); rip.DBDB4(:,7)];
+[powerP,powerT,power_stats] = anovan(power_vals, {treatLabs, ageLabs},'model','interaction');% ,'display','off');
+[powerC,powerM,~,powerNames] = multcompare(power_stats,'Dimension',[1 2],'CType','bonferroni');
+
+% Duration
+dur_vals = [rip.DB2(:,2)-rip.DB2(:,1);  rip.DBDB2(:,2)-rip.DBDB2(:,1); rip.DB4(:,2)-rip.DB4(:,1); rip.DBDB4(:,2)-rip.DBDB4(:,1)] ./1250;
+[durP,durT,dur_stats] = anovan(dur_vals, {treatLabs, ageLabs},'model','interaction'); % ,'display','off');
+[durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni');
 %%  Counts
 count_vals = [];
 count_age = {};

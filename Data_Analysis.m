@@ -60,14 +60,7 @@ for group = 1:4
         LFP_files = {LFP_files.name}; % throw away useless info
         
         counter = counter +1;
-        for layer = 1:3
-            single_channel = LFP(:, chans(layer,cur_animal));
-            low_freq = BPfilter(single_channel, 1250, 1, 8);
-            high_freq = BPfilter(single_channel, 1250, 9, 30);
-            
-            % Group, Band, recording, Animal, Layer/layer
-            slowing_score(group,counter,k,layer) = SignalPower(low_freq,1250) ./ SignalPower(high_freq,1250);
-        end % layer
+        
         % Check Data fidelity
         %%%%%%
         for k = 1:size(SWRLTDIdx,2) % run through each of the LTD periods (where SWRs occur)
@@ -77,7 +70,14 @@ for group = 1:4
                 load(char(SWR_files(k)));  % Load SWR events
                 load(char(LFP_files(k))); % Load LFP events
                 LFP = LFPs{1,2} .*voltConv; % load LFP
-                
+                for layer = 1:3
+                    single_channel = LFP(:, chans(layer,cur_animal));
+                    low_freq = BPfilter(single_channel, 1250, 1, 8);
+                    high_freq = BPfilter(single_channel, 1250, 9, 30);
+                    
+                    % Group, Band, recording, Animal, Layer/layer
+                    slowing_score(group,counter,k,layer) = SignalPower(low_freq,1250) ./ SignalPower(high_freq,1250);
+                end % layer
                 % Preprocess signal
                 %%%%%%
                 LFP = BPfilter(LFP,1250,30,60); % isolate gamma frequency band
@@ -152,5 +152,5 @@ time = time -0.5; % adjust for SWR event initiation
 scores_combine = squeeze(nanmean(slowing_score,3)); % Combine both recordings of each animal
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Spec','rip','labels','CSD','slowing_score')
+save('LFP Measures','Spec','rip','label','CSD','slowing_score')
 
