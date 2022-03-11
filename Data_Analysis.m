@@ -1,8 +1,3 @@
-
-
-
-
-
 % Load in initializing variables
 voltConv = 0.000000091555527603759401; % Neurolynx saves data in a unitless value, we need this to convert it to volts
 Fs = 1250;
@@ -24,8 +19,10 @@ label.DB4 = [];
 label.DBDB2 = [];
 label.DBDB4 = [];
 
-slowing_score = NaN(4,7,2,3);
-% Group,Animal, recording, Layer/layer
+Co = NaN(4,7,7,3);
+% Group, Animal, freq_band, Layer_comb
+slowing_score = NaN(4,7,3);
+% Group,Animal,Layer_comb
 
 % Begin parsing data
 %%%%%%
@@ -48,6 +45,7 @@ for group = 1:4
     csd = [];
     
     for cur_animal = grouping
+        disp(['Animal: ' num2str(cur_animal)])
         cd(animal_list(cur_animal).name)
         % Get file names of specific animals relevant files
         %%%%%%
@@ -59,24 +57,17 @@ for group = 1:4
         LFP_files = {LFP_files.name}; % throw away useless info
         
         counter = counter +1;
-        
+        full_LFP = [];
         % Check Data fidelity
         %%%%%%
-        for k = 1:size(SWRLTDIdx,2) % run through each of the LTD periods (where SWRs occur)
+        for k = 1:length(SWRLTDIdx) % run through each of the LTD periods (where SWRs occur)
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
                 % Load in animal data
                 %%%%%%
                 load(char(SWR_files(k)));  % Load SWR events
                 load(char(LFP_files(k))); % Load LFP events
                 LFP = LFPs{1,2} .*voltConv; % load LFP
-                for layer = 1:3
-                    single_channel = LFP(:, chans(layer,cur_animal));
-                    low_freq = BPfilter(single_channel, 1250, 1, 8);
-                    high_freq = BPfilter(single_channel, 1250, 9, 30);
-                    
-                    % Group, Band, recording, Animal, Layer/layer
-                    slowing_score(group,counter,k,layer) = SignalPower(low_freq,1250) ./ SignalPower(high_freq,1250);
-                end % layer
+                full_LFP = [full_LFP; LFP];
                 % Preprocess signal
                 %%%%%%
                 gamma_LFP = BPfilter(LFP,1250,30,60); % isolate gamma frequency band
@@ -122,6 +113,59 @@ for group = 1:4
             end %is empty SWRLTD
             
         end % for k SWRLTDIdx
+        for layer = 1:3
+            if ~isempty(full_LFP)
+                single_channel = full_LFP(:, chans(layer,cur_animal));
+                low_freq = BPfilter(single_channel, 1250, 1, 8);
+                high_freq = BPfilter(single_channel, 1250, 9, 30);
+                
+                % Group, Band, recording, Animal, Layer
+                slowing_score(group,counter,layer) = SignalPower(low_freq,1250) ./ SignalPower(high_freq,1250);
+                switch layer
+                    case 1
+                        A = 1;
+                        B = 2;
+                        compare = 'Cortex-Pyr';
+                    case 2
+                        A = 1;
+                        B = 3;
+                        compare = 'Cortex-Slm';
+                    case 3
+                        A = 2;
+                        B = 3;
+                        compare = 'Pyr-Slm';
+                end % switch layer
+                disp(compare)
+                % Assign single channels to run coherence on
+                
+                A_LFP = full_LFP(:, chans(A,cur_animal));
+                B_LFP = full_LFP(:, chans(B,cur_animal));
+                % create a vector of indiviudal frequencies to calculate
+                % coherence
+                for freq_band = 1:7
+                    switch freq_band
+                        case 1
+                            range = linspace(0.1,3,20);
+                        case 2
+                            range = linspace(4,7,20);
+                        case 3
+                            range = linspace(8,13,20);
+                        case 4
+                            range = linspace(13,30,20);
+                        case 5
+                            range = linspace(30,58,20);
+                        case 6
+                            range = linspace(62,200,20);
+                        case 7
+                            range = linspace(0,200,50);
+                    end % switch iBand
+                    % Run coherence and average outputs for each frequency
+                    % band
+                    % Group, Band, recording, Animal, Layer/layer
+                    Co(group,counter,freq_band,layer) = nanmean(mscohere(A_LFP,B_LFP,hamming(12500),[],range,1250));
+                end % frequency band
+            end % if
+        end % layer
         cd ..
         
     end % animal
@@ -148,8 +192,8 @@ for group = 1:4
     end % if
 end % group
 time = time -0.5; % adjust for SWR event initiation
-scores_combine = squeeze(nanmean(slowing_score,3)); % Combine both recordings of each animal
+% Group, Animal, freq_band, Layer
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Spec','rip','label','CSD','slowing_score')
+save('LFP Measures','Spec','rip','label','CSD','Co','slowing_score')
 

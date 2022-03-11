@@ -75,7 +75,7 @@ end
 % combineRec(Group, Band, Animal, Layer, layer)
 figure
 set(gcf, 'color', 'w','Position',[100 100 800 420])
-for layComb = 2:3
+for layComb = 1:3
     % First we want to grab individual values, create 2-way labels for
     % them, then concatenate everything together
     temp = scores_combine(:,:,layComb)';
