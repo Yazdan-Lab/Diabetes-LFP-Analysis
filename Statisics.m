@@ -24,6 +24,18 @@ label.DBDB4_treat = cell(size(Spec.DBDB4_Pyr,1),1);
 label.DBDB4_age(:) = {'400'};
 label.DBDB4_treat(:) = {'DBDB'};
 
+% Create catagories for linear modeling
+DB2_age = repmat(200,size(Spec.DB2_Pyr,1),1);
+DB2_treat = zeros(size(Spec.DB2_Pyr,1),1);
+
+DB4_age = repmat(400,size(Spec.DB4_Pyr,1),1);
+DB4_treat = ones(size(Spec.DB4_Pyr,1),1);
+
+DBDB2_age = repmat(200,size(Spec.DBDB2_Pyr,1),1);
+DBDB2_treat = zeros(size(Spec.DBDB2_Pyr,1),1);
+
+DBDB4_age = repmat(400,size(Spec.DBDB4_Pyr,1),1);
+DBDB4_treat = ones(size(Spec.DBDB4_Pyr,1),1);
 % extra set of labels for groups without removed values for windowing
 label.r_DB2_age = cell(length(rip.DB2),1);
 label.r_DB2_treat = cell(length(rip.DB2),1);
@@ -45,12 +57,34 @@ label.r_DBDB4_treat = cell(length(rip.DBDB4),1);
 label.r_DBDB4_age(:) = {'400'};
 label.r_DBDB4_treat(:) = {'DBDB'};
 
+age_arr = [DB2_age; DBDB2_age; DB4_age; DBDB4_age];
+treat_arr = [DB2_treat; DBDB2_treat; DB4_treat; DBDB4_treat];
+
 age_Labs = [label.DB2_age; label.DBDB2_age; label.DB4_age; label.DBDB4_age];
 treat_Labs = [label.DB2_treat; label.DBDB2_treat; label.DB4_treat; label.DBDB4_treat];
 
 r_age_Labs = [label.r_DB2_age; label.r_DBDB2_age; label.r_DB4_age; label.r_DBDB4_age];
 r_treat_Labs = [label.r_DB2_treat; label.r_DBDB2_treat; label.r_DB4_treat; label.r_DBDB4_treat];
 
+per_animal_Ct2AgeLab = cell(sum(~isnan(slowing_score(1,:,1))),1);
+per_animal_Ct2AgeLab(:) = {'200'};
+per_animal_Ct2DbLab = cell(sum(~isnan(slowing_score(1,:,1))),1);
+per_animal_Ct2DbLab(:) = {'Ctrl'};
+
+per_animal_Ct4AgeLab = cell(sum(~isnan(slowing_score(2,:,1))),1);
+per_animal_Ct4AgeLab(:) = {'400'};
+per_animal_Ct4DbLab = cell(sum(~isnan(slowing_score(2,:,1))),1);
+per_animal_Ct4DbLab(:) = {'Ctrl'};
+
+per_animal_Db2AgeLab = cell(sum(~isnan(slowing_score(3,:,1))),1);
+per_animal_Db2AgeLab(:) = {'200'};
+per_animal_Db2DbLab = cell(sum(~isnan(slowing_score(3,:,1))),1);
+per_animal_Db2DbLab(:) = {'DBDB'};
+
+per_animal_Db4AgeLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
+per_animal_Db4AgeLab(:) = {'400'};
+per_animal_Db4DbLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
+per_animal_Db4DbLab(:) = {'DBDB'};
 
 % Process CSD into single value
 CSD.DB2_max = squeeze(max(CSD.DB2,[],[1 2])); %squeeze(CSD.DB2(625:1500,4,:));
@@ -90,6 +124,9 @@ disp('Specific CSD')
 [csdP,csdTable,CSD_stats] = anovan(CSD_vals,{treat_Labs age_Labs},'model','interaction');
 [csdC,csdM,~,csdNames] = multcompare(CSD_stats,'Dimension',[1 2],'CType','bonferroni');
 
+CSD = table( age_Labs, treat_Labs,CSD_vals,'VariableNames',{'Age','DB','CSD'});
+mdl2 = fitlm(CSD,'linear')
+figure, plot(mdl2)
 disp('Full CSD')
 [csdfP,csdfTable,CSDf_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction');
 [csdfC,csdfM,~,csdfNames] = multcompare(CSDf_stats,'Dimension',[1 2],'CType','bonferroni');
@@ -99,6 +136,9 @@ ctxVals = [Spec.DB2_Ctx; Spec.DBDB2_Ctx;Spec.DB4_Ctx; Spec.DBDB4_Ctx];
 pyrVals = [Spec.DB2_Pyr; Spec.DBDB2_Pyr;Spec.DB4_Pyr; Spec.DBDB4_Pyr];
 slmVals = [Spec.DB2_SLM; Spec.DBDB2_SLM;Spec.DB4_SLM; Spec.DBDB4_SLM];
 
+
+Ctx_spec = table( age_arr, treat_arr,ctxVals,'VariableNames',{'Age','Treatment','Spectral_Power'});
+mdl = fitlm(Ctx_spec,'interactions')
 [ctxP,ctxT,ctxStats] = anovan(ctxVals,{treat_Labs age_Labs},'model','interaction');
 [ctxC,ctxM,~,ctxN] = multcompare(ctxStats,'Dimension',[1 2],'CType','bonferroni');
 
@@ -110,7 +150,7 @@ disp('Slm Spec')
 [slmP,slmT,slmStats] = anovan(slmVals,{treat_Labs age_Labs},'model','interaction');
 [slmC,slmM,~,slmN] = multcompare(slmStats,'Dimension',[1 2],'CType','bonferroni');
 
-% Power
+%% Power
 
 disp('Power')
 power_vals = [rip.DB2(:,7); rip.DB4(:,7); rip.DBDB2(:,7); rip.DBDB4(:,7)];
@@ -125,27 +165,9 @@ dur_vals = [rip.DB2(:,2)-rip.DB2(:,1);  rip.DBDB2(:,2)-rip.DBDB2(:,1); rip.DB4(:
 [durP,durT,dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs},'model','interaction'); % ,'display','off');
 [durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni');
 
-% Slowing score
+%% Slowing score
 disp('Slowing score')
-Ct2AgeLab = cell(sum(~isnan(slowing_score(1,:,1))),1);
-Ct2AgeLab(:) = {'200'};
-Ct2DbLab = cell(sum(~isnan(slowing_score(1,:,1))),1);
-Ct2DbLab(:) = {'Ctrl'};
 
-Ct4AgeLab = cell(sum(~isnan(slowing_score(2,:,1))),1);
-Ct4AgeLab(:) = {'400'};
-Ct4DbLab = cell(sum(~isnan(slowing_score(2,:,1))),1);
-Ct4DbLab(:) = {'Ctrl'};
-
-Db2AgeLab = cell(sum(~isnan(slowing_score(3,:,1))),1);
-Db2AgeLab(:) = {'200'};
-Db2DbLab = cell(sum(~isnan(slowing_score(3,:,1))),1);
-Db2DbLab(:) = {'DBDB'};
-
-Db4AgeLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
-Db4AgeLab(:) = {'400'};
-Db4DbLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
-Db4DbLab(:) = {'DBDB'};
 
 for lay_comb = 1:3
     % First we want to grab individual values, create 2-way labels for
@@ -163,35 +185,15 @@ for lay_comb = 1:3
     SS_DB400 = SS_DB400_w_nan(~isnan(SS_DB400_w_nan));
     
     vals = [SS_Ct200; SS_DB200; SS_Ct400; SS_DB400];
-    ageLabs = [Ct2AgeLab; Db2AgeLab;Ct4AgeLab; Db4AgeLab];
-    dbLabs = [Ct2DbLab; Db2DbLab; Ct4DbLab; Db4DbLab];
-    
+    ageLabs = [per_animal_Ct2AgeLab; per_animal_Db2AgeLab;per_animal_Ct4AgeLab; per_animal_Db4AgeLab];
+    dbLabs = [per_animal_Ct2DbLab; per_animal_Db2DbLab; per_animal_Ct4DbLab; per_animal_Db4DbLab];
+    disp('Layer')
     [ssP,ssT,ssStats] = anovan(vals,{dbLabs ageLabs},'model','interaction'); %,'display','off');
     [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni'); % ,'display','off');
 end
 
 %% Coherence
 disp('Coherence')
-% Group, Animal, freq_band, Layer_comb
-Ct2AgeLab = cell(sum(~isnan(Co(1,:,1,1))),1);
-Ct2AgeLab(:) = {'200'};
-Ct2DbLab = cell(sum(~isnan(Co(1,:,1,1))),1);
-Ct2DbLab(:) = {'Ctrl'};
-
-Ct4AgeLab = cell(sum(~isnan(Co(2,:,1,1))),1);
-Ct4AgeLab(:) = {'400'};
-Ct4DbLab = cell(sum(~isnan(Co(2,:,1,1))),1);
-Ct4DbLab(:) = {'Ctrl'};
-
-Db2AgeLab = cell(sum(~isnan(Co(3,:,1,1))),1);
-Db2AgeLab(:) = {'200'};
-Db2DbLab = cell(sum(~isnan(Co(3,:,1,1))),1);
-Db2DbLab(:) = {'DBDB'};
-
-Db4AgeLab = cell(sum(~isnan(Co(4,:,1,1))),1);
-Db4AgeLab(:) = {'400'};
-Db4DbLab = cell(sum(~isnan(Co(4,:,1,1))),1);
-Db4DbLab(:) = {'DBDB'};
 
 for lay_comb = 1:3
     switch lay_comb
@@ -237,8 +239,8 @@ for lay_comb = 1:3
         % them, then concatenate everything together
         
         vals = [Coh_Ct200; Coh_DB200; Coh_Ct400; Coh_DB400];
-        ageLabs = [Ct2AgeLab; Db2AgeLab;Ct4AgeLab; Db4AgeLab];
-        dbLabs = [Ct2DbLab; Db2DbLab; Ct4DbLab; Db4DbLab];
+        ageLabs = [per_animal_Ct2AgeLab; per_animal_Db2AgeLab;per_animal_Ct4AgeLab; per_animal_Db4AgeLab];
+        dbLabs = [per_animal_Ct2DbLab; per_animal_Db2DbLab; per_animal_Ct4DbLab; per_animal_Db4DbLab];
         disp(groupName)
         [cohP,cohT,cohStats] = anovan(vals,{dbLabs ageLabs},'model','interaction');% ,'display','off');
         [cohC,cohM,~,cohN] = multcompare(cohStats,'Dimension',[1 2],'CType','bonferroni'); %,'display','off');

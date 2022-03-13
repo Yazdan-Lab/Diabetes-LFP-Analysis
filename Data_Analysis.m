@@ -68,6 +68,9 @@ for group = 1:4
                 load(char(LFP_files(k))); % Load LFP events
                 LFP = LFPs{1,2} .*voltConv; % load LFP
                 full_LFP = [full_LFP; LFP];
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %%% Per Ripple Analysis %%%
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Preprocess signal
                 %%%%%%
                 gamma_LFP = BPfilter(LFP,1250,30,60); % isolate gamma frequency band
@@ -84,10 +87,12 @@ for group = 1:4
                 % For each event, create a spectrogram and store it in the
                 % temp variable
                 for r = 1:length(LTD_events)
+                    % Create spectrogram of each ripple
                     [~,~,~,temp_spec_ctx(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),hamming(125),[],[5:5:250],1250);
                     [~,~,~,temp_spec_pyr(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),hamming(125),[],[5:5:250],1250);
                     [~,freqs,time,temp_spec_slm(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),hamming(125),[],[5:5:250],1250);
                     
+                    % Create CSD of each ripple
                     temp_CSD(:,:,r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
                 end
                 % Isolate Spectral Power
@@ -101,6 +106,7 @@ for group = 1:4
                 
                 csd = save_check(csd,temp_CSD);
                 
+                % Save all individual ripples for basic analysis
                 if group ==1
                     [rip.DB2,label.DB2] = label_ripples(rip.DB2,label.DB2,SWRevents,SWRLTDIdx,k,counter);
                 elseif group ==2
@@ -113,14 +119,24 @@ for group = 1:4
             end %is empty SWRLTD
             
         end % for k SWRLTDIdx
-        for layer = 1:3
-            if ~isempty(full_LFP)
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%% Per animal analysis %%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if ~isempty(full_LFP)
+            for layer = 1:3
+                %%% Slowing score
+                %%%%%%%%%%%%%%%%%
+                % BP filter LFP for low and high frequencies
                 single_channel = full_LFP(:, chans(layer,cur_animal));
                 low_freq = BPfilter(single_channel, 1250, 1, 8);
                 high_freq = BPfilter(single_channel, 1250, 9, 30);
                 
-                % Group, Band, recording, Animal, Layer
+                % Calculate ratio of signal powers
                 slowing_score(group,counter,layer) = SignalPower(low_freq,1250) ./ SignalPower(high_freq,1250);
+                % Group, Band, Animal, Layer
+                
+                % Coherence
+                %%%%%%%%%%%%%
                 switch layer
                     case 1
                         A = 1;
@@ -164,11 +180,12 @@ for group = 1:4
                     % Group, Band, recording, Animal, Layer/layer
                     Co(group,counter,freq_band,layer) = nanmean(mscohere(A_LFP,B_LFP,hamming(12500),[],range,1250));
                 end % frequency band
-            end % if
-        end % layer
+            end % layer
+        end % if
         cd ..
         
     end % animal
+    % Save data to variable outside loop
     if group ==1
         Spec.DB2_Ctx = spec_ctx;
         Spec.DB2_Pyr = spec_pyr;
