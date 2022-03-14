@@ -24,18 +24,6 @@ label.DBDB4_treat = cell(size(Spec.DBDB4_Pyr,1),1);
 label.DBDB4_age(:) = {'400'};
 label.DBDB4_treat(:) = {'DBDB'};
 
-% Create catagories for linear modeling
-DB2_age = repmat(200,size(Spec.DB2_Pyr,1),1);
-DB2_treat = zeros(size(Spec.DB2_Pyr,1),1);
-
-DB4_age = repmat(400,size(Spec.DB4_Pyr,1),1);
-DB4_treat = ones(size(Spec.DB4_Pyr,1),1);
-
-DBDB2_age = repmat(200,size(Spec.DBDB2_Pyr,1),1);
-DBDB2_treat = zeros(size(Spec.DBDB2_Pyr,1),1);
-
-DBDB4_age = repmat(400,size(Spec.DBDB4_Pyr,1),1);
-DBDB4_treat = ones(size(Spec.DBDB4_Pyr,1),1);
 % extra set of labels for groups without removed values for windowing
 label.r_DB2_age = cell(length(rip.DB2),1);
 label.r_DB2_treat = cell(length(rip.DB2),1);
@@ -56,9 +44,6 @@ label.r_DBDB4_age = cell(length(rip.DBDB4),1);
 label.r_DBDB4_treat = cell(length(rip.DBDB4),1);
 label.r_DBDB4_age(:) = {'400'};
 label.r_DBDB4_treat(:) = {'DBDB'};
-
-age_arr = [DB2_age; DBDB2_age; DB4_age; DBDB4_age];
-treat_arr = [DB2_treat; DBDB2_treat; DB4_treat; DBDB4_treat];
 
 age_Labs = [label.DB2_age; label.DBDB2_age; label.DB4_age; label.DBDB4_age];
 treat_Labs = [label.DB2_treat; label.DBDB2_treat; label.DB4_treat; label.DBDB4_treat];
@@ -86,6 +71,10 @@ per_animal_Db4AgeLab(:) = {'400'};
 per_animal_Db4DbLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
 per_animal_Db4DbLab(:) = {'DBDB'};
 
+per_animal_age_Labs = [per_animal_Ct2AgeLab; per_animal_Db2AgeLab;per_animal_Ct4AgeLab; per_animal_Db4AgeLab];
+per_animal_db_Labs = [per_animal_Ct2DbLab; per_animal_Db2DbLab; per_animal_Ct4DbLab; per_animal_Db4DbLab];
+
+clear per_animal_Ct2AgeLab per_animal_Ct2DbLab per_animal_Ct4AgeLab per_animal_Ct4DbLab per_animal_Db2AgeLab per_animal_Db2DbLab per_animal_Db4AgeLab per_animal_Db4DbLab
 % Process CSD into single value
 CSD.DB2_max = squeeze(max(CSD.DB2,[],[1 2])); %squeeze(CSD.DB2(625:1500,4,:));
 CSD.DB4_max = squeeze(max(CSD.DB4,[],[1 2])); %squeeze(CSD.DB4(625:1500,4,:));
@@ -121,49 +110,58 @@ CSD.DBDB4_amp = CSD.DBDB4_rip - CSD.DBDB4_wav;
 CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
 CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
 disp('Specific CSD')
-[csdP,csdTable,CSD_stats] = anovan(CSD_vals,{treat_Labs age_Labs},'model','interaction');
-[csdC,csdM,~,csdNames] = multcompare(CSD_stats,'Dimension',[1 2],'CType','bonferroni');
+% [csdP,csdTable,CSD_stats] = anovan(CSD_vals,{treat_Labs age_Labs},'model','interaction');
+% [csdC,csdM,~,csdNames] = multcompare(CSD_stats,'Dimension',[1 2],'CType','bonferroni');
 
-CSD = table( age_Labs, treat_Labs,CSD_vals,'VariableNames',{'Age','DB','CSD'});
-mdl2 = fitlm(CSD,'linear')
-figure, plot(mdl2)
-disp('Full CSD')
-[csdfP,csdfTable,CSDf_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction');
-[csdfC,csdfM,~,csdfNames] = multcompare(CSDf_stats,'Dimension',[1 2],'CType','bonferroni');
+CSD = table(age_Labs, treat_Labs,CSD_vals,'VariableNames',{'Age','DB','CSD'});
+CSDmdl = fitlm(CSD,'interactions')
+
+% disp('Full CSD')
+% [csdfP,csdfTable,CSDf_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction');
+% [csdfC,csdfM,~,csdfNames] = multcompare(CSDf_stats,'Dimension',[1 2],'CType','bonferroni');
+
 % Spectrogram
 disp('Ctx Spec')
-ctxVals = [Spec.DB2_Ctx; Spec.DBDB2_Ctx;Spec.DB4_Ctx; Spec.DBDB4_Ctx];
-pyrVals = [Spec.DB2_Pyr; Spec.DBDB2_Pyr;Spec.DB4_Pyr; Spec.DBDB4_Pyr];
-slmVals = [Spec.DB2_SLM; Spec.DBDB2_SLM;Spec.DB4_SLM; Spec.DBDB4_SLM];
+ctx_Vals = [Spec.DB2_Ctx; Spec.DBDB2_Ctx;Spec.DB4_Ctx; Spec.DBDB4_Ctx];
+pyr_Vals = [Spec.DB2_Pyr; Spec.DBDB2_Pyr;Spec.DB4_Pyr; Spec.DBDB4_Pyr];
+slm_Vals = [Spec.DB2_SLM; Spec.DBDB2_SLM;Spec.DB4_SLM; Spec.DBDB4_SLM];
 
 
-Ctx_spec = table( age_arr, treat_arr,ctxVals,'VariableNames',{'Age','Treatment','Spectral_Power'});
-mdl = fitlm(Ctx_spec,'interactions')
-[ctxP,ctxT,ctxStats] = anovan(ctxVals,{treat_Labs age_Labs},'model','interaction');
-[ctxC,ctxM,~,ctxN] = multcompare(ctxStats,'Dimension',[1 2],'CType','bonferroni');
+spec_ctx = table(age_Labs,treat_Labs,ctx_Vals,'VariableNames',{'Age','Treatment','Spectral_Power'});
+spec_ctx_mdl = fitlm(spec_ctx,'interactions')
+
+% [ctxP,ctxT,ctxStats] = anovan(ctxVals,{treat_Labs age_Labs},'model','interaction');
+% [ctxC,ctxM,~,ctxN] = multcompare(ctxStats,'Dimension',[1 2],'CType','bonferroni');
 
 disp('Pyr Spec')
-[pyrP,pyrT,pyrStats] = anovan(pyrVals,{treat_Labs age_Labs},'model','interaction');
-[pyrC,pyrM,~,pyrN] = multcompare(pyrStats,'Dimension',[1 2],'CType','bonferroni');
-
+% [pyrP,pyrT,pyrStats] = anovan(pyrVals,{treat_Labs age_Labs},'model','interaction');
+% [pyrC,pyrM,~,pyrN] = multcompare(pyrStats,'Dimension',[1 2],'CType','bonferroni');
+spec_pyr = table(age_Labs,treat_Labs,pyr_Vals,'VariableNames',{'Age','Treatment','Spectral_Power'});
+spec_pyr_mdl = fitlm(Pyr_spec,'interactions')
 disp('Slm Spec')
-[slmP,slmT,slmStats] = anovan(slmVals,{treat_Labs age_Labs},'model','interaction');
-[slmC,slmM,~,slmN] = multcompare(slmStats,'Dimension',[1 2],'CType','bonferroni');
+spec_slm = table(age_Labs,treat_Labs,slm_Vals,'VariableNames',{'Age','Treatment','Spectral_Power'});
+spec_slm_mdl = fitlm(slm_spec,'interactions')
+% [slmP,slmT,slmStats] = anovan(slm_Vals,{treat_Labs age_Labs},'model','interaction');
+% [slmC,slmM,~,slmN] = multcompare(slmStats,'Dimension',[1 2],'CType','bonferroni');
 
-%% Power
+%% Basic features
 
 disp('Power')
 power_vals = [rip.DB2(:,7); rip.DB4(:,7); rip.DBDB2(:,7); rip.DBDB4(:,7)];
 
-[powerP,powerT,power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs},'model','interaction');% ,'display','off');
-[powerC,powerM,~,powerNames] = multcompare(power_stats,'Dimension',[1 2],'CType','bonferroni');
+power = table(age_Labs,treat_Labs,power_vals,'VariableNames',{'Age','Treatment','Spectral_Power'});
+power_mdl = fitlm(power,'interactions')
+% [powerP,powerT,power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs},'model','interaction');% ,'display','off');
+% [powerC,powerM,~,powerNames] = multcompare(power_stats,'Dimension',[1 2],'CType','bonferroni');
 
 % Duration
 disp('Duration')
 dur_vals = [rip.DB2(:,2)-rip.DB2(:,1);  rip.DBDB2(:,2)-rip.DBDB2(:,1); rip.DB4(:,2)-rip.DB4(:,1); rip.DBDB4(:,2)-rip.DBDB4(:,1)] ./1250;
 
-[durP,durT,dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs},'model','interaction'); % ,'display','off');
-[durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni');
+dur = table(age_Labs,treat_Labs,dur_vals,'VariableNames',{'Age','Treatment','Spectral_Power'});
+dur_mdl = fitlm(dur,'interactions')
+% [durP,durT,dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs},'model','interaction'); % ,'display','off');
+% [durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni');
 
 %% Slowing score
 disp('Slowing score')
@@ -184,12 +182,13 @@ for lay_comb = 1:3
     SS_DB400_w_nan = slowing_score(4,:,lay_comb)';
     SS_DB400 = SS_DB400_w_nan(~isnan(SS_DB400_w_nan));
     
-    vals = [SS_Ct200; SS_DB200; SS_Ct400; SS_DB400];
-    ageLabs = [per_animal_Ct2AgeLab; per_animal_Db2AgeLab;per_animal_Ct4AgeLab; per_animal_Db4AgeLab];
-    dbLabs = [per_animal_Ct2DbLab; per_animal_Db2DbLab; per_animal_Ct4DbLab; per_animal_Db4DbLab];
+    slow_score_vals = [SS_Ct200; SS_DB200; SS_Ct400; SS_DB400];
+    
     disp('Layer')
-    [ssP,ssT,ssStats] = anovan(vals,{dbLabs ageLabs},'model','interaction'); %,'display','off');
-    [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni'); % ,'display','off');
+    slow_score = table(per_animal_age_Labs,per_animal_db_Labs,slow_score_vals,'VariableNames',{'Age','Treatment','Spectral_Power'});
+    dur_mdl = fitlm(dur,'interactions')
+%     [ssP,ssT,ssStats] = anovan(slow_score_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction'); %,'display','off');
+%     [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni'); % ,'display','off');
 end
 
 %% Coherence
@@ -238,13 +237,13 @@ for lay_comb = 1:3
         % First we want to grab individual values, create 2-way labels for
         % them, then concatenate everything together
         
-        vals = [Coh_Ct200; Coh_DB200; Coh_Ct400; Coh_DB400];
-        ageLabs = [per_animal_Ct2AgeLab; per_animal_Db2AgeLab;per_animal_Ct4AgeLab; per_animal_Db4AgeLab];
-        dbLabs = [per_animal_Ct2DbLab; per_animal_Db2DbLab; per_animal_Ct4DbLab; per_animal_Db4DbLab];
+        coh_vals = [Coh_Ct200; Coh_DB200; Coh_Ct400; Coh_DB400];
         disp(groupName)
-        [cohP,cohT,cohStats] = anovan(vals,{dbLabs ageLabs},'model','interaction');% ,'display','off');
-        [cohC,cohM,~,cohN] = multcompare(cohStats,'Dimension',[1 2],'CType','bonferroni'); %,'display','off');
-        
+        coh = table(per_animal_age_Labs,per_animal_db_Labs,coh_vals,'VariableNames',{'Age','Treatment','Spectral_Power'});
+        coh_mdl = fitlm(coh,'interactions')
+%         [cohP,cohT,cohStats] = anovan(coh_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction');% ,'display','off');
+%         [cohC,cohM,~,cohN] = multcompare(cohStats,'Dimension',[1 2],'CType','bonferroni'); %,'display','off');
+%         
     end
 end
 
