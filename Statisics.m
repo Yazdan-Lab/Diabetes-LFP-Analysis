@@ -4,23 +4,23 @@ hotcold = redblue();
 %% Make labels for stats
 % We need two labels for a 2-way anova test, one for each variable we are
 % testing
-label.DB2_age = cell(size(Spec.DB2_Pyr,1),1);
-label.DB2_treat = cell(size(Spec.DB2_Pyr,1),1);
+label.DB2_age = cell(size(Gamma.DB2_Pyr,2),1);
+label.DB2_treat = cell(size(Gamma.DB2_Pyr,2),1);
 label.DB2_age(:) = {'200'};
 label.DB2_treat(:) = {'Control'};
 
-label.DB4_age = cell(size(Spec.DB4_Pyr,1),1);
-label.DB4_treat = cell(size(Spec.DB4_Pyr,1),1);
+label.DB4_age = cell(size(Gamma.DB4_Pyr,2),1);
+label.DB4_treat = cell(size(Gamma.DB4_Pyr,2),1);
 label.DB4_age(:) = {'400'};
 label.DB4_treat(:) = {'Control'};
 
-label.DBDB2_age = cell(size(Spec.DBDB2_Pyr,1),1);
-label.DBDB2_treat = cell(size(Spec.DBDB2_Pyr,1),1);
+label.DBDB2_age = cell(size(Gamma.DBDB2_Pyr,2),1);
+label.DBDB2_treat = cell(size(Gamma.DBDB2_Pyr,2),1);
 label.DBDB2_age(:) = {'200'};
 label.DBDB2_treat(:) = {'DBDB'};
 
-label.DBDB4_age = cell(size(Spec.DBDB4_Pyr,1),1);
-label.DBDB4_treat = cell(size(Spec.DBDB4_Pyr,1),1);
+label.DBDB4_age = cell(size(Gamma.DBDB4_Pyr,2),1);
+label.DBDB4_treat = cell(size(Gamma.DBDB4_Pyr,2),1);
 label.DBDB4_age(:) = {'400'};
 label.DBDB4_treat(:) = {'DBDB'};
 
@@ -106,46 +106,7 @@ CSD.DB2_amp = CSD.DB2_rip - CSD.DB2_wav;
 CSD.DB4_amp = CSD.DB4_rip - CSD.DB4_wav;
 CSD.DBDB2_amp = CSD.DBDB2_rip - CSD.DBDB2_wav;
 CSD.DBDB4_amp = CSD.DBDB4_rip - CSD.DBDB4_wav;
-%% Stats
-CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
-CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
-disp('Specific CSD')
-[csdP,csdTable,CSD_stats] = anovan(CSD_vals,{treat_Labs age_Labs},'model','interaction');
-[csdC,csdM,~,csdNames] = multcompare(CSD_stats,'Dimension',[1 2],'CType','bonferroni');
-
-% disp('Full CSD')
-% [csdfP,csdfTable,CSDf_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction');
-% [csdfC,csdfM,~,csdfNames] = multcompare(CSDf_stats,'Dimension',[1 2],'CType','bonferroni');
-
-% Spectrogram
-disp('Ctx Spec')
-ctx_Vals = [Spec.DB2_Ctx; Spec.DBDB2_Ctx;Spec.DB4_Ctx; Spec.DBDB4_Ctx];
-pyr_Vals = [Spec.DB2_Pyr; Spec.DBDB2_Pyr;Spec.DB4_Pyr; Spec.DBDB4_Pyr];
-slm_Vals = [Spec.DB2_SLM; Spec.DBDB2_SLM;Spec.DB4_SLM; Spec.DBDB4_SLM];
-
-[ctxP,ctxT,ctxStats] = anovan(ctxVals,{treat_Labs age_Labs},'model','interaction');
-[ctxC,ctxM,~,ctxN] = multcompare(ctxStats,'Dimension',[1 2],'CType','bonferroni');
-
-disp('Pyr Spec')
-[pyrP,pyrT,pyrStats] = anovan(pyrVals,{treat_Labs age_Labs},'model','interaction');
-[pyrC,pyrM,~,pyrN] = multcompare(pyrStats,'Dimension',[1 2],'CType','bonferroni');
-disp('Slm Spec')
-[slmP,slmT,slmStats] = anovan(slm_Vals,{treat_Labs age_Labs},'model','interaction');
-[slmC,slmM,~,slmN] = multcompare(slmStats,'Dimension',[1 2],'CType','bonferroni');
-
-%% Basic features
-
-disp('Power')
-power_vals = [rip.DB2(:,7); rip.DB4(:,7); rip.DBDB2(:,7); rip.DBDB4(:,7)];
-
-[powerP,powerT,power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs},'model','interaction');% ,'display','off');
-[powerC,powerM,~,powerNames] = multcompare(power_stats,'Dimension',[1 2],'CType','bonferroni');
-
-% Duration
-disp('Duration')
-dur_vals = [rip.DB2(:,2)-rip.DB2(:,1);  rip.DBDB2(:,2)-rip.DBDB2(:,1); rip.DB4(:,2)-rip.DB4(:,1); rip.DBDB4(:,2)-rip.DBDB4(:,1)] ./1250;
-[durP,durT,dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs},'model','interaction'); % ,'display','off');
-[durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni');
+%% 
 
 %% Slowing score
 disp('Slowing score')
@@ -168,15 +129,30 @@ for lay_comb = 1:3
     
     slow_score_vals = [SS_Ct200; SS_DB200; SS_Ct400; SS_DB400];
     
-    disp('Layer')
+    disp(num2str(lay_comb))
     [ssP,ssT,ssStats] = anovan(slow_score_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction'); %,'display','off');
     [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni'); % ,'display','off');
+    
+    create_bar_figure(ssM(:,2), ssM(:,1), ssC);
+    ylabel('Slowing Score')
+    set(gca,'ytick',[0 5 10 15])
+    ylim([0 15])
+    switch lay_comb
+        case 1
+            title('Cortex')
+        case 2
+            title('Pyramidal')
+        case 3
+            title('SLM')
+    end
 end
 
 %% Coherence
 disp('Coherence')
-
-for lay_comb = 1:3
+count = 0;
+figure
+set(gcf,'Color','w')
+for lay_comb = 1:2 % 1:3
     switch lay_comb
         case 1
             comb_name = 'Ctx-Pyr';
@@ -186,23 +162,25 @@ for lay_comb = 1:3
             comb_name = 'Pyr-Slm';
     end % switch layComb
     disp(comb_name)
-    for band = 1:7
+    for band = 2:5%1:7
         switch band
             case 1
-                groupName = 'Delta';
+                group_Name = 'Delta';
             case 2
-                groupName = 'Theta';
+                group_Name = 'Theta';
             case 3
-                groupName = 'Alpha';
+                group_Name = 'Alpha';
             case 4
-                groupName = 'Beta';
+                group_Name = 'Beta';
             case 5
-                groupName = 'Gamma';
+                group_Name = 'Gamma';
             case 6
-                groupName = 'High Gamma';
+                group_Name = 'High Gamma';
             case 7
-                groupName = 'Full';
+                group_Name = 'Full';
         end
+        
+        count = count +1;
         
         Coh_Ct200_w_nan = Co(1,:,band,lay_comb)';
         Coh_Ct200 = Coh_Ct200_w_nan(~isnan(Coh_Ct200_w_nan));
@@ -220,10 +198,75 @@ for lay_comb = 1:3
         % them, then concatenate everything together
         
         coh_vals = [Coh_Ct200; Coh_DB200; Coh_Ct400; Coh_DB400];
-        disp(groupName)
-        [cohP,cohT,cohStats] = anovan(coh_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction');% ,'display','off');
-        [cohC,cohM,~,cohN] = multcompare(cohStats,'Dimension',[1 2],'CType','bonferroni'); %,'display','off');
-%         
+        disp(group_Name)
+        [cohP,cohT,cohStats] = anovan(coh_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction' ,'display','off');
+        [cohC,cohM,~,cohN] = multcompare(cohStats,'Dimension',[1 2],'CType','bonferroni','display','off');
+%       
+    subaxis(2,4,count,'SpacingHoriz',0.01,'SpacingVert',0.12)
+    create_bar_figure(cohM(:,2), cohM(:,1), cohC);
+    set(gca,'ytick',[0 1],'fontsize',12)
+    xtickangle(25)
+    ylim([0 1])
+    if count < 5
+        title(group_Name)
+    end
+    
+    if count == 1 || count == 5
+        ylabel({comb_name,'Coherence'})
+    else
+        set(gca,'YColor','none')
+    end
     end
 end
+
+%% Basic features of SPWRs
+
+disp('Power')
+power_vals = [rip.DB2(:,7); rip.DB4(:,7); rip.DBDB2(:,7); rip.DBDB4(:,7)];
+
+[powerP,powerT,power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs},'model','interaction');% ,'display','off');
+[powerC,powerM,~,powerNames] = multcompare(power_stats,'Dimension',[1 2],'CType','bonferroni');
+
+% Duration
+disp('Duration')
+dur_vals = [rip.DB2(:,2)-rip.DB2(:,1);  rip.DBDB2(:,2)-rip.DBDB2(:,1); rip.DB4(:,2)-rip.DB4(:,1); rip.DBDB4(:,2)-rip.DBDB4(:,1)] ./1250;
+[durP,durT,dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs},'model','interaction'); % ,'display','off');
+[durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni');
+ create_bar_figure(durM(:,2), durM(:,1), durC);
+    ylabel('SWR Duration (s)')
+     set(gca,'ytick',[0 0.1 0.2 0.3])
+%     ylim([0 15])
+%% CSD 
+CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
+CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
+disp('Specific CSD')
+[csd_P,csd_Table,csd_stats] = anovan(CSD_vals,{treat_Labs age_Labs},'model','interaction','display','off');
+[csd_Comparisons,csd_Means,~,csd_Names] = multcompare(csd_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+create_bar_figure(csd_Means(:,2), csd_Means(:,1), csd_Comparisons);
+    ylabel('CSD Dipole (uV)')
+    set(gca,'ytick',[0 1 2])
+    ylim([0 2.3])
+% disp('Full CSD')
+% [csdfP,csdfTable,CSDf_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction');
+% [csdfC,csdfM,~,csdfNames] = multcompare(CSDf_stats,'Dimension',[1 2],'CType','bonferroni');
+
+%% Gamma power
+
+ctx_Vals = [Gamma.DB2_Ctx Gamma.DBDB2_Ctx Gamma.DB4_Ctx Gamma.DBDB4_Ctx]';
+pyr_Vals = [Gamma.DB2_Pyr Gamma.DBDB2_Pyr Gamma.DB4_Pyr Gamma.DBDB4_Pyr]';
+slm_Vals = [Gamma.DB2_SLM Gamma.DBDB2_SLM Gamma.DB4_SLM Gamma.DBDB4_SLM]';
+disp('Ctx Gamma')
+[ctx_P,ctx_Table,ctx_Stats] = anovan(ctx_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
+[ctx_Comparisons,ctx_Means,~,ctx_Names] = multcompare(ctx_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+
+disp('Pyr Gamma')
+[pyr_P,pyr_Table,pyr_Stats] = anovan(pyr_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
+[pyr_Comparions,pyr_Means,~,pyr_Names] = multcompare(pyr_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+
+create_bar_figure(pyr_Means(:,2), pyr_Means(:,1), pyr_Comparions);
+    ylabel('SWR Gamma power')
+
+disp('Slm Gamma')
+[slmP,slm_Table,slm_Stats] = anovan(slm_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
+[slmC,slmM,~,slmN] = multcompare(slm_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
 

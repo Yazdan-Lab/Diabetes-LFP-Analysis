@@ -5,6 +5,7 @@ load('chans.mat')
 filepath = 'C:\Users\ipzach\Documents\dbdb electrophy';
 cd(filepath)
 animalList = dir;
+% THIS CODE ASSIGNS GROUPS WRONG
 Fs = 1250; % Sampling Frequency; needed for filtering and plotting
 % Theta/Delta state to analyze
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,16 +16,16 @@ scores = NaN(4,7,2,3);
 for group = 1:4
     % 1.Load the right and left side signals
     %load H/L TD indexes
-    
-    if group ==1
-        grouping = 3:9; % DB+ 200D
-    elseif group ==2
-        grouping = [15:18 20 21]; % DBDB 200D
-    elseif group ==3
-        grouping = 10:14; % DB+ 400D
-    elseif group ==4
-        grouping = [22 24:27]; % DBDB 400D
-    end
+    % Commented out to break code until fixed
+%     if group ==1
+%         grouping = 3:9; % DB+ 200D
+%     elseif group ==2
+%         grouping = [15:18 20 21]; % DBDB 200D
+%     elseif group ==3
+%         grouping = 10:14; % DB+ 400D
+%     elseif group ==4
+%         grouping = [22 24:27]; % DBDB 400D
+%     end
     
     count = 0;
     for animal = grouping
@@ -75,7 +76,7 @@ end
 % combineRec(Group, Band, Animal, Layer, layer)
 figure
 set(gcf, 'color', 'w','Position',[100 100 800 420])
-for layComb = 1:3
+for layComb = 2:3
     % First we want to grab individual values, create 2-way labels for
     % them, then concatenate everything together
     temp = scores_combine(:,:,layComb)';
@@ -110,7 +111,7 @@ for layComb = 1:3
     dbLabs = [Ct2DbLab; Db2DbLab; Ct4DbLab; Db4DbLab];
     
     [ssP,ssT,ssStats] = anovan(vals,{dbLabs ageLabs},'model','interaction','display','off');
-    [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni','display','off');
+    [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni');% ,'display','off');
     
     
     subplot(1,2,layComb-1)

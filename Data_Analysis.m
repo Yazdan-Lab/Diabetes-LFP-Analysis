@@ -1,6 +1,8 @@
 % Load in initializing variables
 voltConv = 0.000000091555527603759401; % Neurolynx saves data in a unitless value, we need this to convert it to volts
 Fs = 1250;
+kernel = gaussian(Fs, ceil(8*Fs));
+kernel2 = gaussian(10*Fs, ceil(80*Fs));
 %%%%%%
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
 load('SpkInfo.mat')
@@ -39,9 +41,9 @@ for group = 1:4
     end
     counter = 0;
     
-    spec_pyr = [];
-    spec_slm = [];
-    spec_ctx = [];
+    gamma_pyr = [];
+    gamma_slm = [];
+    gamma_ctx = [];
     csd = [];
     
     for cur_animal = grouping
@@ -79,30 +81,26 @@ for group = 1:4
                 LTD_events = LTD_events(LTD_events <= length(LFP)-1250);% Exclude SWRs that exclude final window
                 
                 % initialize temp storage variables
-                temp_spec_ctx = zeros(50,28,length(LTD_events));
-                temp_spec_pyr = zeros(50,28,length(LTD_events));
-                temp_spec_slm = zeros(50,28,length(LTD_events));
+                temp_gamma_ctx = zeros(1,length(LTD_events));
+                temp_gamma_pyr = zeros(1,length(LTD_events));
+                temp_gamma_slm = zeros(1,length(LTD_events));
                 
                 temp_CSD = zeros(1876,12,length(LTD_events));
                 % For each event, create a spectrogram and store it in the
                 % temp variable
                 for r = 1:length(LTD_events)
                     % Create spectrogram of each ripple
-                    [~,~,~,temp_spec_ctx(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),hamming(125),[],[5:5:250],1250);
-                    [~,~,~,temp_spec_pyr(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),hamming(125),[],[5:5:250],1250);
-                    [~,freqs,time,temp_spec_slm(:,:,r)] = spectrogram(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),hamming(125),[],[5:5:250],1250);
+                    temp_gamma_ctx(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),1250);
+                    temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),1250);
+                    temp_gamma_slm(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),1250);
                     
                     % Create CSD of each ripple
                     temp_CSD(:,:,r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
                 end
-                % Isolate Spectral Power
-                Ctx_spec_power = squeeze(mean(temp_spec_ctx(5:12,:,:),[1,2]));
-                Pyr_spec_power = squeeze(mean(temp_spec_pyr(5:12,:,:),[1,2]));
-                Slm_spec_power = squeeze(mean(temp_spec_slm(5:12,:,:),[1,2]));
                 % Concatenate temp variable to storage variable
-                spec_ctx = [spec_ctx; Ctx_spec_power];
-                spec_pyr = [spec_pyr; Pyr_spec_power];
-                spec_slm = [spec_slm; Slm_spec_power];
+                gamma_ctx = [gamma_ctx temp_gamma_ctx];
+                gamma_pyr = [gamma_pyr temp_gamma_pyr];
+                gamma_slm = [gamma_slm temp_gamma_];
                 
                 csd = save_check(csd,temp_CSD);
                 
@@ -123,6 +121,32 @@ for group = 1:4
         %%% Per animal analysis %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%
         if ~isempty(full_LFP)
+%             pyr_LFP = full_LFP(:, chans(2,cur_animal));
+%             % Theta state
+%             disp('Calclating Thetat state')
+%             Theta = BPfilter(pyr_LFP,Fs,4,7); % filter for Theta (4-7 Hz)
+%             Delta = BPfilter(pyr_LFP,Fs,0.1,3); % filter for Delta (0.1-3 Hz)
+%             % Hilbert and envelop extraction
+%             Hilbert_Theta = abs(hilbert(Theta));
+%             Hilbert_Delta = abs(hilbert(Delta));
+%             
+%             % Smoothing
+%             Smooth_Theta = smoothvect(Hilbert_Theta, kernel);
+%             Smooth_Delta = smoothvect(Hilbert_Delta, kernel);
+%             
+%             
+%             % Theta/Delta envelope
+%             Theta_Delta = Smooth_Theta./Smooth_Delta;
+%             Smooth_Theta_Delta = smoothvect(Theta_Delta, kernel2);
+%             % find the Rem period
+%             thresh = 0.5;
+%             mindur = 10; % in sec, standard 10
+%             disp('making index')
+%             HTD = find(Smooth_Theta_Delta > thresh);
+%             
+%             crossings = find(Fs*10 < diff(HTD) );
+%             C_idx = [0 HTD(crossings+1); HTD(crossings) HTD(end)];
+%             pause
             for layer = 1:3
                 %%% Slowing score
                 %%%%%%%%%%%%%%%%%
@@ -187,30 +211,29 @@ for group = 1:4
     end % animal
     % Save data to variable outside loop
     if group ==1
-        Spec.DB2_Ctx = spec_ctx;
-        Spec.DB2_Pyr = spec_pyr;
-        Spec.DB2_SLM = spec_slm;
+        Gamma.DB2_Ctx = gamma_ctx;
+        Gamma.DB2_Pyr = gamma_pyr;
+        Gamma.DB2_SLM = gamma_slm;
         CSD.DB2 = csd;
     elseif group ==2
-        Spec.DB4_Ctx = spec_ctx;
-        Spec.DB4_Pyr = spec_pyr;
-        Spec.DB4_SLM = spec_slm;
+        Gamma.DB4_Ctx = gamma_ctx;
+        Gamma.DB4_Pyr = gamma_pyr;
+        Gamma.DB4_SLM = gamma_slm;
         CSD.DB4 = csd;
     elseif group ==3
-        Spec.DBDB2_Ctx = spec_ctx;
-        Spec.DBDB2_Pyr = spec_pyr;
-        Spec.DBDB2_SLM = spec_slm;
+        Gamma.DBDB2_Ctx = gamma_ctx;
+        Gamma.DBDB2_Pyr = gamma_pyr;
+        Gamma.DBDB2_SLM = gamma_slm;
         CSD.DBDB2 = csd;
     elseif group ==4
-        Spec.DBDB4_Ctx = spec_ctx;
-        Spec.DBDB4_Pyr = spec_pyr;
-        Spec.DBDB4_SLM = spec_slm;
+        Gamma.DBDB4_Ctx = gamma_ctx;
+        Gamma.DBDB4_Pyr = gamma_pyr;
+        Gamma.DBDB4_SLM = gamma_slm;
         CSD.DBDB4 = csd;
     end % if
 end % group
-time = time -0.5; % adjust for SWR event initiation
 % Group, Animal, freq_band, Layer
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Spec','rip','label','CSD','Co','slowing_score')
+save('LFP Measures','Gamma','rip','label','CSD','Co','slowing_score')
 
