@@ -195,8 +195,6 @@ IRIdbdb4 = IRIdbdb4(~isnan(IRIdbdb4))./1250;
 [cleanIRI,TF] = rmoutliers(IRI_vals,'quartiles');
 IRI_age(TF==1) = [];
 IRI_treat(TF==1) = [];
-[iriP,iriT,IRI_stats] = anovan(cleanIRI, {IRI_treat, IRI_age,},'model','interaction'); % ,'display','off');
-[iriC,iriM,~,iriNames] = multcompare(IRI_stats,'Dimension',[1 2],'CType','bonferroni');
 
 %% Create graphs
 % power

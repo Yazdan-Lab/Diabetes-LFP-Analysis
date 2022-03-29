@@ -107,7 +107,52 @@ CSD.DB4_amp = CSD.DB4_rip - CSD.DB4_wav;
 CSD.DBDB2_amp = CSD.DBDB2_rip - CSD.DBDB2_wav;
 CSD.DBDB4_amp = CSD.DBDB4_rip - CSD.DBDB4_wav;
 %% 
+IRI_vals = [];
+IRI_age = {};
+IRI_treat = {};
+IRI_big = NaN(4,2000);
+for l = [1 3 2 4]
+    switch l
+        case 1
+            group = rip.DB2(:,1);
+            age = '200';
+            treat = 'Control';
+        case 2
+            group = rip.DB4(:,1);
+            age = '400';
+            treat = 'Control';
+        case 3 
+            group = rip.DBDB2(:,1);
+            age = '200';
+            treat = 'DBDB';
+        case 4 
+            group = rip.DBDB4(:,1);
+            age = '400';
+            treat = 'DBDB';
+    end
+    for m = 1:length(group)-1
+        if group(m+1) > group(m)
+            IRI_vals = [IRI_vals; (group(m+1) - group(m))];
+            IRI_age = [IRI_age; {age}];
+            IRI_treat = [IRI_treat; {treat}];
+            IRI_big(l,m) = (group(m+1) - group(m));
+            
+        end
+    end
+end
+IRIdb2 = rmoutliers(IRI_big(1,:));
+IRIdb4 = rmoutliers(IRI_big(2,:));
+IRIdbdb2 = rmoutliers(IRI_big(3,:));
+IRIdbdb4 = rmoutliers(IRI_big(4,:));
 
+IRIdb2 = IRIdb2(~isnan(IRIdb2))./1250;
+IRIdb4 = IRIdb4(~isnan(IRIdb4))./1250;
+IRIdbdb2 = IRIdbdb2(~isnan(IRIdbdb2))./1250;
+IRIdbdb4 = IRIdbdb4(~isnan(IRIdbdb4))./1250;
+
+[cleanIRI,TF] = rmoutliers(IRI_vals,'quartiles');
+IRI_age(TF==1) = [];
+IRI_treat(TF==1) = [];
 %% Slowing score
 disp('Slowing score')
 
@@ -130,12 +175,14 @@ for lay_comb = 1:3
     slow_score_vals = [SS_Ct200; SS_DB200; SS_Ct400; SS_DB400];
     
     disp(num2str(lay_comb))
-    [ssP,ssT,ssStats] = anovan(slow_score_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction'); %,'display','off');
-    [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni'); % ,'display','off');
-    
+    [ssP,ssT,ssStats] = anovan(slow_score_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction','display','off');
+    [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni','display','off');
+    figure
     create_bar_figure(ssM(:,2), ssM(:,1), ssC);
+    sig_values(ssP(2), ssP(1));
     ylabel('Slowing Score')
-    set(gca,'ytick',[0 5 10 15])
+    set(gcf,'Color','w');
+    set(gca,'ytick',[0 6 12])
     ylim([0 15])
     switch lay_comb
         case 1
@@ -205,13 +252,14 @@ for lay_comb = 1:2 % 1:3
     subaxis(2,4,count,'SpacingHoriz',0.01,'SpacingVert',0.12)
     create_bar_figure(cohM(:,2), cohM(:,1), cohC);
     set(gca,'ytick',[0 1],'fontsize',12)
+%      sig_values(cohP(2), cohP(1));
     xtickangle(25)
     ylim([0 1])
     if count < 5
         title(group_Name)
     end
     
-    if count == 1 || count == 5
+    if band == 2
         ylabel({comb_name,'Coherence'})
     else
         set(gca,'YColor','none')
@@ -224,28 +272,44 @@ end
 disp('Power')
 power_vals = [rip.DB2(:,7); rip.DB4(:,7); rip.DBDB2(:,7); rip.DBDB4(:,7)];
 
-[powerP,powerT,power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs},'model','interaction');% ,'display','off');
-[powerC,powerM,~,powerNames] = multcompare(power_stats,'Dimension',[1 2],'CType','bonferroni');
+[powerP,powerT,power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs},'model','interaction','display','off');
+[powerC,powerM,~,powerNames] = multcompare(power_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
 
 % Duration
 disp('Duration')
 dur_vals = [rip.DB2(:,2)-rip.DB2(:,1);  rip.DBDB2(:,2)-rip.DBDB2(:,1); rip.DB4(:,2)-rip.DB4(:,1); rip.DBDB4(:,2)-rip.DBDB4(:,1)] ./1250;
-[durP,durT,dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs},'model','interaction'); % ,'display','off');
-[durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni');
+[durP,durT,dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs},'model','interaction','display','off');
+[durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+
+figure
  create_bar_figure(durM(:,2), durM(:,1), durC);
+ sig_values(durP(2), durP(1));
     ylabel('SWR Duration (s)')
-     set(gca,'ytick',[0 0.1 0.2 0.3])
-%     ylim([0 15])
+     set(gca,'ytick',[0 0.15 0.3])
+    ylim([0 0.4])
+
+% IRI 
+[iriP,iriT,IRI_stats] = anovan(cleanIRI, {IRI_treat, IRI_age,},'model','interaction','display','off');
+[iriC,iriM,~,iriNames] = multcompare(IRI_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+figure
+create_bar_figure(iriM(:,2), iriM(:,1), iriC);
+sig_values(iriP(2), iriP(1));
+ylabel('Inter-ripple interval (s)')
+set(gca,'ytick',[0 3000 6000])
+    ylim([0 8500])
 %% CSD 
 CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
 CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
 disp('Specific CSD')
 [csd_P,csd_Table,csd_stats] = anovan(CSD_vals,{treat_Labs age_Labs},'model','interaction','display','off');
 [csd_Comparisons,csd_Means,~,csd_Names] = multcompare(csd_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+
+figure
 create_bar_figure(csd_Means(:,2), csd_Means(:,1), csd_Comparisons);
+ sig_values(csd_P(2), csd_P(1));
     ylabel('CSD Dipole (uV)')
     set(gca,'ytick',[0 1 2])
-    ylim([0 2.3])
+    ylim([0 2.6])
 % disp('Full CSD')
 % [csdfP,csdfTable,CSDf_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction');
 % [csdfC,csdfM,~,csdfNames] = multcompare(CSDf_stats,'Dimension',[1 2],'CType','bonferroni');
@@ -262,10 +326,12 @@ disp('Ctx Gamma')
 disp('Pyr Gamma')
 [pyr_P,pyr_Table,pyr_Stats] = anovan(pyr_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
 [pyr_Comparions,pyr_Means,~,pyr_Names] = multcompare(pyr_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
-
+figure
 create_bar_figure(pyr_Means(:,2), pyr_Means(:,1), pyr_Comparions);
     ylabel('SWR Gamma power')
-
+    sig_values(pyr_P(2), pyr_P(1));
+set(gca,'ytick',[0 5e-7 1e-6])
+    ylim([0 1.15e-6])
 disp('Slm Gamma')
 [slmP,slm_Table,slm_Stats] = anovan(slm_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
 [slmC,slmM,~,slmN] = multcompare(slm_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
