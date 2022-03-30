@@ -61,12 +61,11 @@ for group = 1:4
         
         counter = counter +1;
         full_LFP = [];
-        state_changes(group, counter) = 0;
         % Check Data fidelity
         %%%%%%
         for k = 1:length(SWRLTDIdx) % run through each of the LTD periods (where SWRs occur)
             if ~isempty(rem(k).R) % Make sure recording exists
-                state_changes(group, counter) = state_changes(group, counter) + length(rem(k).R.start);
+                state_changes(group,  = state_changes + length(rem(k).R.start);
             end % if REM not empty
             
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
@@ -107,7 +106,7 @@ for group = 1:4
                 % Concatenate temp variable to storage variable
                 gamma_ctx = [gamma_ctx temp_gamma_ctx];
                 gamma_pyr = [gamma_pyr temp_gamma_pyr];
-                gamma_slm = [gamma_slm temp_gamma_slm];
+                gamma_slm = [gamma_slm temp_gamma_];
                 
                 csd = save_check(csd,temp_CSD);
                 
@@ -242,5 +241,5 @@ end % group
 % Group, Animal, freq_band, Layer
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Gamma','rip','label','CSD','Co','slowing_score', 'state_changes')
+save('LFP Measures','Gamma','rip','label','CSD','Co','slowing_score')
 

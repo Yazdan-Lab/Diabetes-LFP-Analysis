@@ -51,28 +51,54 @@ treat_Labs = [label.DB2_treat; label.DBDB2_treat; label.DB4_treat; label.DBDB4_t
 r_age_Labs = [label.r_DB2_age; label.r_DBDB2_age; label.r_DB4_age; label.r_DBDB4_age];
 r_treat_Labs = [label.r_DB2_treat; label.r_DBDB2_treat; label.r_DB4_treat; label.r_DBDB4_treat];
 
-per_animal_Ct2AgeLab = cell(sum(~isnan(slowing_score(1,:,1))),1);
-per_animal_Ct2AgeLab(:) = {'200'};
-per_animal_Ct2DbLab = cell(sum(~isnan(slowing_score(1,:,1))),1);
-per_animal_Ct2DbLab(:) = {'Ctrl'};
+slowing_score_Ct2AgeLab = cell(sum(~isnan(slowing_score(1,:,1))),1);
+slowing_score_Ct2AgeLab(:) = {'200'};
+slowing_score_Ct2DbLab = cell(sum(~isnan(slowing_score(1,:,1))),1);
+slowing_score_Ct2DbLab(:) = {'Ctrl'};
 
-per_animal_Ct4AgeLab = cell(sum(~isnan(slowing_score(2,:,1))),1);
-per_animal_Ct4AgeLab(:) = {'400'};
-per_animal_Ct4DbLab = cell(sum(~isnan(slowing_score(2,:,1))),1);
-per_animal_Ct4DbLab(:) = {'Ctrl'};
+slowing_score_Ct4AgeLab = cell(sum(~isnan(slowing_score(2,:,1))),1);
+slowing_score_Ct4AgeLab(:) = {'400'};
+slowing_score_Ct4DbLab = cell(sum(~isnan(slowing_score(2,:,1))),1);
+slowing_score_Ct4DbLab(:) = {'Ctrl'};
 
-per_animal_Db2AgeLab = cell(sum(~isnan(slowing_score(3,:,1))),1);
-per_animal_Db2AgeLab(:) = {'200'};
-per_animal_Db2DbLab = cell(sum(~isnan(slowing_score(3,:,1))),1);
-per_animal_Db2DbLab(:) = {'DBDB'};
+slowing_score_Db2AgeLab = cell(sum(~isnan(slowing_score(3,:,1))),1);
+slowing_score_Db2AgeLab(:) = {'200'};
+slowing_score_Db2DbLab = cell(sum(~isnan(slowing_score(3,:,1))),1);
+slowing_score_Db2DbLab(:) = {'DBDB'};
 
-per_animal_Db4AgeLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
-per_animal_Db4AgeLab(:) = {'400'};
-per_animal_Db4DbLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
-per_animal_Db4DbLab(:) = {'DBDB'};
+slowing_score_Db4AgeLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
+slowing_score_Db4AgeLab(:) = {'400'};
+slowing_score_Db4DbLab = cell(sum(~isnan(slowing_score(4,:,1))),1);
+slowing_score_Db4DbLab(:) = {'DBDB'};
 
-per_animal_age_Labs = [per_animal_Ct2AgeLab; per_animal_Db2AgeLab;per_animal_Ct4AgeLab; per_animal_Db4AgeLab];
-per_animal_db_Labs = [per_animal_Ct2DbLab; per_animal_Db2DbLab; per_animal_Ct4DbLab; per_animal_Db4DbLab];
+
+slowing_score_age_Labs = [slowing_score_Ct2AgeLab; slowing_score_Db2AgeLab;slowing_score_Ct4AgeLab; slowing_score_Db4AgeLab];
+slowing_score_db_Labs = [slowing_score_Ct2DbLab; slowing_score_Db2DbLab; slowing_score_Ct4DbLab; slowing_score_Db4DbLab];
+
+
+state_changes_Ct2AgeLab = cell(sum(~isnan(state_changes(1,:))),1);
+state_changes_Ct2AgeLab(:) = {'200'};
+state_changes_Ct2DbLab = cell(sum(~isnan(state_changes(1,:))),1);
+state_changes_Ct2DbLab(:) = {'Ctrl'};
+
+state_changes_Ct4AgeLab = cell(sum(~isnan(state_changes(2,:))),1);
+state_changes_Ct4AgeLab(:) = {'400'};
+state_changes_Ct4DbLab = cell(sum(~isnan(state_changes(2,:))),1);
+state_changes_Ct4DbLab(:) = {'Ctrl'};
+
+state_changes_Db2AgeLab = cell(sum(~isnan(state_changes(3,:))),1);
+state_changes_Db2AgeLab(:) = {'200'};
+state_changes_Db2DbLab = cell(sum(~isnan(state_changes(3,:))),1);
+state_changes_Db2DbLab(:) = {'DBDB'};
+
+state_changes_Db4AgeLab = cell(sum(~isnan(state_changes(4,:,1))),1);
+state_changes_Db4AgeLab(:) = {'400'};
+state_changes_Db4DbLab = cell(sum(~isnan(state_changes(4,:,1))),1);
+state_changes_Db4DbLab(:) = {'DBDB'};
+
+
+state_changes_age_Labs = [state_changes_Ct2AgeLab; state_changes_Db2AgeLab; state_changes_Ct4AgeLab; state_changes_Db4AgeLab];
+state_changes_db_Labs = [state_changes_Ct2DbLab; state_changes_Db2DbLab; state_changes_Ct4DbLab; state_changes_Db4DbLab];
 
 clear per_animal_Ct2AgeLab per_animal_Ct2DbLab per_animal_Ct4AgeLab per_animal_Ct4DbLab per_animal_Db2AgeLab per_animal_Db2DbLab per_animal_Db4AgeLab per_animal_Db4DbLab
 % Process CSD into single value
@@ -106,7 +132,7 @@ CSD.DB2_amp = CSD.DB2_rip - CSD.DB2_wav;
 CSD.DB4_amp = CSD.DB4_rip - CSD.DB4_wav;
 CSD.DBDB2_amp = CSD.DBDB2_rip - CSD.DBDB2_wav;
 CSD.DBDB4_amp = CSD.DBDB4_rip - CSD.DBDB4_wav;
-%% 
+%%
 IRI_vals = [];
 IRI_age = {};
 IRI_treat = {};
@@ -121,11 +147,11 @@ for l = [1 3 2 4]
             group = rip.DB4(:,1);
             age = '400';
             treat = 'Control';
-        case 3 
+        case 3
             group = rip.DBDB2(:,1);
             age = '200';
             treat = 'DBDB';
-        case 4 
+        case 4
             group = rip.DBDB4(:,1);
             age = '400';
             treat = 'DBDB';
@@ -175,7 +201,7 @@ for lay_comb = 1:3
     slow_score_vals = [SS_Ct200; SS_DB200; SS_Ct400; SS_DB400];
     
     disp(num2str(lay_comb))
-    [ssP,ssT,ssStats] = anovan(slow_score_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction','display','off');
+    [ssP,ssT,ssStats] = anovan(slow_score_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction','display','off');
     [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni','display','off');
     figure
     create_bar_figure(ssM(:,2), ssM(:,1), ssC);
@@ -193,6 +219,26 @@ for lay_comb = 1:3
             title('SLM')
     end
 end
+%% State changes
+SC_Ct200_w_nan = state_changes(1,:)';
+SC_Ct200 = SC_Ct200_w_nan(~isnan(SC_Ct200_w_nan));
+
+SC_DB200_w_nan = state_changes(2,:)';
+SC_DB200 = SC_DB200_w_nan(~isnan(SC_DB200_w_nan));
+
+SC_Ct400_w_nan = state_changes(3,:)';
+SC_Ct400 = SC_Ct400_w_nan(~isnan(SC_Ct400_w_nan));
+
+SC_DB400_w_nan = state_changes(4,:)';
+SC_DB400 = SC_DB400_w_nan(~isnan(SC_DB400_w_nan));
+
+state_change_vals = [SC_Ct200; SC_DB200; SC_Ct400; SC_DB400];
+
+[scP,scT,scStats] = anovan(state_change_vals,{state_changes_age_Labs state_changes_age_Labs},'model','interaction','display','off');
+[scC,scM,~,scN] = multcompare(scStats,'Dimension',[1 2],'CType','bonferroni','display','off');
+figure
+create_bar_figure(scM(:,2), scM(:,1), scC);
+sig_values(scP(2), scP(1));
 
 %% Coherence
 disp('Coherence')
@@ -246,24 +292,24 @@ for lay_comb = 1:2 % 1:3
         
         coh_vals = [Coh_Ct200; Coh_DB200; Coh_Ct400; Coh_DB400];
         disp(group_Name)
-        [cohP,cohT,cohStats] = anovan(coh_vals,{per_animal_db_Labs per_animal_age_Labs},'model','interaction' ,'display','off');
+        [cohP,cohT,cohStats] = anovan(coh_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction' ,'display','off');
         [cohC,cohM,~,cohN] = multcompare(cohStats,'Dimension',[1 2],'CType','bonferroni','display','off');
-%       
-    subaxis(2,4,count,'SpacingHoriz',0.01,'SpacingVert',0.12)
-    create_bar_figure(cohM(:,2), cohM(:,1), cohC);
-    set(gca,'ytick',[0 1],'fontsize',12)
-%      sig_values(cohP(2), cohP(1));
-    xtickangle(25)
-    ylim([0 1])
-    if count < 5
-        title(group_Name)
-    end
-    
-    if band == 2
-        ylabel({comb_name,'Coherence'})
-    else
-        set(gca,'YColor','none')
-    end
+        %
+        subaxis(2,4,count,'SpacingHoriz',0.01,'SpacingVert',0.12)
+        create_bar_figure(cohM(:,2), cohM(:,1), cohC);
+        set(gca,'ytick',[0 1],'fontsize',12)
+        %      sig_values(cohP(2), cohP(1));
+        xtickangle(25)
+        ylim([0 1])
+        if count < 5
+            title(group_Name)
+        end
+        
+        if band == 2
+            ylabel({comb_name,'Coherence'})
+        else
+            set(gca,'YColor','none')
+        end
     end
 end
 
@@ -282,13 +328,13 @@ dur_vals = [rip.DB2(:,2)-rip.DB2(:,1);  rip.DBDB2(:,2)-rip.DBDB2(:,1); rip.DB4(:
 [durC,durM,~,durNames] = multcompare(dur_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
 
 figure
- create_bar_figure(durM(:,2), durM(:,1), durC);
- sig_values(durP(2), durP(1));
-    ylabel('SWR Duration (s)')
-     set(gca,'ytick',[0 0.15 0.3])
-    ylim([0 0.4])
+create_bar_figure(durM(:,2), durM(:,1), durC);
+sig_values(durP(2), durP(1));
+ylabel('SWR Duration (s)')
+set(gca,'ytick',[0 0.15 0.3])
+ylim([0 0.4])
 
-% IRI 
+% IRI
 [iriP,iriT,IRI_stats] = anovan(cleanIRI, {IRI_treat, IRI_age,},'model','interaction','display','off');
 [iriC,iriM,~,iriNames] = multcompare(IRI_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
 figure
@@ -296,8 +342,8 @@ create_bar_figure(iriM(:,2), iriM(:,1), iriC);
 sig_values(iriP(2), iriP(1));
 ylabel('Inter-ripple interval (s)')
 set(gca,'ytick',[0 3000 6000])
-    ylim([0 8500])
-%% CSD 
+ylim([0 8500])
+%% CSD
 CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
 CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
 disp('Specific CSD')
@@ -306,10 +352,10 @@ disp('Specific CSD')
 
 figure
 create_bar_figure(csd_Means(:,2), csd_Means(:,1), csd_Comparisons);
- sig_values(csd_P(2), csd_P(1));
-    ylabel('CSD Dipole (uV)')
-    set(gca,'ytick',[0 1 2])
-    ylim([0 2.6])
+sig_values(csd_P(2), csd_P(1));
+ylabel('CSD Dipole (uV)')
+set(gca,'ytick',[0 1 2])
+ylim([0 2.6])
 % disp('Full CSD')
 % [csdfP,csdfTable,CSDf_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction');
 % [csdfC,csdfM,~,csdfNames] = multcompare(CSDf_stats,'Dimension',[1 2],'CType','bonferroni');
@@ -328,10 +374,10 @@ disp('Pyr Gamma')
 [pyr_Comparions,pyr_Means,~,pyr_Names] = multcompare(pyr_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
 figure
 create_bar_figure(pyr_Means(:,2), pyr_Means(:,1), pyr_Comparions);
-    ylabel('SWR Gamma power')
-    sig_values(pyr_P(2), pyr_P(1));
+ylabel('SWR Gamma power')
+sig_values(pyr_P(2), pyr_P(1));
 set(gca,'ytick',[0 5e-7 1e-6])
-    ylim([0 1.15e-6])
+ylim([0 1.15e-6])
 disp('Slm Gamma')
 [slmP,slm_Table,slm_Stats] = anovan(slm_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
 [slmC,slmM,~,slmN] = multcompare(slm_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
