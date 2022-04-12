@@ -22,6 +22,7 @@ label.DBDB2 = [];
 label.DBDB4 = [];
 
 Co = NaN(4,7,7,3);
+PLI = NaN(4,7,7,3);
 % Group, Animal, freq_band, Layer_comb
 slowing_score = NaN(4,7,3);
 state_changes = NaN(4,7);
@@ -166,7 +167,7 @@ for group = 1:4
                 slowing_score(group,counter,layer) = SignalPower(low_freq,1250) ./ SignalPower(high_freq,1250);
                 % Group, Band, Animal, Layer
                 
-                % Coherence
+                % Coherence and PLI
                 %%%%%%%%%%%%%
                 switch layer
                     case 1
@@ -193,23 +194,38 @@ for group = 1:4
                     switch freq_band
                         case 1
                             range = linspace(0.1,3,20);
+                            A_filt = BPfilter(A_LFP, 1250, 0.1,3);
+                            B_filt = BPfilter(B_LFP, 1250, 0.1,3);
                         case 2
                             range = linspace(4,7,20);
+                            A_filt = BPfilter(A_LFP, 1250, 4,7);
+                            B_filt = BPfilter(B_LFP, 1250, 4,7);
                         case 3
                             range = linspace(8,13,20);
+                            A_filt = BPfilter(A_LFP, 1250, 8,13);
+                            B_filt = BPfilter(B_LFP, 1250, 8,13);
                         case 4
                             range = linspace(13,30,20);
+                            A_filt = BPfilter(A_LFP, 1250, 13,30);
+                            B_filt = BPfilter(B_LFP, 1250, 13,30);
                         case 5
                             range = linspace(30,58,20);
+                            A_filt = BPfilter(A_LFP, 1250, 30,58);
+                            B_filt = BPfilter(B_LFP, 1250, 30,58);
                         case 6
                             range = linspace(62,200,20);
+                            A_filt = BPfilter(A_LFP, 1250, 62,200);
+                            B_filt = BPfilter(B_LFP, 1250, 62,200);
                         case 7
                             range = linspace(0,200,50);
+                            A_filt = BPfilter(A_LFP, 1250, 0,200);
+                            B_filt = BPfilter(B_LFP, 1250, 0,200);
                     end % switch iBand
                     % Run coherence and average outputs for each frequency
                     % band
                     % Group, Band, recording, Animal, Layer/layer
                     Co(group,counter,freq_band,layer) = nanmean(mscohere(A_LFP,B_LFP,hamming(12500),[],range,1250));
+                    PLI(group,counter,freq_band,layer) = PLV(angle(hilbert(A_filt)), angle(hilbert(B_filt)));
                 end % frequency band
             end % layer
         end % if
@@ -242,5 +258,5 @@ end % group
 % Group, Animal, freq_band, Layer
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Gamma','rip','label','CSD','Co','slowing_score', 'state_changes')
+save('LFP Measures','Gamma','rip','label','CSD','Co','PLI','slowing_score', 'state_changes')
 
