@@ -167,6 +167,11 @@ for group = 1:4
                 slowing_score(group,counter,layer) = SignalPower(low_freq,1250) ./ SignalPower(high_freq,1250);
                 % Group, Band, Animal, Layer
                 
+                % calculate Spectral exponent
+                [PSD, frex] = pwelch(single_channel, 2*Fs, Fs, [],Fs);
+                frband = [1 40];
+                
+                
                 % Coherence and PLI
                 %%%%%%%%%%%%%
                 switch layer
@@ -218,14 +223,14 @@ for group = 1:4
                             B_filt = BPfilter(B_LFP, 1250, 62,200);
                         case 7
                             range = linspace(0,200,50);
-                            A_filt = BPfilter(A_LFP, 1250, 0,200);
-                            B_filt = BPfilter(B_LFP, 1250, 0,200);
+                            A_filt = BPfilter(A_LFP, 1250, 0.1,200);
+                            B_filt = BPfilter(B_LFP, 1250, 0.1,200);
                     end % switch iBand
                     % Run coherence and average outputs for each frequency
                     % band
                     % Group, Band, recording, Animal, Layer/layer
                     Co(group,counter,freq_band,layer) = nanmean(mscohere(A_LFP,B_LFP,hamming(12500),[],range,1250));
-                    PLI(group,counter,freq_band,layer) = PLV(angle(hilbert(A_filt)), angle(hilbert(B_filt)));
+                    PLI(group,counter,freq_band,layer) = PLV(angle(hilbert(A_filt))', angle(hilbert(B_filt))');
                 end % frequency band
             end % layer
         end % if
