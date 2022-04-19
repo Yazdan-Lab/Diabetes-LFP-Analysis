@@ -20,7 +20,8 @@ label.DB2 = [];
 label.DB4 = [];
 label.DBDB2 = [];
 label.DBDB4 = [];
-
+intSlo_Store = cell(4,7);
+intSlo0_Store = cell(4,7);
 Co = NaN(4,7,7,3);
 PLI = NaN(4,7,7,3);
 % Group, Animal, freq_band, Layer_comb
@@ -169,9 +170,17 @@ for group = 1:4
                 
                 % calculate Spectral exponent
                 [PSD, frex] = pwelch(single_channel, 2*Fs, Fs, [],Fs);
-                frband = [1 40];
-                
-                
+                frBand = [1 40];
+                frBins = dsearchn(frex, frBand(1)): dsearchn(frex, frBand(2));
+                XX = frex(frBins);
+                YY = PSD(frBins);
+                robRegMeth = 'ols';
+                doPlot = 00; %figure
+                thisCol = [0 0 1];
+                [intSlo, stat, Pows, Deviants, stat0, intSlo0] = fitPowerLaw3steps(XX,YY, robRegMeth,  doPlot, thisCol);
+                Pows_store(group, counter) = Pows;
+                intSlo_store{group, counter}  = num2cell(intSlo);
+                intSlo0_store{group, counter} = num2cell(intSlo0);
                 % Coherence and PLI
                 %%%%%%%%%%%%%
                 switch layer
@@ -263,5 +272,5 @@ end % group
 % Group, Animal, freq_band, Layer
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Gamma','rip','label','CSD','Co','PLI','slowing_score', 'state_changes')
+save('LFP Measures','Gamma','rip','label','CSD','Co','PLI','slowing_score', 'state_changes','intSlo0_Store','int_Slo_Store')
 
