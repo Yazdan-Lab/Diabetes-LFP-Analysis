@@ -91,9 +91,9 @@ state_changes_Db2AgeLab(:) = {'200'};
 state_changes_Db2DbLab = cell(sum(~isnan(state_changes(3,:))),1);
 state_changes_Db2DbLab(:) = {'DBDB'};
 
-state_changes_Db4AgeLab = cell(sum(~isnan(state_changes(4,:,1))),1);
+state_changes_Db4AgeLab = cell(sum(~isnan(state_changes(4,:))),1);
 state_changes_Db4AgeLab(:) = {'400'};
-state_changes_Db4DbLab = cell(sum(~isnan(state_changes(4,:,1))),1);
+state_changes_Db4DbLab = cell(sum(~isnan(state_changes(4,:))),1);
 state_changes_Db4DbLab(:) = {'DBDB'};
 
 
@@ -219,6 +219,103 @@ for lay_comb = 1:3
             title('SLM')
     end
 end
+%% Spectral exponent
+
+% First we want to grab individual values, create 2-way labels for
+% them, then concatenate everything together
+idx = ~cellfun('isempty',intSlo_Store); 
+SE = NaN(size(intSlo_Store)); 
+SE(idx) = cellfun(@(v)v(2),intSlo0_Store(idx));
+ 
+SE_Ct200_w_nan = SE(1,:)';
+SE_Ct200 = SE_Ct200_w_nan(~isnan(SE_Ct200_w_nan));
+
+SE_DB200_w_nan = SE(2,:)';
+SE_DB200 = SE_DB200_w_nan(~isnan(SE_DB200_w_nan));
+
+SE_Ct400_w_nan = SE(3,:)';
+SE_Ct400 = SE_Ct400_w_nan(~isnan(SE_Ct400_w_nan));
+
+SE_DB400_w_nan = SE(4,:)';
+SE_DB400 = SE_DB400_w_nan(~isnan(SE_DB400_w_nan));
+
+SE_vals = [SE_Ct200; SE_DB200; SE_Ct400; SE_DB400];
+
+[seP,seT,seStats] = anovan(SE_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction','display','off');
+[seC,seM,~,seN] = multcompare(seStats,'Dimension',[1 2],'CType','bonferroni','display','off');
+figure
+create_bar_figure(seM(:,2), seM(:,1), seC);
+sig_values(seP(2), seP(1));
+ylabel('Spectral Exponent')
+set(gcf,'Color','w');
+%set(gca,'ytick',[0 6 12])
+%ylim([0 15])
+
+
+%% PLI
+% group,animal, band, layer
+for lay_comb = 1
+    switch lay_comb
+        case 1
+            comb_name = 'Ctx-Pyr';
+        case 2
+            comb_name = 'Ctx-Slm';
+        case 3
+            comb_name = 'Pyr-Slm';
+    end % switch layComb
+    for band = 1:7
+        switch band
+            case 1
+                group_name = 'Delta ';
+            case 2
+                group_name = 'Theta ';
+            case 3
+                group_name = 'Alpha ';
+            case 4
+                group_name = 'Beta ';
+            case 5
+                group_name = 'Gamma ';
+            case 6
+                group_name = 'High Gamma ';
+            case 7
+                group_name = 'Full ';
+        end
+        
+        % First we want to grab individual values, create 2-way labels for
+        % them, then concatenate everything together
+        PLI_Ct200_w_nan = PLI(1,:,band,lay_comb)';
+        PLI_Ct200 = PLI_Ct200_w_nan(~isnan(PLI_Ct200_w_nan));
+        
+        PLI_DB200_w_nan = PLI(2,:,band,lay_comb)';
+        PLI_DB200 = PLI_DB200_w_nan(~isnan(PLI_DB200_w_nan));
+        
+        PLI_Ct400_w_nan = PLI(3,:,band,lay_comb)';
+        PLI_Ct400 = PLI_Ct400_w_nan(~isnan(PLI_Ct400_w_nan));
+        
+        PLI_DB400_w_nan = PLI(4,:,band,lay_comb)';
+        PLI_DB400 = PLI_DB400_w_nan(~isnan(PLI_DB400_w_nan));
+        
+        PLI_vals = [PLI_Ct200; PLI_DB200; PLI_Ct400; PLI_DB400];
+        
+        [pliP,pliT,pliStats] = anovan(PLI_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction','display','off');
+        [pliC,pliM,~,pliN] = multcompare(pliStats,'Dimension',[1 2],'CType','bonferroni','display','off');
+        figure
+        create_bar_figure(pliM(:,2), pliM(:,1), pliC);
+        sig_values(pliP(2), pliP(1));
+        ylabel('Phase Locking Index')
+        set(gcf,'Color','w');
+        %set(gca,'ytick',[0 1])
+        %ylim([0 1])
+        switch lay_comb
+            case 1
+                title([group_name comb_name])
+            case 2
+                title([group_name comb_name])
+            case 3
+                title([group_name comb_name])
+        end
+    end
+end
 %% State changes
 SC_Ct200_w_nan = state_changes(1,:)';
 SC_Ct200 = SC_Ct200_w_nan(~isnan(SC_Ct200_w_nan));
@@ -232,14 +329,14 @@ SC_Ct400 = SC_Ct400_w_nan(~isnan(SC_Ct400_w_nan));
 SC_DB400_w_nan = state_changes(4,:)';
 SC_DB400 = SC_DB400_w_nan(~isnan(SC_DB400_w_nan));
 
-state_change_vals = [SC_Ct200; SC_DB200; SC_Ct400; SC_DB400];
+state_changes_vals = [SC_Ct200; SC_DB200; SC_Ct400; SC_DB400];
 
-[scP,scT,scStats] = anovan(state_change_vals,{state_changes_age_Labs state_changes_age_Labs},'model','interaction','display','off');
+[scP,scT,scStats] = anovan(state_changes_vals,{state_changes_db_Labs state_changes_age_Labs},'model','interaction','display','off');
 [scC,scM,~,scN] = multcompare(scStats,'Dimension',[1 2],'CType','bonferroni','display','off');
 figure
 create_bar_figure(scM(:,2), scM(:,1), scC);
 sig_values(scP(2), scP(1));
-
+title('State Changes')
 %% Coherence
 disp('Coherence')
 count = 0;
@@ -258,19 +355,19 @@ for lay_comb = 1:2 % 1:3
     for band = 2:5%1:7
         switch band
             case 1
-                group_Name = 'Delta';
+                group_name = 'Delta';
             case 2
-                group_Name = 'Theta';
+                group_name = 'Theta';
             case 3
-                group_Name = 'Alpha';
+                group_name = 'Alpha';
             case 4
-                group_Name = 'Beta';
+                group_name = 'Beta';
             case 5
-                group_Name = 'Gamma';
+                group_name = 'Gamma';
             case 6
-                group_Name = 'High Gamma';
+                group_name = 'High Gamma';
             case 7
-                group_Name = 'Full';
+                group_name = 'Full';
         end
         
         count = count +1;
@@ -291,7 +388,7 @@ for lay_comb = 1:2 % 1:3
         % them, then concatenate everything together
         
         coh_vals = [Coh_Ct200; Coh_DB200; Coh_Ct400; Coh_DB400];
-        disp(group_Name)
+        disp(group_name)
         [cohP,cohT,cohStats] = anovan(coh_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction' ,'display','off');
         [cohC,cohM,~,cohN] = multcompare(cohStats,'Dimension',[1 2],'CType','bonferroni','display','off');
         %
@@ -302,7 +399,7 @@ for lay_comb = 1:2 % 1:3
         xtickangle(25)
         ylim([0 1])
         if count < 5
-            title(group_Name)
+            title(group_name)
         end
         
         if band == 2

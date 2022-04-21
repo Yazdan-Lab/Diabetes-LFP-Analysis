@@ -179,8 +179,8 @@ for group = 1:4
                 thisCol = [0 0 1];
                 [intSlo, stat, Pows, Deviants, stat0, intSlo0] = fitPowerLaw3steps(XX,YY, robRegMeth,  doPlot, thisCol);
                 Pows_store(group, counter) = Pows;
-                intSlo_store{group, counter}  = num2cell(intSlo);
-                intSlo0_store{group, counter} = num2cell(intSlo0);
+                intSlo_Store{group, counter}  = intSlo;
+                intSlo0_Store{group, counter} = intSlo0;
                 % Coherence and PLI
                 %%%%%%%%%%%%%
                 switch layer
@@ -272,5 +272,5 @@ end % group
 % Group, Animal, freq_band, Layer
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Gamma','rip','label','CSD','Co','PLI','slowing_score', 'state_changes','intSlo0_Store','int_Slo_Store')
+save('LFP Measures','Gamma','rip','label','CSD','Co','PLI','slowing_score', 'state_changes','intSlo0_Store','intSlo_Store','Pows_store')
 
