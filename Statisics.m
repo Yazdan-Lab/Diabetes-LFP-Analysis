@@ -244,14 +244,50 @@ SE_vals = [SE_Ct200; SE_DB200; SE_Ct400; SE_DB400];
 [seP,seT,seStats] = anovan(SE_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction','display','off');
 [seC,seM,~,seN] = multcompare(seStats,'Dimension',[1 2],'CType','bonferroni','display','off');
 figure
-create_bar_figure(seM(:,2), seM(:,1), seC);
+
+%set(gca,'ytick',[0 6 12])
+%ylim([0 15])
+%% Spectral exponent figure
+XXi = Pows_store(1,1).frex;
+YYi = NaN(7,516);
+int_Slo = NaN(7,2);
+subplot(1,2,1)
+for i = [4,3,2,1]
+    switch i
+        case 1
+            color = [194, 194, 194] ./255;
+        case 2
+            color = [128, 128, 128] ./255;
+        case 3
+            color = [247,149,114] ./255;
+        case 4
+            color = [212, 120, 86] ./255;
+    end
+    for j = 1:7
+        try
+            YYi(j,:) = Pows_store(i,j).obs;
+            int_Slo(j,:) = intSlo0_Store{i,j};
+        catch
+            continue
+        end
+    end
+    YYi = rmmissing(YYi);
+    int = nanmean(int_Slo(:,1));
+    slo = nanmean(int_Slo(:,2));
+    Xi = log10(XXi);
+    
+    stdshade(log(YYi), 0.1,color,log(XXi)); hold on,
+    YYpred0= 10.^( int+slo*(Xi))';
+    plot( log(XXi([1 end])), log(YYpred0([1 end])),'LineWidth',1.5,'color', color );
+    set(gca, 'FontSize',14,'TickDir','out');
+    box off
+    xlim([0,3.6])
+end
+ subplot(1,2,2)
+ create_bar_figure(seM(:,2), seM(:,1), seC);
 sig_values(seP(2), seP(1));
 ylabel('Spectral Exponent')
 set(gcf,'Color','w');
-%set(gca,'ytick',[0 6 12])
-%ylim([0 15])
-
-
 %% PLI
 % group,animal, band, layer
 for lay_comb = 1
@@ -263,6 +299,7 @@ for lay_comb = 1
         case 3
             comb_name = 'Pyr-Slm';
     end % switch layComb
+    %im bored
     for band = 1:7
         switch band
             case 1

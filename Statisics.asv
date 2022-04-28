@@ -225,7 +225,7 @@ end
 % them, then concatenate everything together
 idx = ~cellfun('isempty',intSlo_Store); 
 SE = NaN(size(intSlo_Store)); 
-SE(idx) = cellfun(@(v)v(2),intSlo_Store(idx));
+SE(idx) = cellfun(@(v)v(2),intSlo0_Store(idx));
  
 SE_Ct200_w_nan = SE(1,:)';
 SE_Ct200 = SE_Ct200_w_nan(~isnan(SE_Ct200_w_nan));
@@ -250,11 +250,47 @@ ylabel('Spectral Exponent')
 set(gcf,'Color','w');
 %set(gca,'ytick',[0 6 12])
 %ylim([0 15])
+%% Spectral exponent figure
+XXi = Pows_store(1,i).frex;
+YYi = NaN(7,516);
 
+for i = 1:7
+    YYi(i,:) = Pows_store(1,i).obs;
+end
+Xi = log10(XXi);
+[line, fill] = stdshade(YYi, 0.1
+thisCol = 'k';
+ intSlo0 = intSlo0_Store{1,1};
+    loglog(XXi, YYi,'color', 'k'); hold on;
+    
+    %xPlot= XXi; xPlot(boolYdev)= nan;
+    %loglog(xPlot, 10.^(Yi ), '-',   'LineWidth',myLW, 'color', thisCol); hold on;
+    %%% PLOT FIRST SLOPE
+    YYpred0= 10.^( intSlo0(1)+intSlo0(2)*(Xi))';
+hp(2)= plot( XXi([1 end]), YYpred0([1 end]),'--','LineWidth',2,'color', [.5 .5 .5] );
 
+    %%% PLOT SECOND (FINAL) SLOPE
+    hp(1)= plot( XXi([1 end]), YYpred([1 end]),'-','LineWidth',2,'color', thisCol ); 
+     legend(hp,stat.myName);
+    
+    
+
+      %%%% DOTS ON PEAKS 
+%     xPlot= XXi; xPlot(~boolYdev)= nan;
+%     loglog( xPlot, 10.^(Yi ), 'o','markersize',4, 'color', thisCol); hold on;
+%     loglog(xPlot(Clusts.locs), 10.^(Yi(Clusts.locs) ) ,'.', 'color', thisCol); %.k
 %% PLI
 % group,animal, band, layer
-for lay_comb = 1:3
+for lay_comb = 1
+    switch lay_comb
+        case 1
+            comb_name = 'Ctx-Pyr';
+        case 2
+            comb_name = 'Ctx-Slm';
+        case 3
+            comb_name = 'Pyr-Slm';
+    end % switch layComb
+    %im bored
     for band = 1:7
         switch band
             case 1
@@ -289,9 +325,8 @@ for lay_comb = 1:3
         
         PLI_vals = [PLI_Ct200; PLI_DB200; PLI_Ct400; PLI_DB400];
         
-        disp(num2str(lay_comb))
         [pliP,pliT,pliStats] = anovan(PLI_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction','display','off');
-        [pliC,pliM,~,pliN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni','display','off');
+        [pliC,pliM,~,pliN] = multcompare(pliStats,'Dimension',[1 2],'CType','bonferroni','display','off');
         figure
         create_bar_figure(pliM(:,2), pliM(:,1), pliC);
         sig_values(pliP(2), pliP(1));
@@ -301,11 +336,11 @@ for lay_comb = 1:3
         %ylim([0 1])
         switch lay_comb
             case 1
-                title([group_name 'Cortex'])
+                title([group_name comb_name])
             case 2
-                title([group_name 'Pyramidal'])
+                title([group_name comb_name])
             case 3
-                title([group_name 'SLM'])
+                title([group_name comb_name])
         end
     end
 end
