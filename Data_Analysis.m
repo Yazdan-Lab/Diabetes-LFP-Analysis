@@ -130,32 +130,6 @@ for group = 1:4
         %%% Per animal analysis %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%
         if ~isempty(full_LFP)
-%             pyr_LFP = full_LFP(:, chans(2,cur_animal));
-%             % Theta state
-%             disp('Calclating Thetat state')
-%             Theta = BPfilter(pyr_LFP,Fs,4,7); % filter for Theta (4-7 Hz)
-%             Delta = BPfilter(pyr_LFP,Fs,0.1,3); % filter for Delta (0.1-3 Hz)
-%             % Hilbert and envelop extraction
-%             Hilbert_Theta = abs(hilbert(Theta));
-%             Hilbert_Delta = abs(hilbert(Delta));
-%             
-%             % Smoothing
-%             Smooth_Theta = smoothvect(Hilbert_Theta, kernel);
-%             Smooth_Delta = smoothvect(Hilbert_Delta, kernel);
-%             
-%             
-%             % Theta/Delta envelope
-%             Theta_Delta = Smooth_Theta./Smooth_Delta;
-%             Smooth_Theta_Delta = smoothvect(Theta_Delta, kernel2);
-%             % find the Rem period
-%             thresh = 0.5;
-%             mindur = 10; % in sec, standard 10
-%             disp('making index')
-%             HTD = find(Smooth_Theta_Delta > thresh);
-%             
-%             crossings = find(Fs*10 < diff(HTD) );
-%             C_idx = [0 HTD(crossings+1); HTD(crossings) HTD(end)];
-%             pause
             for layer = 1:3
                 %%% Slowing score
                 %%%%%%%%%%%%%%%%%
