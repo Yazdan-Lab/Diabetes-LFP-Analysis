@@ -481,19 +481,109 @@ ylim([0 8500])
 CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
 CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
 disp('Specific CSD')
-[csd_P,csd_Table,csd_stats] = anovan(CSD_vals,{treat_Labs age_Labs},'model','interaction','display','off');
+[csd_P,csd_Table,csd_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction','display','off');
 [csd_Comparisons,csd_Means,~,csd_Names] = multcompare(csd_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
 
+ylim([0 2.6])
+CSD.DB2m = mean(CSD.DB2,3);
+CSD.DB4m = mean(CSD.DB4,3);
+
+CSD.DBDB2m = mean(CSD.DBDB2,3);
+CSD.DBDB4m = mean(CSD.DBDB4,3);
+
+CSD.DB2v = var(CSD.DB2,0,3);
+CSD.DB4v = var(CSD.DB4,0,3);
+
+CSD.DBDB2v = var(CSD.DBDB2,0,3);
+CSD.DBDB4v = var(CSD.DBDB4,0,3);
+%% Plot
 figure
-create_bar_figure(csd_Means(:,2), csd_Means(:,1), csd_Comparisons);
+max_val = 1;
+min_val = -1;
+set(gcf,'Color','w','Position',[100 100 1200 600])
+xstart = 0.07;
+x2start = 0.37;
+toph = 0.55;
+h = 0.35;
+both = 0.15;
+w = 0.28;
+
+subplot('Position',[xstart toph w h])
+h1 = pcolor(flipud(CSD.DB2m(:,2:end-1))');
+set(h1,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
+title('200 d','FontSize',14)
+ylabel('db/+','FontSize',14,'FontWeight','bold')
+set(gca,'xtick',[])
+caxis([min_val max_val])
+
+subplot('Position',[x2start toph w h])
+
+h2 = pcolor(flipud(CSD.DB4m(:,2:end-1)'));
+set(h2,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
+title('400 d','FontSize',14)
+set(gca,'xtick',[], 'ytick',[])
+caxis([min_val max_val])
+
+subplot('Position',[xstart both w h])
+h3 = pcolor(flipud(CSD.DBDB2m(:,2:end-1)'));
+set(h3,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
+ylabel('db/db','FontSize',14,'FontWeight','bold')
+set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
+caxis([min_val max_val])
+
+
+subplot('Position',[x2start both w h])
+h4 = pcolor(flipud(CSD.DBDB4m(:,2:end-1)'));
+shading interp, colormap(flipud(hotcold))
+set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
+caxis([min_val max_val])
+set(h4,'EdgeColor','none');
+
+subplot('Position',[0.75 both 0.2 0.8])
+
+b = create_bar_figure(csd_Means(:,2), csd_Means(:,1), csd_Comparisons);
+
+%set(b,'ytick',[0 1 2],'ylim', [0 2])
 sig_values(csd_P(2), csd_P(1));
 ylabel('CSD Dipole (uV)')
-set(gca,'ytick',[0 1 2])
-ylim([0 2.6])
-% disp('Full CSD')
-% [csdfP,csdfTable,CSDf_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction');
-% [csdfC,csdfM,~,csdfNames] = multcompare(CSDf_stats,'Dimension',[1 2],'CType','bonferroni');
 
+
+%% Plot variance
+figure
+set(gcf,'Color','w','Position',[100 100 1200 600])
+max_val = 120;
+min_val = 0;
+subplot(2,2,1)
+h1 = pcolor(flipud(CSD.DB2v(:,2:end-1))');
+set(h1,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+title('200 d','FontSize',14)
+ylabel('db/+','FontSize',14,'FontWeight','bold')
+set(gca,'xtick',[])
+caxis([min_val max_val])
+
+subplot(2,2,2)
+
+h2 = pcolor(flipud(CSD.DB4v(:,2:end-1)'));
+set(h2,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+title('400 d','FontSize',14)
+set(gca,'xtick',[], 'ytick',[])
+caxis([min_val max_val])
+
+subplot(2,2,3)
+h3 = pcolor(flipud(CSD.DBDB2v(:,2:end-1)'));
+set(h3,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+ylabel('db/db','FontSize',14,'FontWeight','bold')
+set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
+caxis([min_val max_val])
+
+
+subplot(2,2,4)
+h4 = pcolor(flipud(CSD.DBDB4v(:,2:end-1)'));
+shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
+caxis([min_val max_val])
+set(h4,'EdgeColor','none');
+colorbar
 %% Gamma power
 
 ctx_Vals = [Gamma.DB2_Ctx Gamma.DBDB2_Ctx Gamma.DB4_Ctx Gamma.DBDB4_Ctx]';

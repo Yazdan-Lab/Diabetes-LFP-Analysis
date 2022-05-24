@@ -53,7 +53,7 @@ for group = 1:4
         cd(animal_list(cur_animal).name)
         % Get file names of specific animals relevant files
         %%%%%%
-        load('SWR_Index.mat'); % load SWR HTD/LTD  indices 
+        load('SWR_Index.mat'); % load SWR HTD/LTD  indices
         load('REM.mat'); % load HTD/LTD State times
         SWR_files = dir('SWR_R_*'); % Grab the number of files that have SWR event timings (usually 2, sometimes 1 or 3)
         SWR_files = {SWR_files.name}; % throw away useless info
@@ -93,26 +93,29 @@ for group = 1:4
                 temp_gamma_ctx = zeros(1,length(LTD_events));
                 temp_gamma_pyr = zeros(1,length(LTD_events));
                 temp_gamma_slm = zeros(1,length(LTD_events));
-                
-                temp_CSD = zeros(1876,12,length(LTD_events));
+                avg_rip = zeros(1876,length(LTD_events));
+                norm_CSD = zeros(1876,12,length(LTD_events));
                 % For each event, create a spectrogram and store it in the
                 % temp variable
                 for r = 1:length(LTD_events)
                     % Create spectrogram of each ripple
-                    temp_gamma_ctx(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),1250);
+                    %temp_gamma_ctx(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),1250);
                     temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),1250);
-                    temp_gamma_slm(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),1250);
-                    
+                    %temp_gamma_slm(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),1250);
+                    avg_rip(:,r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal))
                     % Create CSD of each ripple
-                    temp_CSD(:,:,r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
+                    temp_CSD = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
+                    norm_CSD(:,:,r) = temp_CSD; % normalize(temp_CSD);
                 end
-                % Concatenate temp variable to storage variable
-                gamma_ctx = [gamma_ctx temp_gamma_ctx];
-                gamma_pyr = [gamma_pyr temp_gamma_pyr];
-                gamma_slm = [gamma_slm temp_gamma_slm];
-                
-                csd = save_check(csd,temp_CSD);
-                
+                    % Concatenate temp variable to storage variable
+                    %gamma_ctx = [gamma_ctx temp_gamma_ctx];
+                    gamma_pyr = [gamma_pyr temp_gamma_pyr];
+                    %gamma_slm = [gamma_slm temp_gamma_slm];
+                     csd = ((csd - cmin)/(cmax-cmin) - 0.5) * 2;
+                    csd = save_check(csd,norm_CSD);
+                    cmin = min(csd(:));
+                    cmax = max(csd(:));
+                   
                 % Save all individual ripples for basic analysis
                 if group ==1
                     [rip.DB2,label.DB2] = label_ripples(rip.DB2,label.DB2,SWRevents,SWRLTDIdx,k,counter);
