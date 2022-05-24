@@ -102,19 +102,16 @@ for group = 1:4
                     %temp_gamma_ctx(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),1250);
                     temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),1250);
                     %temp_gamma_slm(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),1250);
-                    avg_rip(:,r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal))
+                    avg_rip(:,r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal));
                     % Create CSD of each ripple
                     temp_CSD = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
-                    norm_CSD(:,:,r) = temp_CSD; % normalize(temp_CSD);
+                    norm_CSD(:,:,r) = normalize(temp_CSD);
                 end
                     % Concatenate temp variable to storage variable
                     %gamma_ctx = [gamma_ctx temp_gamma_ctx];
                     gamma_pyr = [gamma_pyr temp_gamma_pyr];
                     %gamma_slm = [gamma_slm temp_gamma_slm];
-                     csd = ((csd - cmin)/(cmax-cmin) - 0.5) * 2;
                     csd = save_check(csd,norm_CSD);
-                    cmin = min(csd(:));
-                    cmax = max(csd(:));
                    
                 % Save all individual ripples for basic analysis
                 if group ==1
@@ -225,29 +222,33 @@ for group = 1:4
     end % animal
     % Save data to variable outside loop
     if group ==1
-        Gamma.DB2_Ctx = gamma_ctx;
+        %Gamma.DB2_Ctx = gamma_ctx;
         Gamma.DB2_Pyr = gamma_pyr;
-        Gamma.DB2_SLM = gamma_slm;
+        %Gamma.DB2_SLM = gamma_slm;
         CSD.DB2 = csd;
+        rip_wav.DB2 = avg_rip;
     elseif group ==2
-        Gamma.DB4_Ctx = gamma_ctx;
+        %Gamma.DB4_Ctx = gamma_ctx;
         Gamma.DB4_Pyr = gamma_pyr;
-        Gamma.DB4_SLM = gamma_slm;
+        %Gamma.DB4_SLM = gamma_slm;
         CSD.DB4 = csd;
+        rip_wav.DB4 = avg_rip;
     elseif group ==3
-        Gamma.DBDB2_Ctx = gamma_ctx;
+        %Gamma.DBDB2_Ctx = gamma_ctx;
         Gamma.DBDB2_Pyr = gamma_pyr;
-        Gamma.DBDB2_SLM = gamma_slm;
+        %Gamma.DBDB2_SLM = gamma_slm;
         CSD.DBDB2 = csd;
+        rip_wav.DBDB2 = avg_rip;
     elseif group ==4
-        Gamma.DBDB4_Ctx = gamma_ctx;
+        %Gamma.DBDB4_Ctx = gamma_ctx;
         Gamma.DBDB4_Pyr = gamma_pyr;
-        Gamma.DBDB4_SLM = gamma_slm;
+        %Gamma.DBDB4_SLM = gamma_slm;
         CSD.DBDB4 = csd;
+        rip_wav.DBDB4 = avg_rip;
     end % if
 end % group
 % Group, Animal, freq_band, Layer
 %% save processed data
 cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-save('LFP Measures','Gamma','rip','label','CSD','Co','PLI','slowing_score', 'state_changes','intSlo0_Store','intSlo_Store','Pows_store')
+save('LFP Measures','Gamma','rip','rip_wav','label','CSD','Co','PLI','slowing_score', 'state_changes','intSlo0_Store','intSlo_Store','Pows_store')
 
