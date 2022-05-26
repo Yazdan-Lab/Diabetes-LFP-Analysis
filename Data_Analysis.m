@@ -47,6 +47,7 @@ for group = 1:4
     gamma_pyr = [];
     gamma_slm = [];
     gamma_ctx = [];
+    avg_rip = [];
     csd = [];
     for cur_animal = grouping
         disp(['Animal: ' num2str(cur_animal)])
@@ -93,7 +94,7 @@ for group = 1:4
                 temp_gamma_ctx = zeros(1,length(LTD_events));
                 temp_gamma_pyr = zeros(1,length(LTD_events));
                 temp_gamma_slm = zeros(1,length(LTD_events));
-                avg_rip = zeros(1876,length(LTD_events));
+                temp_avg_rip = zeros(1876,length(LTD_events));
                 norm_CSD = zeros(1876,12,length(LTD_events));
                 % For each event, create a spectrogram and store it in the
                 % temp variable
@@ -102,16 +103,18 @@ for group = 1:4
                     %temp_gamma_ctx(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(1,cur_animal)),1250);
                     temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),1250);
                     %temp_gamma_slm(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),1250);
-                    avg_rip(:,r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal));
+                    temp_avg_rip(:,r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal));
                     % Create CSD of each ripple
                     temp_CSD = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
-                    norm_CSD(:,:,r) = normalize(temp_CSD);
+                    norm_CSD(:,:,r) = temp_CSD; % normalize(temp_CSD);
                 end
                     % Concatenate temp variable to storage variable
                     %gamma_ctx = [gamma_ctx temp_gamma_ctx];
                     gamma_pyr = [gamma_pyr temp_gamma_pyr];
                     %gamma_slm = [gamma_slm temp_gamma_slm];
+                    avg_rip = [avg_rip temp_avg_rip];
                     csd = save_check(csd,norm_CSD);
+                    
                    
                 % Save all individual ripples for basic analysis
                 if group ==1

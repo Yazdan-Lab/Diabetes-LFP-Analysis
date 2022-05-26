@@ -447,8 +447,8 @@ for lay_comb = 1:2 % 1:3
     end
 end
 
-%% Basic features of SPWRs
 
+%%
 disp('Power')
 power_vals = [rip.DB2(:,7); rip.DB4(:,7); rip.DBDB2(:,7); rip.DBDB4(:,7)];
 
@@ -477,6 +477,102 @@ sig_values(iriP(2), iriP(1));
 ylabel('Inter-ripple interval (s)')
 set(gca,'ytick',[0 3000 6000])
 ylim([0 8500])
+
+%% Gamma power
+
+%ctx_Vals = [Gamma.DB2_Ctx Gamma.DBDB2_Ctx Gamma.DB4_Ctx Gamma.DBDB4_Ctx]';
+pyr_Vals = [Gamma.DB2_Pyr Gamma.DBDB2_Pyr Gamma.DB4_Pyr Gamma.DBDB4_Pyr]';
+%slm_Vals = [Gamma.DB2_SLM Gamma.DBDB2_SLM Gamma.DB4_SLM Gamma.DBDB4_SLM]';
+% disp('Ctx Gamma')
+% [ctx_P,ctx_Table,ctx_Stats] = anovan(ctx_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
+% [ctx_Comparisons,ctx_Means,~,ctx_Names] = multcompare(ctx_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+
+disp('Pyr Gamma')
+[pyr_P,pyr_Table,pyr_Stats] = anovan(pyr_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
+[pyr_Comparions,pyr_Means,~,pyr_Names] = multcompare(pyr_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+figure
+
+% disp('Slm Gamma')
+% [slmP,slm_Table,slm_Stats] = anovan(slm_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
+% [slmC,slmM,~,slmN] = multcompare(slm_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+% 
+%% Basic features of SPWRs
+both = 0.1;
+toph = 0.55;
+h = 0.32;
+lw = 0.1;
+mw = 0.55;
+w = 0.35;
+riph = 0.174;
+mod = 0.175;
+
+control_200 = [194, 194, 194] ./255;
+control_400 = [128, 128, 128] ./255;
+DB_200 = [247,149,114] ./255;
+DB_400 = [212, 120, 86] ./255;
+
+fig_lim = 5e-6;
+% [][] |    |
+% [][] |____|
+%|    ||    |
+%|____||____|
+figure
+set(gcf, 'color','w','Position',[100 100 1200 700])
+% top left ripple
+subplot('Position',[lw toph+mod riph riph])
+plot(mean(rip_wav.DB2,2),'color',control_200)
+% title('DB2')
+axis off
+ylim([-fig_lim fig_lim])
+vline(625,'k:')
+% top right ripple
+subplot('Position',[lw+mod toph+mod riph riph])
+plot(mean(rip_wav.DB4,2),'color',control_400)
+ylim([-fig_lim fig_lim])
+axis off
+vline(625,'k:')
+
+%bottom left ripple
+subplot('Position',[lw toph riph riph])
+plot(mean(rip_wav.DBDB2,2),'color',DB_200)
+ylim([-fig_lim fig_lim])
+%title('DBDB2')
+vline(625,'k:')
+axis off
+
+%bottom right ripple
+subplot('Position',[lw+mod toph riph riph])
+plot(mean(rip_wav.DBDB4,2),'color',DB_400)
+ylim([-fig_lim fig_lim])
+%title('DBDB4')
+vline(625,'k:')
+axis off
+% top right quad
+%Gamma power
+subplot('Position',[mw toph w h])
+create_bar_figure(pyr_Means(:,2), pyr_Means(:,1), pyr_Comparions);
+%ylabel('SWR Gamma power')
+%sig_values(pyr_P(2), pyr_P(1));
+%set(gca,'ytick',[0 5e-7 1e-6])
+%ylim([0 1.15e-6])
+
+% bottom left quad
+% Duration
+subplot('Position',[lw both w h])
+dur_fig = create_bar_figure(durM(:,2), durM(:,1), durC);
+%sig_values(durP(2), durP(1));
+%ylabel('SWR Duration (s)')
+%set(gca,'ytick',[0 0.15 0.3])
+%ylim([0 0.4])
+
+%bottom right quad
+% IRI
+subplot('Position',[mw both w h])
+irir_fig = create_bar_figure(iriM(:,2), iriM(:,1), iriC);
+%sig_values(iriP(2), iriP(1));
+%ylabel('Inter-ripple interval (s)')
+%set(gca,'ytick',[0 3000 6000])
+%ylim([0 8500])
 %% CSD
 CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
 CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
@@ -584,25 +680,3 @@ set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
 caxis([min_val max_val])
 set(h4,'EdgeColor','none');
 colorbar
-%% Gamma power
-
-ctx_Vals = [Gamma.DB2_Ctx Gamma.DBDB2_Ctx Gamma.DB4_Ctx Gamma.DBDB4_Ctx]';
-pyr_Vals = [Gamma.DB2_Pyr Gamma.DBDB2_Pyr Gamma.DB4_Pyr Gamma.DBDB4_Pyr]';
-slm_Vals = [Gamma.DB2_SLM Gamma.DBDB2_SLM Gamma.DB4_SLM Gamma.DBDB4_SLM]';
-disp('Ctx Gamma')
-[ctx_P,ctx_Table,ctx_Stats] = anovan(ctx_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
-[ctx_Comparisons,ctx_Means,~,ctx_Names] = multcompare(ctx_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
-
-disp('Pyr Gamma')
-[pyr_P,pyr_Table,pyr_Stats] = anovan(pyr_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
-[pyr_Comparions,pyr_Means,~,pyr_Names] = multcompare(pyr_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
-figure
-create_bar_figure(pyr_Means(:,2), pyr_Means(:,1), pyr_Comparions);
-ylabel('SWR Gamma power')
-sig_values(pyr_P(2), pyr_P(1));
-set(gca,'ytick',[0 5e-7 1e-6])
-ylim([0 1.15e-6])
-disp('Slm Gamma')
-[slmP,slm_Table,slm_Stats] = anovan(slm_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
-[slmC,slmM,~,slmN] = multcompare(slm_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
-
