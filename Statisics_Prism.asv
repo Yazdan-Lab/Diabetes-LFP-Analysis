@@ -53,15 +53,15 @@ DCX_area_db_labs = [{'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl
 DCX_area_vals = [0.86905428	0.40203504	0.61880966	0.96045872	0.59835453	0.76930995	0.57231413	0.66077933	0.63941011	0.55605886 0.30577565	0.82527817	0.54625988	0.51994375	0.86898684		0.66492079	0.49467394	0.63386285	0.62273342	0.288 0.35631714	0.38152388	0.50035393	0.40593881	0.72359952	0.48474846	0.50949774	0.47484167	0.39605664						0.30277759	0.3116963	0.66197221	0.41141166	0.31725581	0.49430311	0.57633195]';
 
 [DCX_area_P, DCX_area_T, DCX_area_Stats] = anovan(DCX_area_vals,{DCX_area_db_labs, DCX_area_age_labs}, 'model', 'interaction','display','off');
+[DCX_area_C,DCX_area_M,~,SVZ_area_N] = multcompare(DCX_area_Stats, 'Dimension', [1 2], 'CType', 'bonferroni','display','off');
+
+
+DCX_area_age_labs = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 400 400 400 400 400 400 400 400 400 400 400 400 400 400 400 400]';
+DCX_area_db_labs = [{'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} ]';
+DCX_area_vals = [1.14910433	1.15187916	1.45288016	1.26325729	0.96277997	1.30006284	0.95256623	1.01916796	1.01737855	0.97594866	1.00761731	0.90286391	1.09079694		0.89506044	1.18214604	1.15794379	0.77721419	0.92112363	0.86397362	0.89019276	0.77860856	1.04603338	0.9916208	1.04311233	0.86216188	0.748431 0.91308736	0.70173132	0.98842323	0.98417843	1.13546348	0.75589647	0.7848981	0.7183573	0.74536513						0.8703761	0.88873734	0.81507973	0.84761724	0.86056048	0.78401774	0.77375563]';
+
+[DCX_area_P, DCX_area_T, DCX_area_Stats] = anovan(DCX_area_vals,{DCX_area_db_labs, DCX_area_age_labs}, 'model', 'interaction','display','off');
 [DCX_area_C,DCX_area_M,~,DCX_area_N] = multcompare(DCX_area_Stats, 'Dimension', [1 2], 'CType', 'bonferroni','display','off');
-
-
-SVZ_area_age_labs = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 400 400 400 400 400 400 400 400 400 400 400 400 400 400 400 400]';
-SVZ_area_db_labs = [{'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} ]';
-SVZ_area_vals = [1.14910433	1.15187916	1.45288016	1.26325729	0.96277997	1.30006284	0.95256623	1.01916796	1.01737855	0.97594866	1.00761731	0.90286391	1.09079694		0.89506044	1.18214604	1.15794379	0.77721419	0.92112363	0.86397362	0.89019276	0.77860856	1.04603338	0.9916208	1.04311233	0.86216188	0.748431 0.91308736	0.70173132	0.98842323	0.98417843	1.13546348	0.75589647	0.7848981	0.7183573	0.74536513						0.8703761	0.88873734	0.81507973	0.84761724	0.86056048	0.78401774	0.77375563]';
-
-[SVZ_area_P, SVZ_area_T, SVZ_area_Stats] = anovan(SVZ_area_vals,{SVZ_area_db_labs, SVZ_area_age_labs}, 'model', 'interaction','display','off');
-[SVZ_area_C,SVZ_area_M,~,SVZ_area_N] = multcompare(SVZ_area_Stats, 'Dimension', [1 2], 'CType', 'bonferroni','display','off');
 
 figure
 set(gcf,'color','w','position',[100  100 1200 400])

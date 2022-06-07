@@ -182,8 +182,8 @@ IRI_treat(TF==1) = [];
 %% Slowing score
 disp('Slowing score')
 
-
-for lay_comb = 1:3
+figure
+for lay_comb = 2:3
     % First we want to grab individual values, create 2-way labels for
     % them, then concatenate everything together
     SS_Ct200_w_nan = slowing_score(1,:,lay_comb)';
@@ -203,21 +203,22 @@ for lay_comb = 1:3
     disp(num2str(lay_comb))
     [ssP,ssT,ssStats] = anovan(slow_score_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction','display','off');
     [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni','display','off');
-    figure
+    subplot(1,2,lay_comb-1)
     create_bar_figure(ssM(:,2), ssM(:,1), ssC);
-    sig_values(ssP(2), ssP(1));
-    ylabel('Slowing Score')
+    %sig_values(ssP(2), ssP(1));
+    %ylabel('Slowing Score')
     set(gcf,'Color','w');
     set(gca,'ytick',[0 6 12])
     ylim([0 15])
-    switch lay_comb
-        case 1
-            title('Cortex')
-        case 2
-            title('Pyramidal')
-        case 3
-            title('SLM')
-    end
+    xtickangle(60)
+%     switch lay_comb
+%         case 1
+%             title('Cortex')
+%         case 2
+%             title('Pyramidal')
+%         case 3
+%             title('SLM')
+%     end
 end
 %% Spectral exponent
 
@@ -285,11 +286,13 @@ for i = [4,3,2,1]
 end
  subplot(1,2,2)
  create_bar_figure(seM(:,2), seM(:,1), seC);
-sig_values(seP(2), seP(1));
-ylabel('Spectral Exponent')
+ xtickangle(60)
+%sig_values(seP(2), seP(1));
+%ylabel('Spectral Exponent')
 set(gcf,'Color','w');
 %% PLI
 % group,animal, band, layer
+figure
 for lay_comb = 1
     switch lay_comb
         case 1
@@ -300,7 +303,7 @@ for lay_comb = 1
             comb_name = 'Pyr-Slm';
     end % switch layComb
     %im bored
-    for band = 1:7
+    for band = 2:5
         switch band
             case 1
                 group_name = 'Delta ';
@@ -336,21 +339,22 @@ for lay_comb = 1
         
         [pliP,pliT,pliStats] = anovan(PLI_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction','display','off');
         [pliC,pliM,~,pliN] = multcompare(pliStats,'Dimension',[1 2],'CType','bonferroni','display','off');
-        figure
+        subplot(1,4,band-1)
         create_bar_figure(pliM(:,2), pliM(:,1), pliC);
-        sig_values(pliP(2), pliP(1));
-        ylabel('Phase Locking Index')
+        %sig_values(pliP(2), pliP(1));
+        %ylabel('Phase Locking Index')
         set(gcf,'Color','w');
+        xtickangle(60)
         %set(gca,'ytick',[0 1])
         %ylim([0 1])
-        switch lay_comb
-            case 1
-                title([group_name comb_name])
-            case 2
-                title([group_name comb_name])
-            case 3
-                title([group_name comb_name])
-        end
+%         switch lay_comb
+%             case 1
+%                 title([group_name comb_name])
+%             case 2
+%                 title([group_name comb_name])
+%             case 3
+%                 title([group_name comb_name])
+%         end
     end
 end
 %% State changes
@@ -607,8 +611,8 @@ w = 0.28;
 subplot('Position',[xstart toph w h])
 h1 = pcolor(flipud(CSD.DB2m(:,2:end-1))');
 set(h1,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
-title('200 d','FontSize',14)
-ylabel('db/+','FontSize',14,'FontWeight','bold')
+%title('200 d','FontSize',14)
+%ylabel('db/+','FontSize',14,'FontWeight','bold')
 set(gca,'xtick',[])
 caxis([min_val max_val])
 
@@ -616,14 +620,14 @@ subplot('Position',[x2start toph w h])
 
 h2 = pcolor(flipud(CSD.DB4m(:,2:end-1)'));
 set(h2,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
-title('400 d','FontSize',14)
+%title('400 d','FontSize',14)
 set(gca,'xtick',[], 'ytick',[])
 caxis([min_val max_val])
 
 subplot('Position',[xstart both w h])
 h3 = pcolor(flipud(CSD.DBDB2m(:,2:end-1)'));
 set(h3,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
-ylabel('db/db','FontSize',14,'FontWeight','bold')
+%ylabel('db/db','FontSize',14,'FontWeight','bold')
 set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
 caxis([min_val max_val])
 
@@ -634,49 +638,49 @@ shading interp, colormap(flipud(hotcold))
 set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
 caxis([min_val max_val])
 set(h4,'EdgeColor','none');
-
+colorbar
 subplot('Position',[0.75 both 0.2 0.8])
 
 b = create_bar_figure(csd_Means(:,2), csd_Means(:,1), csd_Comparisons);
 
 %set(b,'ytick',[0 1 2],'ylim', [0 2])
-sig_values(csd_P(2), csd_P(1));
-ylabel('CSD Dipole (uV)')
+%sig_values(csd_P(2), csd_P(1));
+%ylabel('CSD Dipole (uV)')
 
 
-%% Plot variance
-figure
-set(gcf,'Color','w','Position',[100 100 1200 600])
-max_val = 120;
-min_val = 0;
-subplot(2,2,1)
-h1 = pcolor(flipud(CSD.DB2v(:,2:end-1))');
-set(h1,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
-title('200 d','FontSize',14)
-ylabel('db/+','FontSize',14,'FontWeight','bold')
-set(gca,'xtick',[])
-caxis([min_val max_val])
-
-subplot(2,2,2)
-
-h2 = pcolor(flipud(CSD.DB4v(:,2:end-1)'));
-set(h2,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
-title('400 d','FontSize',14)
-set(gca,'xtick',[], 'ytick',[])
-caxis([min_val max_val])
-
-subplot(2,2,3)
-h3 = pcolor(flipud(CSD.DBDB2v(:,2:end-1)'));
-set(h3,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
-ylabel('db/db','FontSize',14,'FontWeight','bold')
-set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
-caxis([min_val max_val])
-
-
-subplot(2,2,4)
-h4 = pcolor(flipud(CSD.DBDB4v(:,2:end-1)'));
-shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
-set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
-caxis([min_val max_val])
-set(h4,'EdgeColor','none');
-colorbar
+% % Plot variance
+% figure
+% set(gcf,'Color','w','Position',[100 100 1200 600])
+% max_val = 120;
+% min_val = 0;
+% subplot(2,2,1)
+% h1 = pcolor(flipud(CSD.DB2v(:,2:end-1))');
+% set(h1,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+% title('200 d','FontSize',14)
+% ylabel('db/+','FontSize',14,'FontWeight','bold')
+% set(gca,'xtick',[])
+% caxis([min_val max_val])
+% 
+% subplot(2,2,2)
+% 
+% h2 = pcolor(flipud(CSD.DB4v(:,2:end-1)'));
+% set(h2,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+% title('400 d','FontSize',14)
+% set(gca,'xtick',[], 'ytick',[])
+% caxis([min_val max_val])
+% 
+% subplot(2,2,3)
+% h3 = pcolor(flipud(CSD.DBDB2v(:,2:end-1)'));
+% set(h3,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+% ylabel('db/db','FontSize',14,'FontWeight','bold')
+% set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
+% caxis([min_val max_val])
+% 
+% 
+% subplot(2,2,4)
+% h4 = pcolor(flipud(CSD.DBDB4v(:,2:end-1)'));
+% shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+% set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
+% caxis([min_val max_val])
+% set(h4,'EdgeColor','none');
+% colorbar

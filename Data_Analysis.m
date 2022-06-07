@@ -106,7 +106,7 @@ for group = 1:4
                     temp_avg_rip(:,r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal));
                     % Create CSD of each ripple
                     temp_CSD = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
-                    norm_CSD(:,:,r) = temp_CSD; % normalize(temp_CSD);
+                    norm_CSD(:,:,r) = normalize(temp_CSD);
                 end
                     % Concatenate temp variable to storage variable
                     %gamma_ctx = [gamma_ctx temp_gamma_ctx];
