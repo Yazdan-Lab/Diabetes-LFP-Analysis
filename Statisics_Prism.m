@@ -26,8 +26,8 @@ dcx_age_labs =  [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200
 dcx_db_labs  =  [{'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} ]';
 
 
-brdu_vals = log([198 192 300 180 276 240 468	480	279	480 192	108	72	162	132	204	144	288	216	156	180	180 153	108	132 96 108 171 171 171	180	180	144	189	117	204	72	63	84	36	72	96	96]');
-dcx_vals = log([420	480	594	648	864	888	576	1380 882 1440 132 96 162	108	96	636	504	456	594	492	288 120	90	84 156 144	276	126	225	300	360	144	312	180	198	48	48	18	45	96	108	72]');
+brdu_vals = log10([198 192 300 180 276 240 468 480 279 480 192 108 72 162 132 204 144 288 216 156 180 180 153	108	132 96 108 171 171 171	180	180	144	189	117	204	72	63	84	36	72	96	96]');
+dcx_vals = log10([420	480	594	648	864	888	576	1380 882 1440 132 96 162	108	96	636	504	456	594	492	288 120	90	84 156 144	276	126	225	300	360	144	312	180	198	48	48	18	45	96	108	72]');
 
 [brdu_P, brdu_T, brdu_Stats] = anovan(brdu_vals,{brdu_db_labs, brdu_age_labs}, 'model', 'interaction','display','off');
 [brdu_C,brdu_M,~,brdu_N] = multcompare(brdu_Stats, 'Dimension', [1 2], 'CType', 'bonferroni','display','off');
@@ -37,6 +37,7 @@ dcx_vals = log([420	480	594	648	864	888	576	1380 882 1440 132 96 162	108	96	636	
 
 
 figure
+set(gcf,'Position',[100 100 900  400])
 subplot(1,2,1)
 create_bar_figure(brdu_M(:,2), brdu_M(:,1), brdu_C);
 xtickangle(60)
@@ -63,8 +64,25 @@ SVZ_area_vals = [1.14910433	1.15187916	1.45288016	1.26325729	0.96277997	1.300062
 [SVZ_area_P, SVZ_area_T, SVZ_area_Stats] = anovan(SVZ_area_vals,{SVZ_area_db_labs, SVZ_area_age_labs}, 'model', 'interaction','display','off');
 [SVZ_area_C,SVZ_area_M,~,SVZ_area_N] = multcompare(SVZ_area_Stats, 'Dimension', [1 2], 'CType', 'bonferroni','display','off');
 
+Brdu_svz_vals = [1272	996;
+                1470	324;
+                1236	876;
+                1516	636;
+                1201	746;
+                1401	860;
+                1184	894;
+                1212	810;
+                1368	868;
+                756     860];
+brdu_svz_labs = {'ctrl','DB'};
+
+[brdu_svz_P,~,brdu_svz_S] = anova1(Brdu_svz_vals,brdu_svz_labs,'off');
+
+[brdu_svz_Comp,brdu_svz_Means,~,brdu_svz_Names] = multcompare(brdu_svz_S,'CType','bonferroni','Display','off');
+
+
 figure
-set(gcf,'color','w','position',[100  100 1200 400])
+set(gcf,'color','w','position',[100  100 1550 300])
 subplot(1,3,1)
 create_bar_figure(SVZ_area_M(:,2), SVZ_area_M(:,1), SVZ_area_C);
 xtickangle(60)
@@ -72,7 +90,30 @@ xtickangle(60)
 subplot(1,3,2)
 create_bar_figure(DCX_area_M(:,2), DCX_area_M(:,1), DCX_area_C);
 xtickangle(60)
+
+subplot(1,3,3)
+control_200 = [194, 194, 194] ./255;DB_200 = [247,149,114] ./255;
+xlabels = {'Ctrl','DB'};
+b= bar(brdu_svz_Means(:,1));
+set(gca,'xTickLabel',xlabels)
+hold on
+er = errorbar([1 2]',brdu_svz_Means(:,1)', brdu_svz_Means(:,2)');
+er.LineStyle = 'none';
+er.Color = 'k';
+% er.CapSize = 0;
 box off
+set(gca, 'FontSize',14,'TickDir','out');
+b(1).FaceColor = 'flat';
+b(1).EdgeColor = 'flat';
+b(1).CData(1,:) = control_200;
+b(1).CData(2,:) = DB_200;
+for i = 1:size(brdu_svz_Comp,1)
+    a = brdu_svz_Comp(i,1);
+    b = brdu_svz_Comp(i,2);
+   if brdu_svz_Comp(i,6) <= 0.05
+       sigstar2([a b],brdu_svz_Comp(i,6));
+   end 
+end
 
 %% CA1 Signal Power
 hgamma_vals = [1.45 2.17 1.95 2.53 2.61 2.47 2.35 2.2 2.474356 2.519189 2.5 2.52 2.22 1.98 2.18 2.3 1.75 2.04 1.51 2.06 1.75 2.37 2.23]';

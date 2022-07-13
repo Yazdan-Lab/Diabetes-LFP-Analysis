@@ -22,7 +22,7 @@ hold on
 er = errorbar([1 2 3 4]',data', Error');
 er.LineStyle = 'none';
 er.Color = 'k';
-er.CapSize = 0;
+% er.CapSize = 0;
 box off
 set(gca, 'FontSize',14,'TickDir','out');
 
