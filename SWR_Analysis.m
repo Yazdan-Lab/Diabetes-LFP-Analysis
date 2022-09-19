@@ -4,7 +4,7 @@
 % CSD
 clear all, close all, clc
 
-cd('C:\Users\ipzach\Documents\dbdb electrophy\General_Scripts')
+cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
 load('SpkInfo.mat')
 cd('C:\Users\ipzach\Documents\dbdb electrophy');
 animals = dir;
