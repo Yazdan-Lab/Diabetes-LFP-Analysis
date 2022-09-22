@@ -1,12 +1,13 @@
+addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
+    'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+
 %% SWR CSD Analysis
 % This script will load LFP and grab the LFP 500ms before and 1500ms after
 % the onset of a ripple (max duration recorded 1237ms) then perform CSD on
 % that file, save the file to a 3D matrix, and create an average CSD
 
-
-cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
 load('PyramChans.mat')
-cd('C:\Users\ipzach\Documents\dbdb electrophy');
+cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy');
 animals = dir;
 hotcold = redblue();
 voltConv = 0.000000091555527603759401;
@@ -37,10 +38,19 @@ for i = 2% :4
                 load(char(LFP_files(k)));
                 LFP = LFPs{1,2} .*voltConv;
                 
-                LTDevents = SWRevents(SWRLTDIdx(k).R,1);
-                LTDevents = LTDevents(LTDevents >= 625);
-                LTDevents = LTDevents(LTDevents <= length(LFP)-1250);
-                
+                LTDevents = clean_events(...
+                    SWRevents(SWRLTDIdx(k).R,1),...
+                    length(LFP),...
+                    Fs/2,...
+                    Fs);
+                SwrFullCsd = calculate_CSD(...
+                    SwrFullCsd,...
+                    LFP,...
+                    LTDevents,...
+                    chans(j),...
+                    Fs/2,...
+                    Fs,...
+                    Fs);
                 temp_CSD = zeros(1876,12,length(LTDevents));
                 for l = 1:length(LTDevents)
                     temp_CSD(:,:,l) = CSD(LFP(LTDevents(l)-625:LTDevents(l)+1250,chans(j)-5:chans(j)+6),1250,1e-4);
@@ -53,7 +63,9 @@ for i = 2% :4
                 else
                     SwrFullCsd = cat(3,SwrFullCsd,temp_CSD);
                 end
-            end % for k SWRLTDIdx
+
+                
+            end % for k s
             
         end % j grouping
         cd ..
