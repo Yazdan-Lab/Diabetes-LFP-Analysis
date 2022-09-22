@@ -11,7 +11,8 @@ cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy');
 animals = dir;
 hotcold = redblue();
 voltConv = 0.000000091555527603759401;
-for i = 2% :4
+Fs = 1250;
+for i = 1:4
     if i ==1
         grouping = 3:9; % DB+ 200D
     elseif i ==2
@@ -44,72 +45,123 @@ for i = 2% :4
                     Fs/2,...
                     Fs);
                 
-                
-            end % for k SWRLTDIdx
+                SwrFullCsd = calculate_CSD(...
+                    SwrFullCsd,...
+                    LFP,...
+                    LTDevents,...
+                    chans(j),...
+                    Fs/2,...
+                    Fs,...
+                    Fs);
+            end % for k s
             
         end % j grouping
         cd ..
         
     end % j 
     if i ==1
-        CSD.DB2 = SwrFullCsd;
+        full_csd.DB2 = SwrFullCsd;
     elseif i ==2
-        CSD.DB4 = SwrFullCsd;
+        full_csd.DB4 = SwrFullCsd;
     elseif i ==3
-        CSD.DBDB2 = SwrFullCsd;
+        full_csd.DBDB2 = SwrFullCsd;
     elseif i ==4
-        CSD.DBDB4 = SwrFullCsd;
+        full_csd.DBDB4 = SwrFullCsd;
     end
 end
 
-CSD.DB2m = mean(CSD.DB2,3);
-CSD.DB4m = mean(CSD.DB4,3);
+CSDm.DB2 = mean(full_csd.DB2,3);
+CSDm.DB4 = mean(full_csd.DB4,3);
 
-CSD.DBDB2m = mean(CSD.DBDB2,3);
-CSD.DBDB4m = mean(CSD.DBDB4,3);
+CSDm.DBDB2 = mean(full_csd.DBDB2,3);
+CSDm.DBDB4 = mean(full_csd.DBDB4,3);
 
+set(gca,'xtick',[])
+caxis([-5 5])
+
+%% stats
+% Pick a window
+[x_DB2, y_DB2] = define_window(CSDm.DB2);
+[x_DB4, y_DB4] = define_window(CSDm.DB4);
+[x_DBDB2, y_DBDB2] = define_window(CSDm.DBDB2);
+[x_DBDB4, y_DBDB4] = define_window(CSDm.DBDB4);
+
+%% Check window
+
+test = CSDm.DB4;
+test(625:1500,9)= 20;
+
+h1 = pcolor(flipud(test(:,2:end-1)'));
+set(h1,'EdgeColor','none'), colormap(flipud(hotcold))
+title('200 d','FontSize',14)
+ylabel('db/+','FontSize',14,'FontWeight','bold')
+set(gca,'xtick',[])
+caxis([-5 5])
+
+
+h1 = pcolor(test(:,2:end));
+set(h1,'EdgeColor','none'), colormap(flipud(hotcold))
+caxis([-5 5])
+rectangle('Position',[high_chan-1 win(i) 1 win(end)-win(1)])
+rectangle('Position',[low_chan-1 win(i) 1 win(end)-win(1)])
+high_chan = 6:7;
+low_chan = 11;
+pre_win = 1:600;
+win = 625:1500;
+post_win = 1325:1875;
+%%
+figure
+h1 = pcolor(test(:,2:end-1));
+set(h1,'EdgeColor','none'), colormap(flipud(hotcold))
+caxis([-5 5])
+rectangle('Position',[high_chan win(i) 1 win(end)-win(1)])
+%% Calculate 
+dipole_DB2_pre   = calculate_CSD_dipole(full_csd.DB2,  high_chan, low_chan, pre_win);
+dipole_DB4_pre   = calculate_CSD_dipole(full_csd.DB4,  high_chan, low_chan, pre_win);
+dipole_DBDB2_pre = calculate_CSD_dipole(full_csd.DBDB2,high_chan, low_chan, pre_win);
+dipole_DBDB4_pre = calculate_CSD_dipole(full_csd.DBDB4,high_chan, low_chan, pre_win);
+
+dipole_vals_pre = [dipole_DB2_pre; dipole_DBDB2_pre; dipole_DB4_pre; dipole_DBDB4_pre];
+
+dipole_DB2   = calculate_CSD_dipole(full_csd.DB2,  high_chan, low_chan, win);
+dipole_DB4   = calculate_CSD_dipole(full_csd.DB4,  high_chan, low_chan, win);
+dipole_DBDB2 = calculate_CSD_dipole(full_csd.DBDB2,high_chan, low_chan, win);
+dipole_DBDB4 = calculate_CSD_dipole(full_csd.DBDB4,high_chan, low_chan, win);
+
+dipole_vals = [dipole_DB2; dipole_DBDB2; dipole_DB4; dipole_DBDB4];
+
+dipole_DB2_post   = calculate_CSD_dipole(full_csd.DB2,  high_chan, low_chan, post_win);
+dipole_DB4_post   = calculate_CSD_dipole(full_csd.DB4,  high_chan, low_chan, post_win);
+dipole_DBDB2_post = calculate_CSD_dipole(full_csd.DBDB2,high_chan, low_chan, post_win);
+dipole_DBDB4_post = calculate_CSD_dipole(full_csd.DBDB4,high_chan, low_chan, post_win);
+
+dipole_vals_post = [dipole_DB2_post; dipole_DBDB2_post; dipole_DB4_post; dipole_DBDB4_post];
 %% Make labels
-label.DB2age = cell(size(CSD.DB2,3),1);
-label.DB2treat = cell(size(CSD.DB2,3),1);
+label.DB2age = cell(size(full_csd.DB2,3),1);
+label.DB2treat = cell(size(full_csd.DB2,3),1);
 label.DB2age(:) = {'200'};
 label.DB2treat(:) = {'Control'};
 
-label.DB4age = cell(size(CSD.DB4,3),1);
-label.DB4treat = cell(size(CSD.DB4,3),1);
+label.DB4age = cell(size(full_csd.DB4,3),1);
+label.DB4treat = cell(size(full_csd.DB4,3),1);
 label.DB4age(:) = {'400'};
 label.DB4treat(:) = {'Control'};
 
-label.DBDB2age = cell(size(CSD.DBDB2,3),1);
-label.DBDB2treat = cell(size(CSD.DBDB2,3),1);
+label.DBDB2age = cell(size(full_csd.DBDB2,3),1);
+label.DBDB2treat = cell(size(full_csd.DBDB2,3),1);
 label.DBDB2age(:) = {'200'};
 label.DBDB2treat(:) = {'DBDB'};
 
-label.DBDB4age = cell(size(CSD.DBDB4,3),1);
-label.DBDB4treat = cell(size(CSD.DBDB4,3),1);
+label.DBDB4age = cell(size(full_csd.DBDB4,3),1);
+label.DBDB4treat = cell(size(full_csd.DBDB4,3),1);
 label.DBDB4age(:) = {'400'};
 label.DBDB4treat(:) = {'DBDB'};
 
-%% stats
-CSD.DB2max = squeeze(max(max(CSD.DB2,[],1),[],2)); %squeeze(CSD.DB2(625:1500,4,:));
-CSD.DB4max = squeeze(max(max(CSD.DB4,[],1),[],2)); %squeeze(CSD.DB4(625:1500,4,:));
-CSD.DBDB2max = squeeze(max(max(CSD.DBDB2,[],1),[],2)); %squeeze(CSD.DBDB2(625:1500,3,:));
-CSD.DBDB4max = squeeze(max(max(CSD.DBDB4,[],1),[],2)); %squeeze(CSD.DBDB4(625:1500,4,:));
-
-CSD.DB2min = squeeze(min(min(CSD.DB2,[],1),[],2)); %squeeze(CSD.DB2(625:1500,3,:));
-CSD.DB4min = squeeze(min(min(CSD.DB4,[],1),[],2)); %squeeze(CSD.DB4(625:1500,3,:));
-CSD.DBDB2min = squeeze(min(min(CSD.DBDB2,[],1),[],2)); %squeeze(CSD.DBDB2(625:1500,2,:));
-CSD.DBDB4min = squeeze(min(min(CSD.DBDB4,[],1),[],2)); %squeeze(CSD.DBDB4(625:1500,3,:));
-
-CSD.DB2i = CSD.DB2max - CSD.DB2min;
-CSD.DB4i = CSD.DB4max - CSD.DB4min;
-CSD.DBDB2i = CSD.DBDB2max - CSD.DBDB2min;
-CSD.DBDB4i = CSD.DBDB4max - CSD.DBDB4min;
-
-CSD_vals = [CSD.DB2i; CSD.DBDB2i; CSD.DB4i; CSD.DBDB4i];
 ageLabs = [label.DB2age; label.DBDB2age; label.DB4age; label.DBDB4age];
 treatLabs = [label.DB2treat; label.DBDB2treat; label.DB4treat; label.DBDB4treat];
+%% Stats
 
-[csdP,csdTable,CSD_stats] = anovan(CSD_vals,{treatLabs ageLabs},'model','interaction');
+[csdP,csdTable,CSD_stats] = anovan(dipole_vals,{treatLabs ageLabs},'model','interaction');
 [csdC,csdM,~,csdNames] = multcompare(CSD_stats,'Dimension',[1 2],'CType','bonferroni');
 %% Plot
 figure
@@ -122,8 +174,17 @@ both = 0.15;
 w = 0.28;
 
 subplot('Position',[xstart toph w h])
-h1 = pcolor(flipud(CSD.DB2m(:,2:end-1))');
-set(h1,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
+h1 = pcolor(flipud(CSDm.DB2(:,2:end-1)'));
+set(h1,'EdgeColor','none'), colormap(flipud(hotcold)), shading interp
+%rectangle('Position',[pre_win(1) 12-high_chan pre_win(end)-pre_win(1) 1])
+%rectangle('Position',[pre_win(1) 12-low_chan pre_win(end)-pre_win(1) 1])
+
+rectangle('Position',[win(1) 12-high_chan win(end)-win(1) 1])
+rectangle('Position',[win(1) 12-low_chan win(end)-win(1) 1])
+
+% rectangle('Position',[post_win(1) 12-high_chan post_win(end)-post_win(1) 1])
+% rectangle('Position',[post_win(1) 12-low_chan post_win(end)-post_win(1) 1])
+hline(6,'k', 'Pyramidal')
 title('200 d','FontSize',14)
 ylabel('db/+','FontSize',14,'FontWeight','bold')
 set(gca,'xtick',[])
@@ -131,23 +192,43 @@ caxis([-5 5])
 
 subplot('Position',[x2start toph w h])
 
-h2 = pcolor(flipud(CSD.DB4m(:,2:end-1)'));
+h2 = pcolor(flipud(CSDm.DB4(:,2:end-1)'));
 set(h2,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
 title('400 d','FontSize',14)
 set(gca,'xtick',[], 'ytick',[])
+% rectangle('Position',[pre_win(1) 12-high_chan pre_win(end)-pre_win(1) 1])
+% rectangle('Position',[pre_win(1) 12-low_chan pre_win(end)-pre_win(1) 1])
+
+rectangle('Position',[win(1) 12-high_chan win(end)-win(1) 1])
+rectangle('Position',[win(1) 12-low_chan win(end)-win(1) 1])
+
+% rectangle('Position',[post_win(1) 12-high_chan post_win(end)-post_win(1) 1])
+% rectangle('Position',[post_win(1) 12-low_chan post_win(end)-post_win(1) 1])
+hline(6,'k', 'Pyramidal')
 caxis([-5 5])
 
 subplot('Position',[xstart both w h])
-h3 = pcolor(flipud(CSD.DBDB2m(:,2:end-1)'));
+h3 = pcolor(flipud(CSDm.DBDB2(:,2:end-1)'));
 set(h3,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
 ylabel('db/db','FontSize',14,'FontWeight','bold')
 set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
 caxis([-5 5])
 
-
+rectangle('Position',[win(1) 12-high_chan win(end)-win(1) 1])
+rectangle('Position',[win(1) 12-low_chan win(end)-win(1) 1])
+hline(6,'k', 'Pyramidal')
 subplot('Position',[x2start both w h])
-h4 = pcolor(flipud(CSD.DBDB4m(:,2:end-1)'));
+h4 = pcolor(flipud(CSDm.DBDB4(:,2:end-1)'));
 shading interp, colormap(flipud(hotcold))
+% rectangle('Position',[pre_win(1) 12-high_chan pre_win(end)-pre_win(1) 1])
+% rectangle('Position',[pre_win(1) 12-low_chan pre_win(end)-pre_win(1) 1])
+
+rectangle('Position',[win(1) 12-high_chan win(end)-win(1) 1])
+rectangle('Position',[win(1) 12-low_chan win(end)-win(1) 1])
+% 
+% rectangle('Position',[post_win(1) 12-high_chan post_win(end)-post_win(1) 1])
+% rectangle('Position',[post_win(1) 12-low_chan post_win(end)-post_win(1) 1])
+hline(6,'k', 'Pyramidal')
 set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
 caxis([-5 5])
 set(h4,'EdgeColor','none');
@@ -176,15 +257,5 @@ set(A,'FontSize',12,'FontWeight','bold')
 % save('DBDB_SPWR_CSD_stats','CSD_stats','CSD_vals','csdC','csdM','csdTable')
 
 
-function sig = sig_check(P)
-if P > 0.05
-    sig = 'n.s.';
-elseif P <= 0.05 && P >0.01
-    sig = '*';
-elseif P <= 0.01 && P >0.001
-    sig = '**';
-elseif P <= 0.001
-    sig = '***';
-end
-end
+
 
