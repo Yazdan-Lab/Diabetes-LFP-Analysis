@@ -58,7 +58,7 @@ for i = 1:4
         end % j grouping
         cd ..
         
-    end % j 
+    end % j
     if i ==1
         full_csd.DB2 = SwrFullCsd;
     elseif i ==2
@@ -86,36 +86,39 @@ caxis([-5 5])
 [x_DBDB2, y_DBDB2] = define_window(CSDm.DBDB2);
 [x_DBDB4, y_DBDB4] = define_window(CSDm.DBDB4);
 
+%%
+high_chan = 7;
+low_chan = 11;
+pre_win = 1:550;
+win = 650:750;
+post_win = 850:1300;
 %% Check window
 
 test = CSDm.DB4;
-test(625:1500,9)= 20;
+test(625:650,11)= 20;
 
-h1 = pcolor(flipud(test(:,2:end-1)'));
-set(h1,'EdgeColor','none'), colormap(flipud(hotcold))
+h = pcolor(flipud(test(:,2:end-1)'));
+set(h,'EdgeColor','none'), colormap(flipud(hotcold))
 title('200 d','FontSize',14)
 ylabel('db/+','FontSize',14,'FontWeight','bold')
 set(gca,'xtick',[])
 caxis([-5 5])
 
 
-h1 = pcolor(test(:,2:end));
-set(h1,'EdgeColor','none'), colormap(flipud(hotcold))
+h = pcolor(test(:,2:end));
+set(h,'EdgeColor','none'), colormap(flipud(hotcold))
 caxis([-5 5])
 rectangle('Position',[high_chan-1 win(i) 1 win(end)-win(1)])
 rectangle('Position',[low_chan-1 win(i) 1 win(end)-win(1)])
-high_chan = 6:7;
-low_chan = 11;
-pre_win = 1:600;
-win = 625:1500;
-post_win = 1325:1875;
+%%
+
 %%
 figure
-h1 = pcolor(test(:,2:end-1));
-set(h1,'EdgeColor','none'), colormap(flipud(hotcold))
+h = pcolor(test(:,2:end-1));
+set(h,'EdgeColor','none'), colormap(flipud(hotcold))
 caxis([-5 5])
-rectangle('Position',[high_chan win(i) 1 win(end)-win(1)])
-%% Calculate 
+rectangle('Position',[high_chan(1) win(1) 2 win(end)-win(1)])
+%% Calculate
 dipole_DB2_pre   = calculate_CSD_dipole(full_csd.DB2,  high_chan, low_chan, pre_win);
 dipole_DB4_pre   = calculate_CSD_dipole(full_csd.DB4,  high_chan, low_chan, pre_win);
 dipole_DBDB2_pre = calculate_CSD_dipole(full_csd.DBDB2,high_chan, low_chan, pre_win);
@@ -163,6 +166,12 @@ treatLabs = [label.DB2treat; label.DBDB2treat; label.DB4treat; label.DBDB4treat]
 
 [csdP,csdTable,CSD_stats] = anovan(dipole_vals,{treatLabs ageLabs},'model','interaction');
 [csdC,csdM,~,csdNames] = multcompare(CSD_stats,'Dimension',[1 2],'CType','bonferroni');
+
+[csdP_pre,csdTable_pre,CSD_stats_pre] = anovan(dipole_vals_pre,{treatLabs ageLabs},'model','interaction');
+[csdC_pre,csdM_pre,~,csdNames_pre] = multcompare(CSD_stats_pre,'Dimension',[1 2],'CType','bonferroni');
+
+[csdP_post,csdTable_post,CSD_stats_post] = anovan(dipole_vals_post,{treatLabs ageLabs},'model','interaction');
+[csdC_post,csdM_post,~,csdNames_post] = multcompare(CSD_stats_post,'Dimension',[1 2],'CType','bonferroni');
 %% Plot
 figure
 set(gcf,'Color','w','Position',[100 100 1200 600])
@@ -172,83 +181,64 @@ toph = 0.55;
 h = 0.35;
 both = 0.15;
 w = 0.28;
+ylims = [0 10];
+clim = 4.5;
+for i = 1:4
+    switch i
+        case 1
+            subplot('Position',[xstart toph w h])
+            hand = pcolor(flipud(CSDm.DB2(:,2:end-1)'));
+            title('200 d','FontSize',14)
+            ylabel('db/+','FontSize',14,'FontWeight','bold')
+        case 2
+            subplot('Position',[x2start toph w h])
+            hand = pcolor(flipud(CSDm.DB4(:,2:end-1)'));
+            title('400 d','FontSize',14)
+        case 3
+            subplot('Position',[xstart both w h])
+            hand = pcolor(flipud(CSDm.DBDB2(:,2:end-1)'));
+            ylabel('db/db','FontSize',14,'FontWeight','bold')
+        case 4
+            subplot('Position',[x2start both w h])
+            hand = pcolor(flipud(CSDm.DBDB4(:,2:end-1)'));
+    end
+    set(hand,'EdgeColor','none'), colormap(flipud(hotcold)), shading interp
+    rectangle('Position',[pre_win(1) 12-high_chan(end) pre_win(end)-pre_win(1) 1])
+    rectangle('Position',[pre_win(1) 12-low_chan(end) pre_win(end)-pre_win(1) 1])
+    
+    rectangle('Position',[win(1) 12-high_chan(end) win(end)-win(1) 1])
+    rectangle('Position',[win(1) 12-low_chan(end) win(end)-win(1) 1])
+    
+    rectangle('Position',[post_win(1) 12-high_chan(end) post_win(end)-post_win(1) 1])
+    rectangle('Position',[post_win(1) 12-low_chan(end) post_win(end)-post_win(1) 1])
+    
+    hline(6,'k', 'Pyramidal')
+    hline(3, 'k', 'Radiatum')
+    
+    set(gca,'xtick',[])
+    caxis([-clim clim])
+end
 
-subplot('Position',[xstart toph w h])
-h1 = pcolor(flipud(CSDm.DB2(:,2:end-1)'));
-set(h1,'EdgeColor','none'), colormap(flipud(hotcold)), shading interp
-%rectangle('Position',[pre_win(1) 12-high_chan pre_win(end)-pre_win(1) 1])
-%rectangle('Position',[pre_win(1) 12-low_chan pre_win(end)-pre_win(1) 1])
+subplot('Position',[0.75 both+0.6 0.2 0.18])
+[csdBar] = UCSF_graph([csdM_pre(1:2,2),csdM_pre(3:4,2)]',[csdM_pre(1:2,1),csdM_pre(3:4,1)]',csdC_pre);
+title('Pre-Ripple')
+ylim(ylims)
 
-rectangle('Position',[win(1) 12-high_chan win(end)-win(1) 1])
-rectangle('Position',[win(1) 12-low_chan win(end)-win(1) 1])
-
-% rectangle('Position',[post_win(1) 12-high_chan post_win(end)-post_win(1) 1])
-% rectangle('Position',[post_win(1) 12-low_chan post_win(end)-post_win(1) 1])
-hline(6,'k', 'Pyramidal')
-title('200 d','FontSize',14)
-ylabel('db/+','FontSize',14,'FontWeight','bold')
-set(gca,'xtick',[])
-caxis([-5 5])
-
-subplot('Position',[x2start toph w h])
-
-h2 = pcolor(flipud(CSDm.DB4(:,2:end-1)'));
-set(h2,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
-title('400 d','FontSize',14)
-set(gca,'xtick',[], 'ytick',[])
-% rectangle('Position',[pre_win(1) 12-high_chan pre_win(end)-pre_win(1) 1])
-% rectangle('Position',[pre_win(1) 12-low_chan pre_win(end)-pre_win(1) 1])
-
-rectangle('Position',[win(1) 12-high_chan win(end)-win(1) 1])
-rectangle('Position',[win(1) 12-low_chan win(end)-win(1) 1])
-
-% rectangle('Position',[post_win(1) 12-high_chan post_win(end)-post_win(1) 1])
-% rectangle('Position',[post_win(1) 12-low_chan post_win(end)-post_win(1) 1])
-hline(6,'k', 'Pyramidal')
-caxis([-5 5])
-
-subplot('Position',[xstart both w h])
-h3 = pcolor(flipud(CSDm.DBDB2(:,2:end-1)'));
-set(h3,'EdgeColor','none'),shading interp, colormap(flipud(hotcold))
-ylabel('db/db','FontSize',14,'FontWeight','bold')
-set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
-caxis([-5 5])
-
-rectangle('Position',[win(1) 12-high_chan win(end)-win(1) 1])
-rectangle('Position',[win(1) 12-low_chan win(end)-win(1) 1])
-hline(6,'k', 'Pyramidal')
-subplot('Position',[x2start both w h])
-h4 = pcolor(flipud(CSDm.DBDB4(:,2:end-1)'));
-shading interp, colormap(flipud(hotcold))
-% rectangle('Position',[pre_win(1) 12-high_chan pre_win(end)-pre_win(1) 1])
-% rectangle('Position',[pre_win(1) 12-low_chan pre_win(end)-pre_win(1) 1])
-
-rectangle('Position',[win(1) 12-high_chan win(end)-win(1) 1])
-rectangle('Position',[win(1) 12-low_chan win(end)-win(1) 1])
-% 
-% rectangle('Position',[post_win(1) 12-high_chan post_win(end)-post_win(1) 1])
-% rectangle('Position',[post_win(1) 12-low_chan post_win(end)-post_win(1) 1])
-hline(6,'k', 'Pyramidal')
-set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
-caxis([-5 5])
-set(h4,'EdgeColor','none');
-
-subplot('Position',[0.75 both 0.2 0.8])
+subplot('Position',[0.75 both+0.3 0.2 0.18])
 [csdBar] = UCSF_graph([csdM(1:2,2),csdM(3:4,2)]',[csdM(1:2,1),csdM(3:4,1)]',csdC);
-ylabel('Average Dipole Amplitude (mV)')
-l = legend('db/+','db/db');
-legend('boxoff')
-legend('Location','northoutside')
-age_sig = sig_check(csdP(2));
-db_sig = sig_check(csdP(1));
-if csdP(2) <= 0.05
-B = suplabel(['age effect: ' age_sig],'t',[0.72 0.08 0.01 0.85]);
-set(B,'FontSize',12)
-end
-if csdP(1) <= 0.05
-C = suplabel(['db effect: ' db_sig],'t',[0.72 0.08 0.01 0.8]);
-set(C,'FontSize',12)
-end
+title('Ripple')
+ylim(ylims)
+
+subplot('Position',[0.75 both 0.2 0.18])
+[csdBar] = UCSF_graph([csdM_post(1:2,2),csdM_post(3:4,2)]',[csdM_post(1:2,1),csdM_post(3:4,1)]',csdC_post);
+title('Post-Ripple')
+ylim(ylims)
+% l = legend('db/+','db/db');
+% legend('boxoff')
+% legend('Location','northoutside')
+% age_sig = sig_check(csdP(2));
+% db_sig = sig_check(csdP(1));
+
 A = suplabel('Time (s)','x',[0.1 0.1 0.52 0.5]);
 set(A,'FontSize',12,'FontWeight','bold')
 
