@@ -13,13 +13,6 @@ volt_conv_factor  = 0.000000015624999960550667;
 smoothing_width = 0.01; % 300 ms
 kernel = gaussian(smoothing_width*Fs, ceil(8*smoothing_width*Fs));
 
-% SpwrStats
-% SWR Occurance
-% SPW Occurance
-% Overlap Pct
-% SWR During LTD
-% SPW During LTD
-% Overlap during LTD
 cd(data_path)
 animals = dir;
 
