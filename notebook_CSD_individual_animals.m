@@ -66,8 +66,9 @@ for i = 1:4
         hline(6,'k', 'Pyramidal')
         hline(3, 'k', 'Radiatum')
         title(['Group: ' num2str(i) ' Animal: ' num2str(j)],'FontSize',14)
-        ylabel('db/+','FontSize',14,'FontWeight','bold')
+        ylabel('Electrode','FontSize',14,'FontWeight','bold')
         set(gca,'xtick',[])
+        xlabel('Time')
         colorbar
         caxis([-15 15])
         drawnow
