@@ -23,6 +23,7 @@ kernel = gaussian(smoothing_width*Fs, ceil(8*smoothing_width*Fs));
 cd(data_path)
 animals = dir;
 
+Print_Test = 'Hello World';
 for i = 1:4
     disp(num2str(i))
     if i ==1
