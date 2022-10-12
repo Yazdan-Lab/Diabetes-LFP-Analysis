@@ -29,6 +29,8 @@ for i = 1:4
     elseif i ==4
         grouping = [22 24:27]; % DBDB 400D
     end
+    
+    
     counter = 0;
     for j = grouping
         cd(animals(j).name)

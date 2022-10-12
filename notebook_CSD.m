@@ -29,12 +29,15 @@ for i = 1:4
         SWR_files = dir('SWR_R_*');
         SWR_files = {SWR_files.name};
         
+        SPWR_files = dir('SWR_R_*');
+        SPWR_files = {SPWR_files.name};
+        
         LFP_files = dir('LFP*');
         LFP_files = {LFP_files.name};
         
         for k = 1:size(SWRLTDIdx,2)
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
-                load(char(SWR_files(k)));
+                load(char(SPWR_files(k)));
                 
                 load(char(LFP_files(k)));
                 LFP = LFPs{1,2} .*voltConv;
