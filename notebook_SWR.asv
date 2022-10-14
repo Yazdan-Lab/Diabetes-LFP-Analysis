@@ -32,6 +32,7 @@ for i = 1:4
         message = 'Processing: DBDB 400 ';
     end % if i
     group_spwrs = [];
+    group_ripples = [];
     for j = grouping
         cd(animals(j).name)
         load('REM.mat');
@@ -41,7 +42,7 @@ for i = 1:4
         LFP_files = dir('LFP*');
         LFP_files = {LFP_files.name};
         bval = bval + (.25/length(grouping));
-        waitbar(bval, wbar, [message num2str(round(bval*400)) '%']);
+        waitbar(bval, wbar, [message num2str(round(bval*100)) '%']);
         for k = 1:size(rem,2)
             if ~isempty(rem(k).R) % makes sure ripple occured during this period
                 load(char(LFP_files(k)));
@@ -49,20 +50,29 @@ for i = 1:4
                 
                 [pyr, rad] = process_LFP(LFP, j, chans);
                 
-                ripples = detect_events(pyr, 5);
-                waves = detect_events(-rad, 3);
+                ripples = detect_events(pyr, 6);
+                waves = detect_events(-rad, 4);
                 
                 SPWRs = SPWR_filter(ripples, waves);
                 
                 LTD_SPWRs = TD_check(SPWRs, rem, k);
-                
+                LTD_ripples = TD_check(ripples, rem, k);
+                for i = 1:size(LTD_SPWRs,1)
+                    ripple_visualize(LTD_SPWRs(i,1),...
+                                     LTD_SPWRs(i,2),...
+                                     LFP,...
+                                     pyr,..
+                end % for ripple viz
+                group_ripples = cat(1,group_ripples,LTD_ripples);
                 group_spwrs = cat(1,group_spwrs,LTD_SPWRs);
+                
             else
                 group_spwrs = [];
+                group_ripples = [];
             end % if empty
-            
+            % save with consistent file name for future use
             SWRevents = group_spwrs;
-            save(
+            save(['SPWR_R_' num2str(k)],'pyr','rad','SWRevents')
         end % For k
         cd ..
     end % for j
@@ -79,3 +89,4 @@ for i = 1:4
     
     
 end % for i
+waitbar(1, wbar, 'Done!');

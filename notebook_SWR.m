@@ -57,8 +57,18 @@ for i = 1:4
                 
                 LTD_SPWRs = TD_check(SPWRs, rem, k);
                 LTD_ripples = TD_check(ripples, rem, k);
+                figure
+                for viz = 1:size(LTD_SPWRs,1)
+                    ripple_visualize(LTD_SPWRs(viz,1),...
+                                     LTD_SPWRs(viz,2),...
+                                     LFP,...
+                                     chans,...
+                                     j);
+                    pause(1)
+                end % for ripple viz
                 group_ripples = cat(1,group_ripples,LTD_ripples);
                 group_spwrs = cat(1,group_spwrs,LTD_SPWRs);
+                
             else
                 group_spwrs = [];
                 group_ripples = [];
