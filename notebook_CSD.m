@@ -29,7 +29,7 @@ for i = 1:4
         SWR_files = dir('SWR_R_*');
         SWR_files = {SWR_files.name};
         
-        SPWR_files = dir('SWR_R_*');
+        SPWR_files = dir('SPWR_R_*');
         SPWR_files = {SPWR_files.name};
         
         LFP_files = dir('LFP*');
@@ -43,7 +43,7 @@ for i = 1:4
                 LFP = LFPs{1,2} .*voltConv;
                 
                 LTDevents = clean_events(...
-                    SWRevents(SWRLTDIdx(k).R,1),...
+                    SWRevents(:,1),...
                     length(LFP),...
                     Fs/2,...
                     Fs);
@@ -216,7 +216,7 @@ for i = 1:4
     rectangle('Position',[post_win(1) 12-low_chan(end) post_win(end)-post_win(1) 1])
     
     hline(6,'k', 'Pyramidal')
-    hline(3, 'k', 'Radiatum')
+    hline(2, 'k', 'Radiatum')
     
     set(gca,'xtick',[])
     caxis([-clim clim])

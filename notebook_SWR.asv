@@ -50,18 +50,22 @@ for i = 1:4
                 
                 [pyr, rad] = process_LFP(LFP, j, chans);
                 
-                ripples = detect_events(pyr, 6);
-                waves = detect_events(-rad, 4);
+                ripples = detect_events(pyr, 5);
+                waves = detect_events(-rad, 3);
                 
                 SPWRs = SPWR_filter(ripples, waves);
                 
                 LTD_SPWRs = TD_check(SPWRs, rem, k);
                 LTD_ripples = TD_check(ripples, rem, k);
-                for i = 1:size(LTD_SPWRs,1)
-                    ripple_visualize(LTD_SPWRs(i,1),...
-                                     LTD_SPWRs(i,2),...
+                if viz
+                figure
+                for viz = 1:size(LTD_SPWRs,1)
+                    ripple_visualize(LTD_SPWRs(viz,1),...
+                                     LTD_SPWRs(viz,2),...
                                      LFP,...
-                                     pyr,..
+                                     chans,...
+                                     j);
+                    pause(1)
                 end % for ripple viz
                 group_ripples = cat(1,group_ripples,LTD_ripples);
                 group_spwrs = cat(1,group_spwrs,LTD_SPWRs);

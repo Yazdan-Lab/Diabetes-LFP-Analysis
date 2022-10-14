@@ -7,16 +7,18 @@ addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
 load('SpkInfo.mat');
 load('PyramChans.mat');
 Fs = 1250;
+bval = 0;
 data_path = 'C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy';
 volt_conv_factor  = 0.000000015624999960550667;
-
 smoothing_width = 0.01; % 300 ms
 kernel = gaussian(smoothing_width*Fs, ceil(8*smoothing_width*Fs));
-
 cd(data_path)
 animals = dir;
 wbar = waitbar(0,'Initializing');
-bval = 0;
+
+
+
+viz = 1;
 for i = 1:4
     if i ==1
         grouping = 3:9; % DB+ 200D
@@ -50,22 +52,25 @@ for i = 1:4
                 
                 [pyr, rad] = process_LFP(LFP, j, chans);
                 
-                ripples = detect_events(pyr, 6);
+                ripples = detect_events(pyr, 4);
                 waves = detect_events(-rad, 4);
                 
                 SPWRs = SPWR_filter(ripples, waves);
                 
                 LTD_SPWRs = TD_check(SPWRs, rem, k);
                 LTD_ripples = TD_check(ripples, rem, k);
-                figure
-                for viz = 1:size(LTD_SPWRs,1)
-                    ripple_visualize(LTD_SPWRs(viz,1),...
-                                     LTD_SPWRs(viz,2),...
-                                     LFP,...
-                                     chans,...
-                                     j);
-                    pause(1)
-                end % for ripple viz
+                % Get intuition for SPWR quality
+                if viz
+                    figure
+                    for viz = 1:size(LTD_SPWRs,1)
+                        ripple_visualize(LTD_SPWRs(viz,1),...
+                            LTD_SPWRs(viz,2),...
+                            LFP,...
+                            chans,...
+                            j);
+                        pause(1)
+                    end % for ripple viz
+                end % if viz
                 group_ripples = cat(1,group_ripples,LTD_ripples);
                 group_spwrs = cat(1,group_spwrs,LTD_SPWRs);
                 
@@ -92,4 +97,4 @@ for i = 1:4
     
     
 end % for i
-waitbar(1, wbar, 'Done!');
+close(wbar)

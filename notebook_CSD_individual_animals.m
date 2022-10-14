@@ -92,7 +92,7 @@ for i = 1:4
     end % if
 end % i = group
 
-waitbar(1, wbar, 'Done!');
+close(wbar)
 
 CSDm.DB2 = mean(full_csd.DB2,3);
 CSDm.DB4 = mean(full_csd.DB4,3);
