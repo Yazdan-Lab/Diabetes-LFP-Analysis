@@ -37,7 +37,7 @@ for i = 1:4
         
         for k = 1:size(SWRLTDIdx,2)
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
-                load(char(SPWR_files(k)));
+                load(char(SWR_files(k)));
                 
                 load(char(LFP_files(k)));
                 LFP = LFPs{1,2} .*voltConv;
@@ -84,10 +84,10 @@ caxis([-5 5])
 
 %% stats
 % Pick a window
-[x_DB2, y_DB2] = define_window(CSDm.DB2);
-[x_DB4, y_DB4] = define_window(CSDm.DB4);
-[x_DBDB2, y_DBDB2] = define_window(CSDm.DBDB2);
-[x_DBDB4, y_DBDB4] = define_window(CSDm.DBDB4);
+% [x_DB2, y_DB2] = define_window(CSDm.DB2);
+% [x_DB4, y_DB4] = define_window(CSDm.DB4);
+% [x_DBDB2, y_DBDB2] = define_window(CSDm.DBDB2);
+% [x_DBDB4, y_DBDB4] = define_window(CSDm.DBDB4);
 
 %%
 high_chan = 7;
@@ -184,7 +184,7 @@ toph = 0.55;
 h = 0.35;
 both = 0.15;
 w = 0.28;
-ylims = [0 10];
+ylims = [0 8];
 clim = 4.5;
 for i = 1:4
     switch i
@@ -223,17 +223,19 @@ for i = 1:4
 end
 
 subplot('Position',[0.75 both+0.6 0.2 0.18])
-[csdBar] = UCSF_graph([csdM_pre(1:2,2),csdM_pre(3:4,2)]',[csdM_pre(1:2,1),csdM_pre(3:4,1)]',csdC_pre);
+[csdBar] = create_bar_figure(csdM_pre(1:4,2)',csdM_pre(1:4,1)',csdC_pre);
 title('Pre-Ripple')
 ylim(ylims)
+set(gca, 'xtick',[])
 
 subplot('Position',[0.75 both+0.3 0.2 0.18])
-[csdBar] = UCSF_graph([csdM(1:2,2),csdM(3:4,2)]',[csdM(1:2,1),csdM(3:4,1)]',csdC);
+[csdBar] = create_bar_figure(csdM(1:4,2)',csdM(1:4,1)',csdC);
 title('Ripple')
 ylim(ylims)
+set(gca, 'xtick',[])
 
 subplot('Position',[0.75 both 0.2 0.18])
-[csdBar] = UCSF_graph([csdM_post(1:2,2),csdM_post(3:4,2)]',[csdM_post(1:2,1),csdM_post(3:4,1)]',csdC_post);
+[csdBar] = create_bar_figure(csdM_post(1:4,2)',csdM_post(1:4,1)',csdC_post);
 title('Post-Ripple')
 ylim(ylims)
 % l = legend('db/+','db/db');
