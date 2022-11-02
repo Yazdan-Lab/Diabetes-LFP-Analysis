@@ -3,12 +3,18 @@
 load('SpkInfo.mat')
 load('chans.mat')
 
-addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
-    'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+% addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
+%     'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+
+ addpath('C:\COM\ePhy\dbdb\code\utils-toolbox\utils-toolbox')
+  addpath('C:\COM\ePhy\dbdb\code\spectral-analysis-tools')
 
 % file path for
-filepath = 'C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy';
-savepath = 'C:\Users\ipzach\Documents\MATLAB\output\Diabetes-Saved-Files\';
+%filepath = 'C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy';
+% savepath = 'C:\Users\ipzach\Documents\MATLAB\output\Diabetes-Saved-Files\';
+filepath = 'C:\COM\ePhy\dbdb\Data\dbdb electrophy';
+savepath = 'C:\COM\ePhy\dbdb\Data\Outputs\';
+
 cd(filepath)
 animalList = dir;
 Fs = 1250; % Sampling Frequency; needed for filtering and plotting
@@ -20,7 +26,7 @@ switch TD
     case 2
         method = 'low';
 end
-phase = false; %0 Cortical layer is phase, 1 is hippocampal layer
+phase = false; % 0 Cortical layer is phase, 1 is hippocampal layer
 %%%%%%%%%%%%%%%%%%%%%%%%%
 switch phase
     case 0
@@ -127,10 +133,17 @@ for group = 1:4
                 
                 disp('Plotting')
                 figure
-                contourf(PhaseFreqVector+PhaseFreq_BandWidth/2,AmpFreqVector+AmpFreq_BandWidth/2,Comodulogram',30,'lines','none')
+                contourf(PhaseFreqVector+PhaseFreq_BandWidth/2,AmpFreqVector+AmpFreq_BandWidth/2,Comodulogram',30,'lines','none');
                 title([num2str(animal) ' ' name ' ' num2str(recording)]), colormap('jet')
                 colorbar
                 drawnow
+                %MS
+                Datetime_PAC = string(datetime('now'));
+                Filename_PAC = sprintf('PAC_Figure_%s.tiff', Datetime_PAC);
+                Filename_PAC = regexprep(Filename_PAC, ' ', '_');
+                Filename_PAC = regexprep(Filename_PAC, ':', '_');
+                saveas(gcf, Filename_PAC);                
+                %ME
             end % for layer
             catch
                 disp('No recording exists, continuing')
@@ -140,22 +153,3 @@ for group = 1:4
         cd ..
     end % for animal
 end % for group
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

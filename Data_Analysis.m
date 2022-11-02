@@ -4,10 +4,12 @@ Fs = 1250;
 kernel = gaussian(Fs, ceil(8*Fs));
 kernel2 = gaussian(10*Fs, ceil(80*Fs));
 %%%%%%
-cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
+%cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
+cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
 load('SpkInfo.mat')
 load('chans.mat')
-cd('C:\Users\ipzach\Documents\dbdb electrophy'); % here is the data
+cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy'); % here is the data
+
 animal_list = dir; % create a list of every folder (each one is one animal)
 
 
@@ -215,6 +217,9 @@ for group = 1:4
                     % Run coherence and average outputs for each frequency
                     % band
                     % Group, Band, recording, Animal, Layer/layer
+                    % Co(1: group id, animal, frequency band, layer
+                    % comparison (check compare variable)) 
+                    % comparison)
                     Co(group,counter,freq_band,layer) = nanmean(mscohere(A_LFP,B_LFP,hamming(12500),[],range,1250));
                     PLI(group,counter,freq_band,layer) = PLV(angle(hilbert(A_filt))', angle(hilbert(B_filt))');
                 end % frequency band
@@ -252,6 +257,6 @@ for group = 1:4
 end % group
 % Group, Animal, freq_band, Layer
 %% save processed data
-cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
+cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
 save('LFP Measures','Gamma','rip','rip_wav','label','CSD','Co','PLI','slowing_score', 'state_changes','intSlo0_Store','intSlo_Store','Pows_store')
 

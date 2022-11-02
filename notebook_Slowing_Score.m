@@ -2,7 +2,8 @@ disp('Initializing Files')
 clear all, close all
 load('SpkInfo.mat')
 load('chans.mat')
-filepath = 'C:\Users\ipzach\Documents\dbdb electrophy';
+%filepath = 'C:\Users\ipzach\Documents\dbdb electrophy';
+filepath = 'C:\COM\ePhy\dbdb\Data\dbdb electrophy';
 cd(filepath)
 animalList = dir;
 % THIS CODE ASSIGNS GROUPS WRONG
@@ -17,15 +18,15 @@ for group = 1:4
     % 1.Load the right and left side signals
     %load H/L TD indexes
     % Commented out to break code until fixed
-%     if group ==1
-%         grouping = 3:9; % DB+ 200D
-%     elseif group ==2
-%         grouping = [15:18 20 21]; % DBDB 200D
-%     elseif group ==3
-%         grouping = 10:14; % DB+ 400D
-%     elseif group ==4
-%         grouping = [22 24:27]; % DBDB 400D
-%     end
+    if group ==1
+        grouping = 3:9; % DB+ 200D
+    elseif group ==2
+        grouping = [15:18 20 21]; % DBDB 200D
+    elseif group ==3
+        grouping = 10:14; % DB+ 400D
+    elseif group ==4
+        grouping = [22 24:27]; % DBDB 400D
+    end
     
     count = 0;
     for animal = grouping
@@ -63,6 +64,13 @@ for i = 1:3
     figure
     temp = scores_combine(:,:,i)';
     boxplot(temp,score_labels')
+    %MS
+    Datetime_SlwScr = string(datetime('now'));
+    Filename_SlwScr = sprintf('SlowingScore_Figure_%s.tiff', Datetime_SlwScr);
+    Filename_SlwScr = regexprep(Filename_SlwScr, ' ', '_');
+    Filename_SlwScr = regexprep(Filename_SlwScr, ':', '_');
+    saveas(gcf, Filename_SlwScr);
+    %ME
     pause(1)
 end
 
@@ -111,11 +119,20 @@ for layComb = 2:3
     dbLabs = [Ct2DbLab; Db2DbLab; Ct4DbLab; Db4DbLab];
     
     [ssP,ssT,ssStats] = anovan(vals,{dbLabs ageLabs},'model','interaction','display','off');
-    [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni');% ,'display','off');
+    [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni','display','off');
     
     
     subplot(1,2,layComb-1)
     UCSF_graph([ssM(1:2,2),ssM(3:4,2)]',[ssM(1:2,1),ssM(3:4,1)]',ssC);
+    %MS
+    T_SlwScr = ssM';
+    Datetime_SlwScr = string(datetime('now'));
+    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SlowingScore')
+    Filename_SlwScr = sprintf('SlowingScore_data_%d_%s.xlsx', layComb, Datetime_SlwScr);
+    Filename_SlwScr = regexprep(Filename_SlwScr, ' ', '_');
+    Filename_SlwScr = regexprep(Filename_SlwScr, ':', '_');
+    xlswrite(Filename_SlwScr,T_SlwScr);
+    %ME
     set(gca,'Ytick',[0 5 10 15],'fontweight','bold')
     ylim([0 15])
     switch layComb
@@ -140,21 +157,28 @@ for layComb = 2:3
         C = suplabel(['db effect: ' db_sig],'t',[0.43*(layComb-1) 0.08 0.01 0.75]);
         set(C,'FontSize',12,'FontWeight','bold')
     end
+    %MS
+    Datetime_SlwScr = string(datetime('now'));
+    Filename_SlwScr = sprintf('SlowingScore_Figure_%s.tiff', Datetime_SlwScr);
+    Filename_SlwScr = regexprep(Filename_SlwScr, ' ', '_');
+    Filename_SlwScr = regexprep(Filename_SlwScr, ':', '_');
+    saveas(gcf, Filename_SlwScr);
+    %ME
 end
 
 
 
 
 function sig = sig_check(P)
-if P > 0.05
-    sig = 'n.s.';
-elseif P <= 0.05 && P >0.01
-    sig = '*';
-elseif P <= 0.01 && P >0.001
-    sig = '**';
-elseif P <= 0.001
-    sig = '***';
-end
+    if P > 0.05
+        sig = 'n.s.';
+    elseif P <= 0.05 && P >0.01
+        sig = '*';
+    elseif P <= 0.01 && P >0.001
+        sig = '**';
+    elseif P <= 0.001
+        sig = '***';
+    end
 end
 
 

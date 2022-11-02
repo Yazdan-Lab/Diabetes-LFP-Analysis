@@ -1,9 +1,11 @@
 % load in spkinf and concise channel info
-% clear all, close all
+ clear all; close all;clc
 load('SpkInfo.mat')
 load('chans.mat')
 % file path for 
-filepath = 'C:\Users\ipzach\Documents\dbdb electrophy';
+%filepath = 'C:\Users\ipzach\Documents\dbdb electrophy';
+filepath ='C:\COM\ePhy\dbdb\Data\dbdb electrophy';
+
 cd(filepath)
 animalList = dir;
 Fs = 1250; % Sampling Frequency; needed for filtering and plotting
@@ -235,9 +237,17 @@ for layComb = 1:2
         counter = counter +1;
         subplot(2,7,counter)
         UCSF_graph([cohM(1:2,2),cohM(3:4,2)]',[cohM(1:2,1),cohM(3:4,1)]',cohC);
+        %MS
+        T_Chrnc = cohM'; 
+        Datetime_Chrnc = string(datetime('now'));
+        cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
+        Filename_Chrnc = sprintf('Coherence_data_animal_%d_%s_%s.xlsx', animal, compare, Datetime_Chrnc);
+        Filename_Chrnc = regexprep(Filename_Chrnc, ' ', '_');
+        Filename_Chrnc = regexprep(Filename_Chrnc, ':', '_');
+        xlswrite(Filename_Chrnc,T_Chrnc);
+        %ME
         
         set(gca, 'ytick', [0 0.5 1])
-        
         ylim([0 1.1])
         %             if counter == 1
         %                 ylabel('Coherence')
@@ -279,19 +289,16 @@ for layComb = 1:2
     end % for layComb
 end% for band
 
-
-
-
 function sig = sig_check(P)
-if P > 0.05
-    sig = 'n.s.';
-elseif P <= 0.05 && P >0.01
-    sig = '*';
-elseif P <= 0.01 && P >0.001
-    sig = '**';
-elseif P <= 0.001
-    sig = '***';
-end
+    if P > 0.05
+        sig = 'n.s.';
+    elseif P <= 0.05 && P >0.01
+        sig = '*';
+    elseif P <= 0.01 && P >0.001
+        sig = '**';
+    elseif P <= 0.001
+        sig = '***';
+    end
 end
 
 

@@ -1,14 +1,15 @@
 % This notebook will take the dbdb Data and detect ripples using
 % thresholding for both pyramidal ripples and radiatum sharp waves
 clear all
-addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
-    'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+%     'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+addpath('C:\COM\ePhy\dbdb\code\utils-toolbox\utils-toolbox')
+addpath('C:\COM\ePhy\dbdb\code\spectral-analysis-tools')
 
-load('SpkInfo.mat');
+load('SpkInfo.mat'); %MS: Contains
 load('PyramChans.mat');
 Fs = 1250;
 bval = 0;
-data_path = 'C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy';
+data_path = 'C:\COM\ePhy\dbdb\Data\dbdb electrophy';
 volt_conv_factor  = 0.000000015624999960550667;
 smoothing_width = 0.01; % 300 ms
 kernel = gaussian(smoothing_width*Fs, ceil(8*smoothing_width*Fs));
@@ -16,12 +17,10 @@ cd(data_path)
 animals = dir;
 wbar = waitbar(0,'Initializing');
 
-
-
 viz = 1;
 for i = 1:4
     if i ==1
-        grouping = 3:9; % DB+ 200D
+        grouping = 3:9; % DB+ 200D %Is based on 
         message = 'Processing: DB+ 200 ';
     elseif i == 2
         grouping = 10:14; % DB+ 400D
@@ -37,7 +36,7 @@ for i = 1:4
     group_ripples = [];
     for j = grouping
         cd(animals(j).name)
-        load('REM.mat');
+        load('REM.mat'); %ME: loads Theta_Delta info >  figure;plot(rem(1).R.Theta_Delta(:))
         SWR_files = dir('SWR_R_*');
         SWR_files = {SWR_files.name};
         

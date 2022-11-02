@@ -1,5 +1,7 @@
-addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
-    'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+%addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
+ %   'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+ addpath('C:\COM\ePhy\dbdb\code\utils-toolbox\utils-toolbox')
+  addpath('C:\COM\ePhy\dbdb\code\spectral-analysis-tools')
 
 %% SWR CSD Analysis
 % This script will load LFP and grab the LFP 500ms before and 1500ms after
@@ -7,7 +9,10 @@ addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
 % that file, save the file to a 3D matrix, and create an average CSD
 
 load('PyramChans.mat')
-cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy');
+%cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy');
+%cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
+cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy');
+
 animals = dir;
 hotcold = redblue();
 voltConv = 0.000000091555527603759401;
@@ -29,15 +34,16 @@ for i = 1:4
         SWR_files = dir('SWR_R_*');
         SWR_files = {SWR_files.name};
         
-        SPWR_files = dir('SPWR_R_*');
-        SPWR_files = {SPWR_files.name};
+%         SPWR_files = dir('SPWR_R_*'); % The new analysis with different
+%         results that was not considered
+%         SPWR_files = {SPWR_files.name};
         
         LFP_files = dir('LFP*');
         LFP_files = {LFP_files.name};
         
         for k = 1:size(SWRLTDIdx,2)
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
-                load(char(SPWR_files(k)));
+                load(char(SWR_files(k)));
                 
                 load(char(LFP_files(k)));
                 LFP = LFPs{1,2} .*voltConv;
@@ -84,43 +90,42 @@ caxis([-5 5])
 
 %% stats
 % Pick a window
-[x_DB2, y_DB2] = define_window(CSDm.DB2);
-[x_DB4, y_DB4] = define_window(CSDm.DB4);
-[x_DBDB2, y_DBDB2] = define_window(CSDm.DBDB2);
-[x_DBDB4, y_DBDB4] = define_window(CSDm.DBDB4);
+% [x_DB2, y_DB2] = define_window(CSDm.DB2);
+% [x_DB4, y_DB4] = define_window(CSDm.DB4);
+% [x_DBDB2, y_DBDB2] = define_window(CSDm.DBDB2);
+% [x_DBDB4, y_DBDB4] = define_window(CSDm.DBDB4);
 
-%%
-high_chan = 7;
-low_chan = 11;
-pre_win = 1:550;
-win = 650:750;
-post_win = 850:1300;
+%% Define windows of interest
+high_chan = 7; %pyramidal channel
+low_chan = 11; % Radiatum channel
+pre_win = 1:550; % pre indices
+win = 650:750; % ripple indices 
+post_win = 850:1300; % post indices 
 %% Check window
-
-test = CSDm.DB4;
-test(625:650,11)= 20;
-
-h = pcolor(flipud(test(:,2:end-1)'));
-set(h,'EdgeColor','none'), colormap(flipud(hotcold))
-title('200 d','FontSize',14)
-ylabel('db/+','FontSize',14,'FontWeight','bold')
-set(gca,'xtick',[])
-caxis([-5 5])
-
-
-h = pcolor(test(:,2:end));
-set(h,'EdgeColor','none'), colormap(flipud(hotcold))
-caxis([-5 5])
-rectangle('Position',[high_chan-1 win(i) 1 win(end)-win(1)])
-rectangle('Position',[low_chan-1 win(i) 1 win(end)-win(1)])
-%%
-
-%%
-figure
-h = pcolor(test(:,2:end-1));
-set(h,'EdgeColor','none'), colormap(flipud(hotcold))
-caxis([-5 5])
-rectangle('Position',[high_chan(1) win(1) 2 win(end)-win(1)])
+% 
+% test = CSDm.DB4;
+% test(625:650,11)= 20;
+% 
+% h = pcolor(flipud(test(:,2:end-1)'));
+% set(h,'EdgeColor','none'), colormap(flipud(hotcold))
+% title('200 d','FontSize',14)
+% ylabel('db/+','FontSize',14,'FontWeight','bold')
+% set(gca,'xtick',[])
+% caxis([-5 5])
+% 
+% 
+% h = pcolor(test(:,2:end));
+% set(h,'EdgeColor','none'), colormap(flipud(hotcold))
+% caxis([-5 5])
+% rectangle('Position',[high_chan-1 win(i) 1 win(end)-win(1)])
+% rectangle('Position',[low_chan-1 win(i) 1 win(end)-win(1)])
+% 
+% %%
+% figure
+% h = pcolor(test(:,2:end-1));
+% set(h,'EdgeColor','none'), colormap(flipud(hotcold))
+% caxis([-5 5])
+% rectangle('Position',[high_chan(1) win(1) 2 win(end)-win(1)])
 %% Calculate
 dipole_DB2_pre   = calculate_CSD_dipole(full_csd.DB2,  high_chan, low_chan, pre_win);
 dipole_DB4_pre   = calculate_CSD_dipole(full_csd.DB4,  high_chan, low_chan, pre_win);
@@ -196,7 +201,7 @@ for i = 1:4
         case 2
             subplot('Position',[x2start toph w h])
             hand = pcolor(flipud(CSDm.DB4(:,2:end-1)'));
-            title('400 d','FontSize',14)
+            title('400 d','FontSize',14)%M needs alteration
         case 3
             subplot('Position',[xstart both w h])
             hand = pcolor(flipud(CSDm.DBDB2(:,2:end-1)'));
@@ -224,16 +229,43 @@ end
 
 subplot('Position',[0.75 both+0.6 0.2 0.18])
 [csdBar] = UCSF_graph([csdM_pre(1:2,2),csdM_pre(3:4,2)]',[csdM_pre(1:2,1),csdM_pre(3:4,1)]',csdC_pre);
+%MS
+T_Pre_Ripple = csdM_pre';
+Datetime_Pre_Ripple = string(datetime('now'));
+cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
+Filename_Pre_Ripple = sprintf('Pre_Ripple_CSD_%s.xlsx', Datetime_Pre_Ripple);
+Filename_Pre_Ripple = regexprep(Filename_Pre_Ripple, ' ', '_');
+Filename_Pre_Ripple = regexprep(Filename_Pre_Ripple, ':', '_');
+xlswrite(Filename_Pre_Ripple,T_Pre_Ripple);
+%ME
 title('Pre-Ripple')
 ylim(ylims)
 
 subplot('Position',[0.75 both+0.3 0.2 0.18])
 [csdBar] = UCSF_graph([csdM(1:2,2),csdM(3:4,2)]',[csdM(1:2,1),csdM(3:4,1)]',csdC);
+%MS
+T_Ripple = csdM'; 
+Datetime_Ripple = string(datetime('now'));
+cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
+Filename_Ripple = sprintf('Ripple_CSD_%s.xlsx', Datetime_Ripple);
+Filename_Ripple = regexprep(Filename_Ripple, ' ', '_');
+Filename_Ripple = regexprep(Filename_Ripple, ':', '_');
+xlswrite(Filename_Ripple,T_Ripple);
+%ME
 title('Ripple')
 ylim(ylims)
 
 subplot('Position',[0.75 both 0.2 0.18])
 [csdBar] = UCSF_graph([csdM_post(1:2,2),csdM_post(3:4,2)]',[csdM_post(1:2,1),csdM_post(3:4,1)]',csdC_post);
+%MS
+T_Post_Ripple = csdM_post';
+Datetime_Post_Ripple = string(datetime('now'));
+cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
+Filename_Post_Ripple = sprintf('Post_Ripple_CSD_%s.xlsx', Datetime_Post_Ripple);
+Filename_Post_Ripple = regexprep(Filename_Post_Ripple, ' ', '_');
+Filename_Post_Ripple = regexprep(Filename_Post_Ripple, ':', '_');
+xlswrite(Filename_Post_Ripple,T_Post_Ripple);
+%ME
 title('Post-Ripple')
 ylim(ylims)
 % l = legend('db/+','db/db');
@@ -245,10 +277,18 @@ ylim(ylims)
 A = suplabel('Time (s)','x',[0.1 0.1 0.52 0.5]);
 set(A,'FontSize',12,'FontWeight','bold')
 
+%MS
+Datetime_NotyebookCSD = string(datetime('now'));
+Filename_NotyebookCSD = sprintf('NotyebookCSD_Figure_%s.tiff', Datetime_NotyebookCSD);
+Filename_NotyebookCSD = regexprep(Filename_NotyebookCSD, ' ', '_');
+Filename_NotyebookCSD = regexprep(Filename_NotyebookCSD, ':', '_');
+saveas(gcf, Filename_NotyebookCSD);
+%ME
 %%
 % cd('C:\Users\ipzach\Documents\dbdb electrophy\General_Scripts')
-% save('DBDB_SPWR_CSD_stats','CSD_stats','CSD_vals','csdC','csdM','csdTable')
-
+cd ('C:\COM\ePhy\dbdb\Data\dbdb electrophy')
+%save('DBDB_SPWR_CSD_stats','CSD_stats','CSD_vals','csdC','csdM','csdTable')
+save('DBDB_SPWR_CSD_stats','CSD_stats','csdC','csdM','csdTable'); %M CSD_vals was omitted
 
 
 
