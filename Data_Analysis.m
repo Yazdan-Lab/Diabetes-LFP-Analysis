@@ -1,13 +1,16 @@
 % Load in initializing variables
+addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach', ...
+    'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+
 voltConv = 0.000000091555527603759401; % Neurolynx saves data in a unitless value, we need this to convert it to volts
 Fs = 1250;
 kernel = gaussian(Fs, ceil(8*Fs));
 kernel2 = gaussian(10*Fs, ceil(80*Fs));
 %%%%%%
-cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
+cd('C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
 load('SpkInfo.mat')
 load('chans.mat')
-cd('C:\Users\ipzach\Documents\dbdb electrophy'); % here is the data
+cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy'); % here is the data
 animal_list = dir; % create a list of every folder (each one is one animal)
 
 
