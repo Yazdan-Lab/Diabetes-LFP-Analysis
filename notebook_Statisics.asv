@@ -489,8 +489,8 @@ figure
 create_bar_figure(iriM(:, 2), iriM(:, 1), iriC);
 sig_values(iriP(2), iriP(1));
 ylabel('Inter-ripple interval (s)')
-%set(gca, 'ytick', [0, 3000, 6000])
-%ylim([0, 8500])
+set(gca, 'ytick', [0, 3000, 6000])
+ylim([0, 8500])
 
 %% Gamma power
 

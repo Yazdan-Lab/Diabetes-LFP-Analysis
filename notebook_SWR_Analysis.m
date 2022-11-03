@@ -2,7 +2,6 @@
 % This script will load all the SWRs the Gratianne catagorized and run
 % analysis on them. It will look at SWR count, duration, Power, IRI, and
 % CSD
-clear all, close all
 addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach', ...
     'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
 
@@ -16,10 +15,10 @@ rip.DB4 = [];
 rip.DBDB2 = [];
 rip.DBDB4 = [];
 
-label.DB2a = [];
-label.DB4a = [];
-label.DBDB2a = [];
-label.DBDB4a = [];
+label.DB2 = [];
+label.DB4 = [];
+label.DBDB2 = [];
+label.DBDB4 = [];
 
 for i = 1:4
     if i == 1
@@ -43,7 +42,7 @@ for i = 1:4
         %         l_files = dir('SWR_L_*');
         %         l_files = {l_files.name};
         %
-        r_files = dir('SPWR_R_*');
+        r_files = dir('SWR_R_*');
         r_files = {r_files.name};
 
         counter = counter + 1;
@@ -52,25 +51,13 @@ for i = 1:4
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
                 load(char(r_files(k)));
                 if i == 1
-                    rip.DB2 = [rip.DB2; SWRevents]; % DB+ 200D
-                    temp_label = zeros(size(SWRevents, 1), 1);
-                    temp_label(:) = counter;
-                    label.DB2a = [label.DB2a; temp_label];
+                    [rip.DB2, label.DB2] = label_ripples(rip.DB2, label.DB2, SWRevents, SWRLTDIdx, k, counter);
                 elseif i == 2
-                    rip.DB4 = [rip.DB4; SWRevents]; % DB+ 400D
-                    temp_label = zeros(size(SWRevents, 1), 1);
-                    temp_label(:) = counter;
-                    label.DB4a = [label.DB4a; temp_label];
+                    [rip.DB4, label.DB4] = label_ripples(rip.DB4, label.DB4, SWRevents, SWRLTDIdx, k, counter);
                 elseif i == 3
-                    rip.DBDB2 = [rip.DBDB2; SWRevents]; % DBDB 200D
-                    temp_label = zeros(size(SWRevents, 1), 1);
-                    temp_label(:) = counter;
-                    label.DBDB2a = [label.DBDB2a; temp_label];
+                    [rip.DBDB2, label.DBDB2] = label_ripples(rip.DBDB2, label.DBDB2, SWRevents, SWRLTDIdx, k, counter);
                 elseif i == 4
-                    rip.DBDB4 = [rip.DBDB4; SWRevents]; % DBDB 400D
-                    temp_label = zeros(size(SWRevents, 1), 1);
-                    temp_label(:) = counter;
-                    label.DBDB4a = [label.DBDB4a; temp_label];
+                    [rip.DBDB4, label.DBDB4] = label_ripples(rip.DBDB4, label.DBDB4, SWRevents, SWRLTDIdx, k, counter);
                 end
 
             end
@@ -160,19 +147,19 @@ count_treat = {};
 for n = 1:4
     switch n
         case 1
-            group = label.DB2a;
+            group = label.DB2;
             age = '200';
             treat = 'Control';
         case 2
-            group = label.DB4a;
+            group = label.DB4;
             age = '400';
             treat = 'Control';
         case 3
-            group = label.DBDB2a;
+            group = label.DBDB2;
             age = '200';
             treat = 'DBDB';
         case 4
-            group = label.DBDB4a;
+            group = label.DBDB4;
             age = '400';
             treat = 'DBDB';
     end
