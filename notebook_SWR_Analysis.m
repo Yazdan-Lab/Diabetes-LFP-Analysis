@@ -1,13 +1,20 @@
 %% SWR Analysis
 % This script will load all the SWRs the Gratianne catagorized and run
 % analysis on them. It will look at SWR count, duration, Power, IRI, and
-% CSD
-addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach', ...
-    'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+% CSD %M run the SPWRdetect first
+clear all, close all
+%addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
+%     'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+ addpath('C:\COM\ePhy\dbdb\code\utils-toolbox\utils-toolbox')
+  addpath('C:\COM\ePhy\dbdb\code\spectral-analysis-tools')
 
-cd('C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
+
+
+% cd('C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
+cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
 load('SpkInfo.mat')
-cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy');
+% cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy');
+cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy');
 animals = dir;
 
 rip.DB2 = [];
@@ -224,16 +231,32 @@ IRIdbdb4 = IRIdbdb4(~isnan(IRIdbdb4)) ./ 1250;
 IRI_age(TF == 1) = [];
 IRI_treat(TF == 1) = [];
 
+%MS
+%Group_SPWR_Ns = [length(Ct200); length(Db200); length(Ct400); length(Db400)];
+%ME
 
 [iriP, IRI_T, iriStats] = anovan(cleanIRI, {IRI_treat, IRI_age}, 'model', 'interaction'); % ,'display','off');
 [iriC, iriM, ~, iriNames] = multcompare(iriStats, 'Dimension', [1, 2], 'CType', 'bonferroni');
 
 %% Create graphs
-% power
+%% power
 figure
-set(gcf, 'Color', 'w')
-[durBar] = UCSF_graph([powerM(1:2, 2), powerM(3:4, 2)]', [powerM(1:2, 1), powerM(3:4, 1)]', powerC);
-ylabel('Power (mV)', 'Fontsize', 20)
+set(gcf,'Color','w')
+[durBar] = UCSF_graph([powerM(1:2,2),powerM(3:4,2)]',[powerM(1:2,1),powerM(3:4,1)]',powerC);
+%MS
+T_PWR = powerM';
+%T_PWR = [T_PWR;Group_SPWR_Ns'];
+Datetime_PWR = string(datetime('now'));
+cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
+Filename_PWR = sprintf('SPWR_Power_%s.xlsx', Datetime_PWR);
+Filename_PWR = regexprep(Filename_PWR, ' ', '_');
+Filename_PWR = regexprep(Filename_PWR, ':', '_');
+xlswrite(Filename_PWR,T_PWR);
+%T = table(powerM(1:2,2), powerM(3:4,2), powerM(1:2,1), powerM(3:2,1));
+%writetable(T,'Power55.xls');
+%ME
+ylabel('Power (mV)','Fontsize',20)
+
 %set(gca,'ytick',[0.1 0.2 0.3])
 l = legend('db/+', 'db/db');
 legend('boxoff')
@@ -249,13 +272,23 @@ if powerP(1) <= 0.05
     set(B, 'FontSize', 12)
 end
 
-% IRI
+%% IRI
 figure
-set(gcf, 'Color', 'w')
-[iriBar] = UCSF_graph([iriM(1:2, 2), iriM(3:4, 2)]', [iriM(1:2, 1), iriM(3:4, 1)]', iriC);
-ylabel('Inter-ripple Interval (s)', 'Fontsize', 18)
-set(gca, 'ytick', [2500, 5000, 7500])
-l = legend('db/+', 'db/db');
+set(gcf,'Color','w')
+[iriBar] = UCSF_graph([iriM(1:2,2),iriM(3:4,2)]',[iriM(1:2,1),iriM(3:4,1)]',iriC);
+%MS
+T_IRI = iriM';
+Datetime_IRI = string(datetime('now'));
+cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
+Filename_IRI = sprintf('SPWR_IRI_%s.xlsx', Datetime_IRI);
+Filename_IRI = regexprep(Filename_IRI, ' ', '_');
+Filename_IRI = regexprep(Filename_IRI, ':', '_');
+xlswrite(Filename_IRI,T_IRI);
+%ME
+ylabel('Inter-ripple Interval (s)','Fontsize',18)
+set(gca,'ytick',[2500 5000 7500])
+l = legend('db/+','db/db');
+
 legend('boxoff')
 legend('Location', 'northoutside')
 age_sig = sig_check(iriP(2));
@@ -269,13 +302,23 @@ if iriP(1) <= 0.05
     set(B, 'FontSize', 12)
 end
 
-% Duration
+%% Duration
 figure
-set(gcf, 'Color', 'w')
-[durBar] = UCSF_graph([durM(1:2, 2), durM(3:4, 2)]', [durM(1:2, 1), durM(3:4, 1)]', durC);
-ylabel('Ripple duration (s)', 'Fontsize', 20)
-set(gca, 'ytick', [0.1, 0.2, 0.3])
-l = legend('db/+', 'db/db');
+set(gcf,'Color','w')
+[durBar] = UCSF_graph([durM(1:2,2),durM(3:4,2)]',[durM(1:2,1),durM(3:4,1)]',durC);
+%MS
+T_Dur = durM';
+Datetime_Dur = string(datetime('now'));
+cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
+Filename_Dur = sprintf('SPWR_Duration_%s.xlsx', Datetime_Dur);
+Filename_Dur = regexprep(Filename_Dur, ' ', '_');
+Filename_Dur = regexprep(Filename_Dur, ':', '_');
+xlswrite(Filename_Dur,T_Dur);
+%ME
+ylabel('Ripple duration (s)','Fontsize',20)
+set(gca,'ytick',[0.1 0.2 0.3])
+l = legend('db/+','db/db');
+
 legend('boxoff')
 legend('Location', 'northoutside')
 age_sig = sig_check(durP(2));
@@ -289,13 +332,23 @@ if iriP(1) <= 0.05
     set(B, 'FontSize', 12)
 end
 
-% Events
+%% Events
 figure
-set(gcf, 'Color', 'w')
-[cBar] = UCSF_graph([cM(1:2, 2), cM(3:4, 2)]', [cM(1:2, 1), cM(3:4, 1)]', cC);
-ylabel('Number of SWRs', 'Fontsize', 20)
-set(gca, 'ytick', [0.1, 0.2, 0.3])
-l = legend('db/+', 'db/db');
+set(gcf,'Color','w')
+[cBar] = UCSF_graph([cM(1:2,2),cM(3:4,2)]',[cM(1:2,1),cM(3:4,1)]',cC);
+%MS
+T_Eve = cM'; 
+Datetime_Eve = string(datetime('now'));
+cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
+Filename_Eve = sprintf('SPWR_Events_%s.xlsx', Datetime_Eve);
+Filename_Eve = regexprep(Filename_Eve, ' ', '_');
+Filename_Eve = regexprep(Filename_Eve, ':', '_');
+xlswrite(Filename_Eve,T_Eve);
+%ME
+ylabel('Number of SWRs','Fontsize',20)
+set(gca,'ytick',[0.1 0.2 0.3])
+l = legend('db/+','db/db');
+
 legend('boxoff')
 legend('Location', 'northoutside')
 age_sig = sig_check(cP(2));
@@ -306,6 +359,7 @@ if cP(2) <= 0.05
     set(A, 'FontSize', 12)
 end
 if cP(1) <= 0.05
-    B = suplabel(['db effect: ', db_sig], 't', [0.8, 0.08, 0.01, 0.75]);
-    set(B, 'FontSize', 12)
+B = suplabel(['db effect: ' db_sig],'t',[0.8 0.08 0.01 0.75]);
+set(B,'FontSize',12)
 end
+

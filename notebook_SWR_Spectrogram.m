@@ -2,11 +2,13 @@
 % This script will load LFP and grab the LFP 500ms before and 1500ms after
 % the onset of a ripple (max duration recorded 1237ms) then perform CSD on
 % that file, save the file to a 3D matrix, and create an average CSD
-clear all, close all, clc
+clear all; close all; clc
 % initalize filepaths and load reference data files
-cd('C:\Users\ipzach\Documents\dbdb electrophy\General_Scripts')
+%cd('C:\Users\ipzach\Documents\dbdb electrophy\General_Scripts')
+cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
 load('chans.mat') % This file lets us know where in the brain each electrode is
-cd('C:\Users\ipzach\Documents\dbdb electrophy'); % here is the data
+%cd('C:\Users\ipzach\Documents\dbdb electrophy'); % here is the data
+cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy')
 animals = dir; % create a list of every folder (each one is one animal)
 voltConv = 0.000000091555527603759401; % Neurolynx saves data in a unitless value, we need this to convert it to volts
 for i = 1:4 % number of groups
