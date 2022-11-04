@@ -393,13 +393,14 @@ for lay_comb = 1
         [pliC, pliM, ~, pliN] = multcompare(pliStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
         subplot(1,5,band)
         create_bar_figure(pliM(:, 2), pliM(:, 1), pliC);
+        title(group_name)
         %MS
         if strcmp(user, 'S')
             T_PLI = pliM';
             T_PLI = [T_PLI; Group_PLI_Ns'];
             Datetime_PLI = string(datetime('now'));
             cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
-            Filename_PLI = sprintf('PLI_data_%s.xlsx', Datetime_PLI);
+            Filename_PLI = sprintf('PLI_data_%s.xlsx', [group_name Datetime_PLI]);
             Filename_PLI = regexprep(Filename_PLI, ' ', '_');
             Filename_PLI = regexprep(Filename_PLI, ':', '_');
             xlswrite(Filename_PLI, T_PLI);
