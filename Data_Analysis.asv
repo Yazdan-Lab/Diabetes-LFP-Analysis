@@ -7,13 +7,10 @@ Fs = 1250;
 kernel = gaussian(Fs, ceil(8*Fs));
 kernel2 = gaussian(10*Fs, ceil(80*Fs));
 %%%%%%
-%cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Data-Analysis')
-cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
+cd('C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
 load('SpkInfo.mat')
 load('chans.mat')
-cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy'); % here is the data
-
-
+cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy'); % here is the data
 animal_list = dir; % create a list of every folder (each one is one animal)
 
 
@@ -93,19 +90,21 @@ for group = 1:4
                 %%%%%%
                 gamma_LFP = BPfilter(LFP,1250,30,60); % isolate gamma frequency band
                 LTD_events = SWRevents(SWRLTDIdx(k).R,1:2); % grab SWRs that occur during this period
-                LTD_events(LTD_events <= 625) = NaN;
-                LTD_events(LTD_events >= length(LFP) - 1250) = NaN;
-                LTD_events = rmmissing(LTD_events, 1);
+                LTD_events = LTD_events(LTD_events >= 625); % Exclude SWRs that clip beginning window
+                LTD_events = LTD_events(LTD_events <= length(LFP)-1250);% Exclude SWRs that exclude final window
                 
                 % initialize temp storage variables
+                temp_gamma_ctx = zeros(1,length(LTD_events));
                 temp_gamma_pyr = zeros(1,length(LTD_events));
+                temp_gamma_slm = zeros(1,length(LTD_events));
                 temp_avg_rip = zeros(1876,length(LTD_events));
                 norm_CSD = zeros(1876,12,length(LTD_events));
                 % For each event, create a spectrogram and store it in the
                 % temp variable
-                for r = 1:size(LTD_events,1)
+                for r = 1:length(LTD_events)
                     % gamma power of each ripple
-                    temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r,1):LTD_events(r,2),chans(2,cur_animal)),1250);
+                    temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)),1250);
+                    %temp_gamma_slm(r) = SignalPower(gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(3,cur_animal)),1250);
                     temp_avg_rip(:,r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal));
                     % Create CSD of each ripple
                     temp_CSD = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250,chans(2,cur_animal)-5:chans(2,cur_animal)+6),Fs,1e-4);
@@ -218,9 +217,6 @@ for group = 1:4
                     % Run coherence and average outputs for each frequency
                     % band
                     % Group, Band, recording, Animal, Layer/layer
-                    % Co(1: group id, animal, frequency band, layer
-                    % comparison (check compare variable)) 
-                    % comparison)
                     Co(group,counter,freq_band,layer) = nanmean(mscohere(A_LFP,B_LFP,hamming(12500),[],range,1250));
                     PLI(group,counter,freq_band,layer) = PLV(angle(hilbert(A_filt))', angle(hilbert(B_filt))');
                 end % frequency band
@@ -258,6 +254,6 @@ for group = 1:4
 end % group
 % Group, Animal, freq_band, Layer
 %% save processed data
-cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
+cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
 save('LFP Measures','Gamma','rip','rip_wav','label','CSD','Co','PLI','slowing_score', 'state_changes','intSlo0_Store','intSlo_Store','Pows_store')
 
