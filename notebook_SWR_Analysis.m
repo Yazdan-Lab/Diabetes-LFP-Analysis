@@ -232,7 +232,7 @@ IRI_age(TF == 1) = [];
 IRI_treat(TF == 1) = [];
 
 %MS
-%Group_SPWR_Ns = [length(Ct200); length(Db200); length(Ct400); length(Db400)];
+Group_SPWR_Ns = [length(IRIdb2); length(IRIdbdb2); length(IRIdb4); length(IRIdbdb4)];
 %ME
 
 [iriP, IRI_T, iriStats] = anovan(cleanIRI, {IRI_treat, IRI_age}, 'model', 'interaction'); % ,'display','off');
@@ -245,15 +245,13 @@ set(gcf,'Color','w')
 [durBar] = UCSF_graph([powerM(1:2,2),powerM(3:4,2)]',[powerM(1:2,1),powerM(3:4,1)]',powerC);
 %MS
 T_PWR = powerM';
-%T_PWR = [T_PWR;Group_SPWR_Ns'];
+T_PWR = [T_PWR;Group_SPWR_Ns'];
 Datetime_PWR = string(datetime('now'));
 cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
 Filename_PWR = sprintf('SPWR_Power_%s.xlsx', Datetime_PWR);
 Filename_PWR = regexprep(Filename_PWR, ' ', '_');
 Filename_PWR = regexprep(Filename_PWR, ':', '_');
 xlswrite(Filename_PWR,T_PWR);
-%T = table(powerM(1:2,2), powerM(3:4,2), powerM(1:2,1), powerM(3:2,1));
-%writetable(T,'Power55.xls');
 %ME
 ylabel('Power (mV)','Fontsize',20)
 
@@ -278,6 +276,7 @@ set(gcf,'Color','w')
 [iriBar] = UCSF_graph([iriM(1:2,2),iriM(3:4,2)]',[iriM(1:2,1),iriM(3:4,1)]',iriC);
 %MS
 T_IRI = iriM';
+T_IRI = [T_IRI;Group_SPWR_Ns'];
 Datetime_IRI = string(datetime('now'));
 cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
 Filename_IRI = sprintf('SPWR_IRI_%s.xlsx', Datetime_IRI);
@@ -308,6 +307,7 @@ set(gcf,'Color','w')
 [durBar] = UCSF_graph([durM(1:2,2),durM(3:4,2)]',[durM(1:2,1),durM(3:4,1)]',durC);
 %MS
 T_Dur = durM';
+T_Dur = [T_Dur;Group_SPWR_Ns'];
 Datetime_Dur = string(datetime('now'));
 cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
 Filename_Dur = sprintf('SPWR_Duration_%s.xlsx', Datetime_Dur);
@@ -338,6 +338,7 @@ set(gcf,'Color','w')
 [cBar] = UCSF_graph([cM(1:2,2),cM(3:4,2)]',[cM(1:2,1),cM(3:4,1)]',cC);
 %MS
 T_Eve = cM'; 
+T_Eve = [T_Eve;Group_SPWR_Ns'];
 Datetime_Eve = string(datetime('now'));
 cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
 Filename_Eve = sprintf('SPWR_Events_%s.xlsx', Datetime_Eve);

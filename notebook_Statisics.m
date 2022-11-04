@@ -555,6 +555,9 @@ end
 %%
 disp('Power')
 power_vals = [rip.DB2(:, 7); rip.DB4(:, 7); rip.DBDB2(:, 7); rip.DBDB4(:, 7)];
+%ME
+Group_SPWRs_Power_Ns = [length(rip.DB2), length(rip.DBDB2), length(rip.DB4), length(rip.DBDB4)];
+%MS
 
 [powerP, powerT, power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs}, 'model', 'interaction', 'display', 'off');
 [powerC, powerM, ~, powerNames] = multcompare(power_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
@@ -562,6 +565,10 @@ power_vals = [rip.DB2(:, 7); rip.DB4(:, 7); rip.DBDB2(:, 7); rip.DBDB4(:, 7)];
 % Duration
 disp('Duration')
 dur_vals = [rip.DB2(:, 2) - rip.DB2(:, 1); rip.DBDB2(:, 2) - rip.DBDB2(:, 1); rip.DB4(:, 2) - rip.DB4(:, 1); rip.DBDB4(:, 2) - rip.DBDB4(:, 1)] ./ 1250;
+%ME
+Group_SPWRs_Dur_Ns = [length(rip.DB2), length(rip.DBDB2), length(rip.DB4), length(rip.DBDB4)];
+Group_SPWRs_IRI_Ns = [length(rip.DB2), length(rip.DBDB2), length(rip.DB4), length(rip.DBDB4)];
+%MS
 [durP, durT, dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs}, 'model', 'interaction', 'display', 'off');
 [durC, durM, ~, durNames] = multcompare(dur_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
 
@@ -662,6 +669,18 @@ axis off
 %Gamma power
 subplot('Position', [mw, toph, w, h])
 create_bar_figure(pyr_Means(:, 2), pyr_Means(:, 1), pyr_Comparions);
+%MS
+T_SPWR_Power = pyr_Means';
+T_SPWR_Power = [T_SPWR_Power; Group_SPWRs_Power_Ns];
+Datetime_SPWRs = string(datetime('now'));
+cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Notebook_Statistics')
+Filename_SPWRs = sprintf('SPWRs_Power_data_%s.xlsx', Datetime_SPWRs);
+Filename_SPWRs = regexprep(Filename_SPWRs, ' ', '_');
+Filename_SPWRs = regexprep(Filename_SPWRs, ':', '_');
+xlswrite(Filename_SPWRs,T_SPWR_Power);
+%ME
+
+
 %ylabel('SWR Gamma power')
 %sig_values(pyr_P(2), pyr_P(1));
 %set(gca,'ytick',[0 5e-7 1e-6])
@@ -671,6 +690,16 @@ create_bar_figure(pyr_Means(:, 2), pyr_Means(:, 1), pyr_Comparions);
 % Duration
 subplot('Position', [lw, both, w, h])
 dur_fig = create_bar_figure(durM(:, 2), durM(:, 1), durC);
+%MS
+T_SPWR_Dur = durM';
+T_SPWR_Dur = [T_SPWR_Dur;Group_SPWRs_Dur_Ns];
+Datetime_SPWRs = string(datetime('now'));
+cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Notebook_Statistics')
+Filename_Dur = sprintf('SPWRs_Duration_data_%s.xlsx', Datetime_SPWRs);
+Filename_Dur = regexprep(Filename_Dur, ' ', '_');
+Filename_Dur = regexprep(Filename_Dur, ':', '_');
+xlswrite(Filename_Dur,T_SPWR_Dur);
+%ME
 %sig_values(durP(2), durP(1));
 %ylabel('SWR Duration (s)')
 %set(gca,'ytick',[0 0.15 0.3])
@@ -680,10 +709,21 @@ dur_fig = create_bar_figure(durM(:, 2), durM(:, 1), durC);
 % IRI
 subplot('Position', [mw, both, w, h])
 irir_fig = create_bar_figure(iriM(:, 2), iriM(:, 1), iriC);
+%MS
+T_SPWR_IRI = iriM';
+T_SPWR_IRI = [T_SPWR_IRI;Group_SPWRs_IRI_Ns];
+Datetime_SPWRs = string(datetime('now'));
+cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Notebook_Statistics')
+Filename_IRI = sprintf('SPWRs_IRI_data_%s.xlsx', Datetime_SPWRs);
+Filename_IRI = regexprep(Filename_IRI, ' ', '_');
+Filename_IRI = regexprep(Filename_IRI, ':', '_');
+xlswrite(Filename_IRI,T_SPWR_IRI);
+%ME
 %sig_values(iriP(2), iriP(1));
 %ylabel('Inter-ripple interval (s)')
 %set(gca,'ytick',[0 3000 6000])
 %ylim([0 8500])
+<<<<<<< Updated upstream
 
 %% CSD %MS Commented this part %ME
 CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
@@ -691,6 +731,14 @@ CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBD
 disp('Specific CSD')
 [csd_P, csd_Table, csd_stats] = anovan(CSD_full_vals, {treat_Labs, age_Labs}, 'model', 'interaction', 'display', 'off');
 [csd_Comparisons, csd_Means, ~, csd_Names] = multcompare(csd_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
+=======
+%% CSD Commented this part 
+CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
+CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
+disp('Specific CSD')
+[csd_P,csd_Table,csd_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction','display','off');
+[csd_Comparisons,csd_Means,~,csd_Names] = multcompare(csd_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+>>>>>>> Stashed changes
 CSD.DB2m = mean(CSD.DB2, 3);
 CSD.DB4m = mean(CSD.DB4, 3);
 
