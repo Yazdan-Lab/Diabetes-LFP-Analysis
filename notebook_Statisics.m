@@ -353,7 +353,7 @@ for lay_comb = 1
             comb_name = 'Pyr-Slm';
     end % switch layComb
     %im bored
-    for band = 1 %:5
+    for band = 1:5
         switch band
             case 1
                 group_name = 'Delta ';
@@ -391,7 +391,7 @@ for lay_comb = 1
         %ME
         [pliP, pliT, pliStats] = anovan(PLI_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
         [pliC, pliM, ~, pliN] = multcompare(pliStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-        %subplot(1,5,band)
+        subplot(1,5,band)
         create_bar_figure(pliM(:, 2), pliM(:, 1), pliC);
         %MS
         if strcmp(user, 'S')
