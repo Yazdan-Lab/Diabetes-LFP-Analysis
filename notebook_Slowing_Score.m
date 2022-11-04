@@ -115,17 +115,20 @@ for layComb = 2:3
     Db4DbLab(:) = {'DBDB'};
     
     vals = [Ct200; Db200; Ct400; Db400];
+    %MS
+    Group_Ns = [length(Ct200); length(Db200); length(Ct400); length(Db400)];
+    %ME
     ageLabs = [Ct2AgeLab; Db2AgeLab;Ct4AgeLab; Db4AgeLab];
     dbLabs = [Ct2DbLab; Db2DbLab; Ct4DbLab; Db4DbLab];
     
     [ssP,ssT,ssStats] = anovan(vals,{dbLabs ageLabs},'model','interaction','display','off');
     [ssC,ssM,~,ssN] = multcompare(ssStats,'Dimension',[1 2],'CType','bonferroni','display','off');
-    
-    
+        
     subplot(1,2,layComb-1)
     UCSF_graph([ssM(1:2,2),ssM(3:4,2)]',[ssM(1:2,1),ssM(3:4,1)]',ssC);
     %MS
     T_SlwScr = ssM';
+    T_SlwScr = [T_SlwScr;Group_Ns'];
     Datetime_SlwScr = string(datetime('now'));
     cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SlowingScore')
     Filename_SlwScr = sprintf('SlowingScore_data_%d_%s.xlsx', layComb, Datetime_SlwScr);
@@ -165,9 +168,6 @@ for layComb = 2:3
     saveas(gcf, Filename_SlwScr);
     %ME
 end
-
-
-
 
 function sig = sig_check(P)
     if P > 0.05

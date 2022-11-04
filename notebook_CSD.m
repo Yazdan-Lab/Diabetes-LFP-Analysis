@@ -133,20 +133,27 @@ dipole_DBDB2_pre = calculate_CSD_dipole(full_csd.DBDB2,high_chan, low_chan, pre_
 dipole_DBDB4_pre = calculate_CSD_dipole(full_csd.DBDB4,high_chan, low_chan, pre_win);
 
 dipole_vals_pre = [dipole_DB2_pre; dipole_DBDB2_pre; dipole_DB4_pre; dipole_DBDB4_pre];
-
+%MS
+Group_Ripple_Pre_Ns = [length(dipole_DB2_pre); length(dipole_DBDB2_pre); length(dipole_DB4_pre); length(dipole_DBDB4_pre)];
+%ME
 dipole_DB2   = calculate_CSD_dipole(full_csd.DB2,  high_chan, low_chan, win);
 dipole_DB4   = calculate_CSD_dipole(full_csd.DB4,  high_chan, low_chan, win);
 dipole_DBDB2 = calculate_CSD_dipole(full_csd.DBDB2,high_chan, low_chan, win);
 dipole_DBDB4 = calculate_CSD_dipole(full_csd.DBDB4,high_chan, low_chan, win);
 
 dipole_vals = [dipole_DB2; dipole_DBDB2; dipole_DB4; dipole_DBDB4];
-
+%MS
+Group_Ripple_Dur_Ns = [length(dipole_DB2); length(dipole_DBDB2); length(dipole_DB4); length(dipole_DBDB4)];
+%ME
 dipole_DB2_post   = calculate_CSD_dipole(full_csd.DB2,  high_chan, low_chan, post_win);
 dipole_DB4_post   = calculate_CSD_dipole(full_csd.DB4,  high_chan, low_chan, post_win);
 dipole_DBDB2_post = calculate_CSD_dipole(full_csd.DBDB2,high_chan, low_chan, post_win);
 dipole_DBDB4_post = calculate_CSD_dipole(full_csd.DBDB4,high_chan, low_chan, post_win);
 
 dipole_vals_post = [dipole_DB2_post; dipole_DBDB2_post; dipole_DB4_post; dipole_DBDB4_post];
+%MS
+Group_Ripple_Post_Ns = [length(dipole_DB2_post); length(dipole_DBDB2_post); length(dipole_DB4_post); length(dipole_DBDB4_post)];
+%ME
 %% Make labels
 label.DB2age = cell(size(full_csd.DB2,3),1);
 label.DB2treat = cell(size(full_csd.DB2,3),1);
@@ -231,6 +238,7 @@ subplot('Position',[0.75 both+0.6 0.2 0.18])
 [csdBar] = UCSF_graph([csdM_pre(1:2,2),csdM_pre(3:4,2)]',[csdM_pre(1:2,1),csdM_pre(3:4,1)]',csdC_pre);
 %MS
 T_Pre_Ripple = csdM_pre';
+T_Pre_Ripple = [T_Pre_Ripple;Group_Ripple_Pre_Ns'];
 Datetime_Pre_Ripple = string(datetime('now'));
 cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
 Filename_Pre_Ripple = sprintf('Pre_Ripple_CSD_%s.xlsx', Datetime_Pre_Ripple);
@@ -245,6 +253,7 @@ subplot('Position',[0.75 both+0.3 0.2 0.18])
 [csdBar] = UCSF_graph([csdM(1:2,2),csdM(3:4,2)]',[csdM(1:2,1),csdM(3:4,1)]',csdC);
 %MS
 T_Ripple = csdM'; 
+T_Ripple = [T_Ripple;Group_Ripple_Dur_Ns'];
 Datetime_Ripple = string(datetime('now'));
 cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
 Filename_Ripple = sprintf('Ripple_CSD_%s.xlsx', Datetime_Ripple);
@@ -259,6 +268,7 @@ subplot('Position',[0.75 both 0.2 0.18])
 [csdBar] = UCSF_graph([csdM_post(1:2,2),csdM_post(3:4,2)]',[csdM_post(1:2,1),csdM_post(3:4,1)]',csdC_post);
 %MS
 T_Post_Ripple = csdM_post';
+T_Post_Ripple = [T_Post_Ripple;Group_Ripple_Post_Ns'];
 Datetime_Post_Ripple = string(datetime('now'));
 cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
 Filename_Post_Ripple = sprintf('Post_Ripple_CSD_%s.xlsx', Datetime_Post_Ripple);

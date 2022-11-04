@@ -241,6 +241,9 @@ IRIdbdb4 = IRIdbdb4(~isnan(IRIdbdb4))./1250;
 IRI_age(TF==1) = [];
 IRI_treat(TF==1) = [];
 
+%MS
+%Group_SPWR_Ns = [length(Ct200); length(Db200); length(Ct400); length(Db400)];
+%ME
 
 [iriP,IRI_T,iriStats] = anovan(cleanIRI, {IRI_treat, IRI_age},'model','interaction'); % ,'display','off');
 [iriC,iriM,~,iriNames] = multcompare(iriStats,'Dimension',[1 2],'CType','bonferroni');
@@ -252,6 +255,7 @@ set(gcf,'Color','w')
 [durBar] = UCSF_graph([powerM(1:2,2),powerM(3:4,2)]',[powerM(1:2,1),powerM(3:4,1)]',powerC);
 %MS
 T_PWR = powerM';
+%T_PWR = [T_PWR;Group_SPWR_Ns'];
 Datetime_PWR = string(datetime('now'));
 cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
 Filename_PWR = sprintf('SPWR_Power_%s.xlsx', Datetime_PWR);

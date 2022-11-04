@@ -240,7 +240,7 @@ for layComb = 1:2
         %MS
         T_Chrnc = cohM'; 
         Datetime_Chrnc = string(datetime('now'));
-        cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
+        cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence_Notebook')
         Filename_Chrnc = sprintf('Coherence_data_animal_%d_%s_%s.xlsx', animal, compare, Datetime_Chrnc);
         Filename_Chrnc = regexprep(Filename_Chrnc, ' ', '_');
         Filename_Chrnc = regexprep(Filename_Chrnc, ':', '_');
