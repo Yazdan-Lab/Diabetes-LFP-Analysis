@@ -1,5 +1,11 @@
-%cd('C:\Users\ipzach\Documents\dbdb electrophy\Diabetes-Saved-Files')
-cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
+user = 'Z'; %'Z' for Zach or 'S' for Shahram for path stuff
+
+switch user
+    case 'Z'
+        cd('C:\Users\ipzach\Documents\MATLAB\output\Diabetes-Saved-Files')
+    case 'S'
+        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
+end
 
 load('LFP Measures')
 hotcold = redblue();
@@ -248,7 +254,7 @@ SE_DB400_w_nan = SE(4, :)';
 SE_DB400 = SE_DB400_w_nan(~isnan(SE_DB400_w_nan));
 
 SE_vals = [SE_Ct200; SE_DB200; SE_Ct400; SE_DB400];
- 
+
 %MS
 Group_SP_Ns = [length(SE_Ct200); length(SE_DB200); length(SE_Ct400); length(SE_DB400)];
 %ME
@@ -270,16 +276,16 @@ for i = [4, 3, 2, 1]
     switch i
         case 1
             %color = [194, 194, 194] ./255;
-            color = [0, 0, 204] ./255;
+            color = [0, 0, 204] ./ 255;
         case 2
             %color = [128, 128, 128] ./255;
-            color = [204, 0, 0] ./255;
+            color = [204, 0, 0] ./ 255;
         case 3
             %color = [247,149,114] ./255;
-            color = [0, 0, 204] ./255;
+            color = [0, 0, 204] ./ 255;
         case 4
             %color = [212, 120, 86] ./255;
-            color = [204, 0, 0] ./255;
+            color = [204, 0, 0] ./ 255;
 
     end
     for j = 1:7
@@ -302,30 +308,35 @@ for i = [4, 3, 2, 1]
     box off
     xlim([0, 3.6])
 end
- subplot(1,2,2)
- create_bar_figure(seM(:,2), seM(:,1), seC);
- %MS
- T_SpecExpoB = seM';
- T_SpecExpoB = [T_SpecExpoB;Group_SP_Ns'];
- Datetime_SpecExpoB = string(datetime('now'));
- cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
- Filename_SpecExpoB = sprintf('Spectral_Exponent_data_%s.xlsx', Datetime_SpecExpoB);
- Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
- Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
- xlswrite(Filename_SpecExpoB,T_SpecExpoB);
- %ME
- xtickangle(60)
+subplot(1, 2, 2)
+create_bar_figure(seM(:, 2), seM(:, 1), seC);
+%MS
+if strcmp(user, 'S')
+    T_SpecExpoB = seM';
+    T_SpecExpoB = [T_SpecExpoB; Group_SP_Ns'];
+    Datetime_SpecExpoB = string(datetime('now'));
+
+    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
+    Filename_SpecExpoB = sprintf('Spectral_Exponent_data_%s.xlsx', Datetime_SpecExpoB);
+    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
+    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
+    xlswrite(Filename_SpecExpoB, T_SpecExpoB);
+end
+%ME
+xtickangle(60)
 
 %sig_values(seP(2), seP(1));
 %ylabel('Spectral Exponent')
-set(gcf,'Color','w');
+set(gcf, 'Color', 'w');
 %MS
-Datetime_SpecExpoB = string(datetime('now'));
-cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
-Filename_SpecExpoB = sprintf('Spectral_Exponent_Figure_%s.tiff', Datetime_SpecExpoB);
-Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
-Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
-saveas(gcf, Filename_SpecExpoB);
+if strcmp(user, 'S')
+    Datetime_SpecExpoB = string(datetime('now'));
+    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
+    Filename_SpecExpoB = sprintf('Spectral_Exponent_Figure_%s.tiff', Datetime_SpecExpoB);
+    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
+    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
+    saveas(gcf, Filename_SpecExpoB);
+end
 %ME
 
 %% PLI
@@ -378,22 +389,22 @@ for lay_comb = 1
         %MS
         Group_PLI_Ns = [length(PLI_Ct200); length(PLI_DB200); length(PLI_Ct400); length(PLI_DB400)];
         %ME
-        [pliP,pliT,pliStats] = anovan(PLI_vals,{slowing_score_db_Labs slowing_score_age_Labs},'model','interaction','display','off');
-        [pliC,pliM,~,pliN] = multcompare(pliStats,'Dimension',[1 2],'CType','bonferroni','display','off');
+        [pliP, pliT, pliStats] = anovan(PLI_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
+        [pliC, pliM, ~, pliN] = multcompare(pliStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
         %subplot(1,5,band)
-        create_bar_figure(pliM(:,2), pliM(:,1), pliC);
+        create_bar_figure(pliM(:, 2), pliM(:, 1), pliC);
         %MS
-        T_PLI = pliM';
-        T_PLI = [T_PLI;Group_PLI_Ns'];
-        Datetime_PLI = string(datetime('now'));
-        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
-        Filename_PLI = sprintf('PLI_data_%s.xlsx', Datetime_PLI);
-        Filename_PLI = regexprep(Filename_PLI, ' ', '_');
-        Filename_PLI = regexprep(Filename_PLI, ':', '_');
-        xlswrite(Filename_PLI,T_PLI);
+        if strcmp(user, 'S')
+            T_PLI = pliM';
+            T_PLI = [T_PLI; Group_PLI_Ns'];
+            Datetime_PLI = string(datetime('now'));
+            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
+            Filename_PLI = sprintf('PLI_data_%s.xlsx', Datetime_PLI);
+            Filename_PLI = regexprep(Filename_PLI, ' ', '_');
+            Filename_PLI = regexprep(Filename_PLI, ':', '_');
+            xlswrite(Filename_PLI, T_PLI);
+        end
         %ME
-
-
 
 
         sig_values(pliP(2), pliP(1));
@@ -401,12 +412,14 @@ for lay_comb = 1
         set(gcf, 'Color', 'w');
         xtickangle(60)
         %MS
-        Datetime_PLI = string(datetime('now'));
-        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
-        Filename_PLI = sprintf('PLI_Figure_%s.tiff', Datetime_PLI);
-        Filename_PLI = regexprep(Filename_PLI, ' ', '_');
-        Filename_PLI = regexprep(Filename_PLI, ':', '_');
-        saveas(gcf, Filename_PLI);
+        if strcmp(user, 'S')
+            Datetime_PLI = string(datetime('now'));
+            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
+            Filename_PLI = sprintf('PLI_Figure_%s.tiff', Datetime_PLI);
+            Filename_PLI = regexprep(Filename_PLI, ' ', '_');
+            Filename_PLI = regexprep(Filename_PLI, ':', '_');
+            saveas(gcf, Filename_PLI);
+        end
         %ME
         %set(gca,'ytick',[0 1])
         %ylim([0 1])
@@ -501,28 +514,28 @@ for lay_comb = 1:2 % 1:3
         [cohP, cohT, cohStats] = anovan(coh_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
         [cohC, cohM, ~, cohN] = multcompare(cohStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
         %
-        subaxis(2,4,count,'SpacingHoriz',0.01,'SpacingVert',0.12)
-        create_bar_figure(cohM(:,2), cohM(:,1), cohC);
+        subaxis(2, 4, count, 'SpacingHoriz', 0.01, 'SpacingVert', 0.12)
+        create_bar_figure(cohM(:, 2), cohM(:, 1), cohC);
         %MS
-        T_coherence = cohM';
-        T_coherence = [T_coherence;Group_Coh_Ns'];
-        Datetime_coherence = string(datetime('now'));
-        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
-        Filename_coherence = sprintf('Coherence_data_%s.xlsx', Datetime_coherence);
-        Filename_coherence = regexprep(Filename_coherence, ' ', '_');
-        Filename_coherence = regexprep(Filename_coherence, ':', '_');
-        xlswrite(Filename_coherence,T_coherence);
-        %ME        
-        set(gca,'ytick',[0 1],'fontsize',12)
-        %MS
-        Datetime_coherence = string(datetime('now'));
-        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
-        Filename_coherence = sprintf('Coherence_Figure_%s.tiff', Datetime_coherence);
-        Filename_coherence = regexprep(Filename_coherence, ' ', '_');
-        Filename_coherence = regexprep(Filename_coherence, ':', '_');
-        saveas(gcf, Filename_coherence);
-        %ME
+        if strcmp(user, 'S')
+            T_coherence = cohM';
+            T_coherence = [T_coherence; Group_Coh_Ns'];
+            Datetime_coherence = string(datetime('now'));
+            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
+            Filename_coherence = sprintf('Coherence_data_%s.xlsx', Datetime_coherence);
+            Filename_coherence = regexprep(Filename_coherence, ' ', '_');
+            Filename_coherence = regexprep(Filename_coherence, ':', '_');
+            xlswrite(Filename_coherence, T_coherence);
 
+            Datetime_coherence = string(datetime('now'));
+            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
+            Filename_coherence = sprintf('Coherence_Figure_%s.tiff', Datetime_coherence);
+            Filename_coherence = regexprep(Filename_coherence, ' ', '_');
+            Filename_coherence = regexprep(Filename_coherence, ':', '_');
+            saveas(gcf, Filename_coherence);
+            %ME
+        end
+        set(gca, 'ytick', [0, 1], 'fontsize', 12)
         %      sig_values(cohP(2), cohP(1));
         xtickangle(25)
         ylim([0, 1])
@@ -597,10 +610,10 @@ w = 0.35;
 riph = 0.174;
 mod = 0.175;
 
-control_200 = [0, 0, 204] ./255;
-control_400 = [0, 0, 204] ./255;
-DB_200 = [204, 0, 0] ./255;
-DB_400 = [204, 0, 0] ./255;
+control_200 = [0, 0, 204] ./ 255;
+control_400 = [0, 0, 204] ./ 255;
+DB_200 = [204, 0, 0] ./ 255;
+DB_400 = [204, 0, 0] ./ 255;
 
 
 fig_lim = 5e-6;
@@ -610,19 +623,19 @@ fig_lim = 5e-6;
 %|____||____|
 figure
 
-set(gcf, 'color','w','Position',[100 100 1200 700])
+set(gcf, 'color', 'w', 'Position', [100, 100, 1200, 700])
 % top left ripple
-subplot('Position',[lw toph+mod riph riph])
-plot(mean(rip_wav.DB2,2),'color', control_200)
+subplot('Position', [lw, toph + mod, riph, riph])
+plot(mean(rip_wav.DB2, 2), 'color', control_200)
 % title('DB2')
 axis off
-ylim([-fig_lim fig_lim])
-vline(625,'k:')
+ylim([-fig_lim, fig_lim])
+vline(625, 'k:')
 
 %bottom left ripple
-subplot('Position',[lw+mod toph+mod riph riph])
-plot(mean(rip_wav.DBDB2,2),'color',DB_200)
-ylim([-fig_lim fig_lim])
+subplot('Position', [lw + mod, toph + mod, riph, riph])
+plot(mean(rip_wav.DBDB2, 2), 'color', DB_200)
+ylim([-fig_lim, fig_lim])
 
 %title('DBDB2')
 vline(625, 'k:')
@@ -630,12 +643,11 @@ axis off
 
 
 % top right ripple
-subplot('Position',[lw toph riph riph])
-plot(mean(rip_wav.DB4,2),'color',control_400)
-ylim([-fig_lim fig_lim])
+subplot('Position', [lw, toph, riph, riph])
+plot(mean(rip_wav.DB4, 2), 'color', control_400)
+ylim([-fig_lim, fig_lim])
 axis off
-vline(625,'k:')
-
+vline(625, 'k:')
 
 
 %bottom right ripple
@@ -671,12 +683,13 @@ irir_fig = create_bar_figure(iriM(:, 2), iriM(:, 1), iriC);
 %ylabel('Inter-ripple interval (s)')
 %set(gca,'ytick',[0 3000 6000])
 %ylim([0 8500])
+
 %% CSD %MS Commented this part %ME
-% % % CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
-% % % CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
-% % % disp('Specific CSD')
-% % % [csd_P,csd_Table,csd_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction','display','off');
-% % % [csd_Comparisons,csd_Means,~,csd_Names] = multcompare(csd_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
+CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
+disp('Specific CSD')
+[csd_P, csd_Table, csd_stats] = anovan(CSD_full_vals, {treat_Labs, age_Labs}, 'model', 'interaction', 'display', 'off');
+[csd_Comparisons, csd_Means, ~, csd_Names] = multcompare(csd_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
 CSD.DB2m = mean(CSD.DB2, 3);
 CSD.DB4m = mean(CSD.DB4, 3);
 
