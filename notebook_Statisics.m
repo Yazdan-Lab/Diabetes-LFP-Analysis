@@ -677,7 +677,8 @@ irir_fig = create_bar_figure(iriM(:, 2), iriM(:, 1), iriC);
 % % % disp('Specific CSD')
 % % % [csd_P,csd_Table,csd_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction','display','off');
 % % % [csd_Comparisons,csd_Means,~,csd_Names] = multcompare(csd_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
-
+CSD.DB2m = mean(CSD.DB2, 3);
+CSD.DB4m = mean(CSD.DB4, 3);
 
 CSD.DBDB2m = mean(CSD.DBDB2, 3);
 CSD.DBDB4m = mean(CSD.DBDB4, 3);
