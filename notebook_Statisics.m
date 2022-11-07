@@ -552,14 +552,14 @@ for lay_comb = 1:2 % 1:3
     end
 end
 
-%%
-disp('Power')
-power_vals = [rip.DB2(:, 7); rip.DB4(:, 7); rip.DBDB2(:, 7); rip.DBDB4(:, 7)];
-
-[powerP, powerT, power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs}, 'model', 'interaction', 'display', 'off');
-[powerC, powerM, ~, powerNames] = multcompare(power_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-
-% Duration
+%% Not being used in manuscript anymore
+% disp('Power')
+% power_vals = [rip.DB2(:, 7); rip.DB4(:, 7); rip.DBDB2(:, 7); rip.DBDB4(:, 7)];
+% 
+% [powerP, powerT, power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs}, 'model', 'interaction', 'display', 'off');
+% [powerC, powerM, ~, powerNames] = multcompare(power_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
+% 
+%% % Duration
 disp('Duration')
 dur_vals = [rip.DB2(:, 2) - rip.DB2(:, 1); rip.DBDB2(:, 2) - rip.DBDB2(:, 1); rip.DB4(:, 2) - rip.DB4(:, 1); rip.DBDB4(:, 2) - rip.DBDB4(:, 1)] ./ 1250;
 [durP, durT, dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs}, 'model', 'interaction', 'display', 'off');
@@ -572,7 +572,7 @@ ylabel('SWR Duration (s)')
 set(gca, 'ytick', [0, 0.15, 0.3])
 ylim([0, 0.4])
 
-% IRI
+%% IRI
 [iriP, iriT, IRI_stats] = anovan(cleanIRI, {IRI_treat, IRI_age,}, 'model', 'interaction', 'display', 'off');
 [iriC, iriM, ~, iriNames] = multcompare(IRI_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
 figure
@@ -686,6 +686,7 @@ irir_fig = create_bar_figure(iriM(:, 2), iriM(:, 1), iriC);
 %ylim([0 8500])
 
 %% CSD %MS Commented this part %ME
+
 CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
 CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
 disp('Specific CSD')
@@ -705,8 +706,7 @@ CSD.DBDB4v = var(CSD.DBDB4, 0, 3);
 
 %% Plot
 figure
-max_val = 1;
-min_val = -1;
+val_lim = 5;
 set(gcf, 'Color', 'w', 'Position', [100, 100, 1200, 600])
 xstart = 0.07;
 x2start = 0.37;
@@ -721,7 +721,7 @@ set(h1, 'EdgeColor', 'none'), shading interp, colormap(flipud(hotcold))
 %title('200 d','FontSize',14)
 %ylabel('db/+','FontSize',14,'FontWeight','bold')
 set(gca, 'xtick', [])
-caxis([min_val, max_val])
+caxis([-val_lim, val_lim])
 
 subplot('Position', [x2start, toph, w, h])
 
@@ -729,21 +729,21 @@ h2 = pcolor(flipud(CSD.DB4m(:, 2:end-1)'));
 set(h2, 'EdgeColor', 'none'), shading interp, colormap(flipud(hotcold))
 %title('400 d','FontSize',14)
 set(gca, 'xtick', [], 'ytick', [])
-caxis([min_val, max_val])
+caxis([-val_lim, val_lim])
 
 subplot('Position', [xstart, both, w, h])
 h3 = pcolor(flipud(CSD.DBDB2m(:, 2:end-1)'));
 set(h3, 'EdgeColor', 'none'), shading interp, colormap(flipud(hotcold))
 %ylabel('db/db','FontSize',14,'FontWeight','bold')
 set(gca, 'xtick', [0, 625, 1250, 1875], 'xticklabels', [-0.5, 0, 0.5, 1])
-caxis([min_val, max_val])
+caxis([-val_lim, val_lim])
 
 
 subplot('Position', [x2start, both, w, h])
 h4 = pcolor(flipud(CSD.DBDB4m(:, 2:end-1)'));
 shading interp, colormap(flipud(hotcold))
 set(gca, 'xtick', [0, 625, 1250, 1875], 'xticklabels', [-0.5, 0, 0.5, 1], 'ytick', [])
-caxis([min_val, max_val])
+caxis([-val_lim, val_lim])
 set(h4, 'EdgeColor', 'none');
 colorbar
 subplot('Position', [0.75, both, 0.2, 0.8])
