@@ -166,7 +166,7 @@ for l = [1, 3, 2, 4]
             IRI_age = [IRI_age; {age}];
             IRI_treat = [IRI_treat; {treat}];
             IRI_big(l, m) = (group(m+1) - group(m));
-            
+
         end
     end
 end
@@ -194,18 +194,18 @@ for lay_comb = 2:3
     % them, then concatenate everything together
     SS_Ct200_w_nan = slowing_score(1, :, lay_comb)';
     SS_Ct200 = SS_Ct200_w_nan(~isnan(SS_Ct200_w_nan));
-    
+
     SS_DB200_w_nan = slowing_score(2, :, lay_comb)';
     SS_DB200 = SS_DB200_w_nan(~isnan(SS_DB200_w_nan));
-    
+
     SS_Ct400_w_nan = slowing_score(3, :, lay_comb)';
     SS_Ct400 = SS_Ct400_w_nan(~isnan(SS_Ct400_w_nan));
-    
+
     SS_DB400_w_nan = slowing_score(4, :, lay_comb)';
     SS_DB400 = SS_DB400_w_nan(~isnan(SS_DB400_w_nan));
-    
+
     slow_score_vals = [SS_Ct200; SS_DB200; SS_Ct400; SS_DB400];
-    
+
     disp(num2str(lay_comb))
     [ssP, ssT, ssStats] = anovan(slow_score_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
     [ssC, ssM, ~, ssN] = multcompare(ssStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
@@ -280,6 +280,7 @@ for i = [4, 3, 2, 1]
         case 4
             %color = [212, 120, 86] ./255;
             color = [204, 0, 0] ./255;
+
     end
     for j = 1:7
         try
@@ -293,7 +294,7 @@ for i = [4, 3, 2, 1]
     int = nanmean(int_Slo(:, 1));
     slo = nanmean(int_Slo(:, 2));
     Xi = log10(XXi);
-    
+
     stdshade(log(YYi), 0.1, color, log(XXi)); hold on,
     YYpred0 = 10.^(int + slo * (Xi))';
     plot(log(XXi([1, end])), log(YYpred0([1, end])), 'LineWidth', 1.5, 'color', color);
@@ -301,22 +302,19 @@ for i = [4, 3, 2, 1]
     box off
     xlim([0, 3.6])
 end
-subplot(1, 2, 2)
-create_bar_figure(seM(:, 2), seM(:, 1), seC);
-%MS
-if strcmp(user, 'S')
-    T_SpecExpoB = seM';
-    T_SpecExpoB = [T_SpecExpoB; Group_SP_Ns'];
-    Datetime_SpecExpoB = string(datetime('now'));
-    
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
-    Filename_SpecExpoB = sprintf('Spectral_Exponent_data_%s.xlsx', Datetime_SpecExpoB);
-    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
-    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
-    xlswrite(Filename_SpecExpoB, T_SpecExpoB);
-end
-%ME
-xtickangle(60)
+ subplot(1,2,2)
+ create_bar_figure(seM(:,2), seM(:,1), seC);
+ %MS
+ T_SpecExpoB = seM';
+ T_SpecExpoB = [T_SpecExpoB;Group_SP_Ns'];
+ Datetime_SpecExpoB = string(datetime('now'));
+ cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
+ Filename_SpecExpoB = sprintf('Spectral_Exponent_data_%s.xlsx', Datetime_SpecExpoB);
+ Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
+ Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
+ xlswrite(Filename_SpecExpoB,T_SpecExpoB);
+ %ME
+ xtickangle(60)
 
 %sig_values(seP(2), seP(1));
 %ylabel('Spectral Exponent')
@@ -361,21 +359,21 @@ for lay_comb = 1
             case 7
                 group_name = 'Full ';
         end
-        
+
         % First we want to grab individual values, create 2-way labels for
         % them, then concatenate everything together
         PLI_Ct200_w_nan = PLI(1, :, band, lay_comb)';
         PLI_Ct200 = PLI_Ct200_w_nan(~isnan(PLI_Ct200_w_nan));
-        
+
         PLI_DB200_w_nan = PLI(2, :, band, lay_comb)';
         PLI_DB200 = PLI_DB200_w_nan(~isnan(PLI_DB200_w_nan));
-        
+
         PLI_Ct400_w_nan = PLI(3, :, band, lay_comb)';
         PLI_Ct400 = PLI_Ct400_w_nan(~isnan(PLI_Ct400_w_nan));
-        
+
         PLI_DB400_w_nan = PLI(4, :, band, lay_comb)';
         PLI_DB400 = PLI_DB400_w_nan(~isnan(PLI_DB400_w_nan));
-        
+
         PLI_vals = [PLI_Ct200; PLI_DB200; PLI_Ct400; PLI_DB400];
         %MS
         Group_PLI_Ns = [length(PLI_Ct200); length(PLI_DB200); length(PLI_Ct400); length(PLI_DB400)];
@@ -394,7 +392,10 @@ for lay_comb = 1
         Filename_PLI = regexprep(Filename_PLI, ':', '_');
         xlswrite(Filename_PLI,T_PLI);
         %ME
-        
+
+
+
+
         sig_values(pliP(2), pliP(1));
         %ylabel('Phase Locking Index')
         set(gcf, 'Color', 'w');
@@ -474,24 +475,24 @@ for lay_comb = 1:2 % 1:3
             case 7
                 group_name = 'Full';
         end
-        
+
         count = count + 1;
-        
+
         Coh_Ct200_w_nan = Co(1, :, band, lay_comb)';
         Coh_Ct200 = Coh_Ct200_w_nan(~isnan(Coh_Ct200_w_nan));
-        
+
         Coh_Ct400_w_nan = Co(2, :, band, lay_comb)';
         Coh_Ct400 = Coh_Ct400_w_nan(~isnan(Coh_Ct400_w_nan));
-        
+
         Coh_DB200_w_nan = Co(3, :, band, lay_comb)';
         Coh_DB200 = Coh_DB200_w_nan(~isnan(Coh_DB200_w_nan));
-        
+
         Coh_DB400_w_nan = Co(4, :, band, lay_comb)';
         Coh_DB400 = Coh_DB400_w_nan(~isnan(Coh_DB400_w_nan));
-        
+
         % First we want to grab individual values, create 2-way labels for
         % them, then concatenate everything together
-        
+
         coh_vals = [Coh_Ct200; Coh_DB200; Coh_Ct400; Coh_DB400];
         %MS
         Group_Coh_Ns = [length(Coh_Ct200); length(Coh_DB200); length(Coh_Ct400); length(Coh_DB400)];
@@ -503,32 +504,32 @@ for lay_comb = 1:2 % 1:3
         subaxis(2,4,count,'SpacingHoriz',0.01,'SpacingVert',0.12)
         create_bar_figure(cohM(:,2), cohM(:,1), cohC);
         %MS
-        if strcmp(user, 'S')
-            T_coherence = cohM';
-            T_coherence = [T_coherence; Group_Coh_Ns'];
-            Datetime_coherence = string(datetime('now'));
-            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
-            Filename_coherence = sprintf('Coherence_data_%s.xlsx', Datetime_coherence);
-            Filename_coherence = regexprep(Filename_coherence, ' ', '_');
-            Filename_coherence = regexprep(Filename_coherence, ':', '_');
-            xlswrite(Filename_coherence, T_coherence);
-            
-            Datetime_coherence = string(datetime('now'));
-            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
-            Filename_coherence = sprintf('Coherence_Figure_%s.tiff', Datetime_coherence);
-            Filename_coherence = regexprep(Filename_coherence, ' ', '_');
-            Filename_coherence = regexprep(Filename_coherence, ':', '_');
-            saveas(gcf, Filename_coherence);
-            %ME
-        end
-        set(gca, 'ytick', [0, 1], 'fontsize', 12)
+        T_coherence = cohM';
+        T_coherence = [T_coherence;Group_Coh_Ns'];
+        Datetime_coherence = string(datetime('now'));
+        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
+        Filename_coherence = sprintf('Coherence_data_%s.xlsx', Datetime_coherence);
+        Filename_coherence = regexprep(Filename_coherence, ' ', '_');
+        Filename_coherence = regexprep(Filename_coherence, ':', '_');
+        xlswrite(Filename_coherence,T_coherence);
+        %ME        
+        set(gca,'ytick',[0 1],'fontsize',12)
+        %MS
+        Datetime_coherence = string(datetime('now'));
+        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
+        Filename_coherence = sprintf('Coherence_Figure_%s.tiff', Datetime_coherence);
+        Filename_coherence = regexprep(Filename_coherence, ' ', '_');
+        Filename_coherence = regexprep(Filename_coherence, ':', '_');
+        saveas(gcf, Filename_coherence);
+        %ME
+
         %      sig_values(cohP(2), cohP(1));
         xtickangle(25)
         ylim([0, 1])
         if count < 5
             title(group_name)
         end
-        
+
         if band == 2
             ylabel({comb_name, 'Coherence'})
         else
@@ -537,14 +538,17 @@ for lay_comb = 1:2 % 1:3
     end
 end
 
-%% Not being used in manuscript anymore
-% disp('Power')
-% power_vals = [rip.DB2(:, 7); rip.DB4(:, 7); rip.DBDB2(:, 7); rip.DBDB4(:, 7)];
-%
-% [powerP, powerT, power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs}, 'model', 'interaction', 'display', 'off');
-% [powerC, powerM, ~, powerNames] = multcompare(power_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-%
-%% % Duration
+%%
+disp('Power')
+power_vals = [rip.DB2(:, 7); rip.DB4(:, 7); rip.DBDB2(:, 7); rip.DBDB4(:, 7)];
+%ME
+Group_SPWRs_Power_Ns = [length(rip.DB2), length(rip.DBDB2), length(rip.DB4), length(rip.DBDB4)];
+%MS
+
+[powerP, powerT, power_stats] = anovan(power_vals, {r_treat_Labs, r_age_Labs}, 'model', 'interaction', 'display', 'off');
+[powerC, powerM, ~, powerNames] = multcompare(power_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
+
+% Duration
 disp('Duration')
 dur_vals = [rip.DB2(:, 2) - rip.DB2(:, 1); rip.DBDB2(:, 2) - rip.DBDB2(:, 1); rip.DB4(:, 2) - rip.DB4(:, 1); rip.DBDB4(:, 2) - rip.DBDB4(:, 1)] ./ 1250;
 %ME
@@ -561,7 +565,7 @@ ylabel('SWR Duration (s)')
 set(gca, 'ytick', [0, 0.15, 0.3])
 ylim([0, 0.4])
 
-%% IRI
+% IRI
 [iriP, iriT, IRI_stats] = anovan(cleanIRI, {IRI_treat, IRI_age,}, 'model', 'interaction', 'display', 'off');
 [iriC, iriM, ~, iriNames] = multcompare(IRI_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
 figure
@@ -706,87 +710,28 @@ xlswrite(Filename_IRI,T_SPWR_IRI);
 %ylabel('Inter-ripple interval (s)')
 %set(gca,'ytick',[0 3000 6000])
 %ylim([0 8500])
+%% CSD Commented this part 
+CSD_vals = [CSD.DB2_amp; CSD.DBDB2_amp; CSD.DB4_amp; CSD.DBDB4_amp];
+CSD_full_vals = [CSD.DB2_full_amp; CSD.DBDB2_full_amp; CSD.DB4_full_amp; CSD.DBDB4_full_amp];
+disp('Specific CSD')
+[csd_P,csd_Table,csd_stats] = anovan(CSD_full_vals,{treat_Labs age_Labs},'model','interaction','display','off');
+[csd_Comparisons,csd_Means,~,csd_Names] = multcompare(csd_stats,'Dimension',[1 2],'CType','bonferroni','display','off');
+CSD.DB2m = mean(CSD.DB2, 3);
+CSD.DB4m = mean(CSD.DB4, 3);
 
-%% CSD %MS Commented this part %ME
-%% Define windows of interest
-high_chan = 7; %pyramidal channel
-low_chan = 11; % Radiatum channel
-pre_win = 1:550; % pre indices
-win = 650:750; % ripple indices
-post_win = 850:1300; % post indices
+CSD.DBDB2m = mean(CSD.DBDB2, 3);
+CSD.DBDB4m = mean(CSD.DBDB4, 3);
 
-CSDm.DB2 = mean(CSD.DB2,3);
-CSDm.DB4 = mean(CSD.DB4,3);
-CSDm.DBDB2 = mean(CSD.DBDB2,3);
-CSDm.DBDB4 = mean(CSD.DBDB4,3);
+CSD.DB2v = var(CSD.DB2, 0, 3);
+CSD.DB4v = var(CSD.DB4, 0, 3);
 
-dipole_DB2_pre = calculate_CSD_dipole(CSD.DB2, high_chan, low_chan, pre_win);
-dipole_DB4_pre = calculate_CSD_dipole(CSD.DB4, high_chan, low_chan, pre_win);
-dipole_DBDB2_pre = calculate_CSD_dipole(CSD.DBDB2, high_chan, low_chan, pre_win);
-dipole_DBDB4_pre = calculate_CSD_dipole(CSD.DBDB4, high_chan, low_chan, pre_win);
-
-dipole_vals_pre = [dipole_DB2_pre; dipole_DBDB2_pre; dipole_DB4_pre; dipole_DBDB4_pre];
-
-dipole_DB2   = calculate_CSD_dipole(CSD.DB2,  high_chan, low_chan, win);
-dipole_DB4   = calculate_CSD_dipole(CSD.DB4,  high_chan, low_chan, win);
-dipole_DBDB2 = calculate_CSD_dipole(CSD.DBDB2,high_chan, low_chan, win);
-dipole_DBDB4 = calculate_CSD_dipole(CSD.DBDB4,high_chan, low_chan, win);
-
-dipole_vals = [dipole_DB2; dipole_DBDB2; dipole_DB4; dipole_DBDB4];
-
-dipole_DB2_post   = calculate_CSD_dipole(CSD.DB2,  high_chan, low_chan, post_win);
-dipole_DB4_post   = calculate_CSD_dipole(CSD.DB4,  high_chan, low_chan, post_win);
-dipole_DBDB2_post = calculate_CSD_dipole(CSD.DBDB2,high_chan, low_chan, post_win);
-dipole_DBDB4_post = calculate_CSD_dipole(CSD.DBDB4,high_chan, low_chan, post_win);
-
-dipole_vals_post = [dipole_DB2_post; dipole_DBDB2_post; dipole_DB4_post; dipole_DBDB4_post];
-%MS
-if strcmp(user, 'S')
-    Group_Ripple_Pre_Ns = [length(dipole_DB2_pre); length(dipole_DBDB2_pre); length(dipole_DB4_pre); length(dipole_DBDB4_pre)];
-    
-    Group_Ripple_Dur_Ns = [length(dipole_DB2); length(dipole_DBDB2); length(dipole_DB4); length(dipole_DBDB4)];
-    
-    Group_Ripple_Post_Ns = [length(dipole_DB2_post); length(dipole_DBDB2_post); length(dipole_DB4_post); length(dipole_DBDB4_post)];
-end
-%ME
-
-%% Make labels
-label.DB2age = cell(size(CSD.DB2, 3), 1);
-label.DB2treat = cell(size(CSD.DB2, 3), 1);
-label.DB2age(:) = {'200'};
-label.DB2treat(:) = {'Control'};
-
-label.DB4age = cell(size(CSD.DB4, 3), 1);
-label.DB4treat = cell(size(CSD.DB4, 3), 1);
-label.DB4age(:) = {'400'};
-label.DB4treat(:) = {'Control'};
-
-label.DBDB2age = cell(size(CSD.DBDB2, 3), 1);
-label.DBDB2treat = cell(size(CSD.DBDB2, 3), 1);
-label.DBDB2age(:) = {'200'};
-label.DBDB2treat(:) = {'DBDB'};
-
-label.DBDB4age = cell(size(CSD.DBDB4, 3), 1);
-label.DBDB4treat = cell(size(CSD.DBDB4, 3), 1);
-label.DBDB4age(:) = {'400'};
-label.DBDB4treat(:) = {'DBDB'};
-
-ageLabs = [label.DB2age; label.DBDB2age; label.DB4age; label.DBDB4age];
-treatLabs = [label.DB2treat; label.DBDB2treat; label.DB4treat; label.DBDB4treat];
-
-%% Stats
-
-[csdP, csdTable, CSD_stats] = anovan(dipole_vals, {treatLabs, ageLabs}, 'model', 'interaction','display','off');
-[csdC, csdM, ~, csdNames] = multcompare(CSD_stats, 'Dimension', [1, 2], 'CType', 'bonferroni','display','off');
-
-[csdP_pre, csdTable_pre, CSD_stats_pre] = anovan(dipole_vals_pre, {treatLabs, ageLabs}, 'model', 'interaction','display','off');
-[csdC_pre, csdM_pre, ~, csdNames_pre] = multcompare(CSD_stats_pre, 'Dimension', [1, 2], 'CType', 'bonferroni','display','off');
-
-[csdP_post, csdTable_post, CSD_stats_post] = anovan(dipole_vals_post, {treatLabs, ageLabs}, 'model', 'interaction','display','off');
-[csdC_post, csdM_post, ~, csdNames_post] = multcompare(CSD_stats_post, 'Dimension', [1, 2], 'CType', 'bonferroni','display','off');
+CSD.DBDB2v = var(CSD.DBDB2, 0, 3);
+CSD.DBDB4v = var(CSD.DBDB4, 0, 3);
 
 %% Plot
 figure
+max_val = 1;
+min_val = -1;
 set(gcf, 'Color', 'w', 'Position', [100, 100, 1200, 600])
 xstart = 0.07;
 x2start = 0.37;
@@ -794,109 +739,80 @@ toph = 0.55;
 h = 0.35;
 both = 0.15;
 w = 0.28;
-ylims = [0, 8];
-clim = 4.5;
-for i = 1:4
-    switch i
-        case 1
-            subplot('Position', [xstart, toph, w, h])
-            hand = pcolor(flipud(CSDm.DB2(:, 2:end-1)'));
-            title('200 d', 'FontSize', 14)
-            ylabel('db/+', 'FontSize', 14, 'FontWeight', 'bold')
-        case 2
-            subplot('Position',[x2start toph w h])
-            hand = pcolor(flipud(CSDm.DB4(:,2:end-1)'));
-            title('400 d','FontSize',14)%M needs alteration
-            
-        case 3
-            subplot('Position', [xstart, both, w, h])
-            hand = pcolor(flipud(CSDm.DBDB2(:, 2:end-1)'));
-            ylabel('db/db', 'FontSize', 14, 'FontWeight', 'bold')
-        case 4
-            subplot('Position', [x2start, both, w, h])
-            hand = pcolor(flipud(CSDm.DBDB4(:, 2:end-1)'));
-    end
-    set(hand, 'EdgeColor', 'none'), colormap(flipud(hotcold)), shading interp
-    rectangle('Position', [pre_win(1), 12 - high_chan(end), pre_win(end) - pre_win(1), 1])
-    rectangle('Position', [pre_win(1), 12 - low_chan(end), pre_win(end) - pre_win(1), 1])
-    
-    rectangle('Position', [win(1), 12 - high_chan(end), win(end) - win(1), 1])
-    rectangle('Position', [win(1), 12 - low_chan(end), win(end) - win(1), 1])
-    
-    rectangle('Position', [post_win(1), 12 - high_chan(end), post_win(end) - post_win(1), 1])
-    rectangle('Position', [post_win(1), 12 - low_chan(end), post_win(end) - post_win(1), 1])
-    
-    hline(6, 'k', 'Pyramidal')
-    hline(2, 'k', 'Radiatum')
-    
-    set(gca, 'xtick', [])
-    caxis([-clim, clim])
-end
 
-subplot('Position',[0.75 both+0.6 0.2 0.18])
-[csdBar] = UCSF_graph([csdM_pre(1:2,2),csdM_pre(3:4,2)]',[csdM_pre(1:2,1),csdM_pre(3:4,1)]',csdC_pre);
-
-
-title('Pre-Ripple')
-ylim(ylims)
+subplot('Position', [xstart, toph, w, h])
+h1 = pcolor(flipud(CSD.DB2m(:, 2:end-1))');
+set(h1, 'EdgeColor', 'none'), shading interp, colormap(flipud(hotcold))
+%title('200 d','FontSize',14)
+%ylabel('db/+','FontSize',14,'FontWeight','bold')
 set(gca, 'xtick', [])
+caxis([min_val, max_val])
 
-subplot('Position',[0.75 both+0.3 0.2 0.18])
-[csdBar] = UCSF_graph([csdM(1:2,2),csdM(3:4,2)]',[csdM(1:2,1),csdM(3:4,1)]',csdC);
+subplot('Position', [x2start, toph, w, h])
+
+h2 = pcolor(flipud(CSD.DB4m(:, 2:end-1)'));
+set(h2, 'EdgeColor', 'none'), shading interp, colormap(flipud(hotcold))
+%title('400 d','FontSize',14)
+set(gca, 'xtick', [], 'ytick', [])
+caxis([min_val, max_val])
+
+subplot('Position', [xstart, both, w, h])
+h3 = pcolor(flipud(CSD.DBDB2m(:, 2:end-1)'));
+set(h3, 'EdgeColor', 'none'), shading interp, colormap(flipud(hotcold))
+%ylabel('db/db','FontSize',14,'FontWeight','bold')
+set(gca, 'xtick', [0, 625, 1250, 1875], 'xticklabels', [-0.5, 0, 0.5, 1])
+caxis([min_val, max_val])
 
 
-title('Ripple')
-ylim(ylims)
-set(gca, 'xtick', [])
+subplot('Position', [x2start, both, w, h])
+h4 = pcolor(flipud(CSD.DBDB4m(:, 2:end-1)'));
+shading interp, colormap(flipud(hotcold))
+set(gca, 'xtick', [0, 625, 1250, 1875], 'xticklabels', [-0.5, 0, 0.5, 1], 'ytick', [])
+caxis([min_val, max_val])
+set(h4, 'EdgeColor', 'none');
+colorbar
+subplot('Position', [0.75, both, 0.2, 0.8])
 
-subplot('Position',[0.75 both 0.2 0.18])
-[csdBar] = UCSF_graph([csdM_post(1:2,2),csdM_post(3:4,2)]',[csdM_post(1:2,1),csdM_post(3:4,1)]',csdC_post);
+b = create_bar_figure(csd_Means(:, 2), csd_Means(:, 1), csd_Comparisons);
+
+%set(b,'ytick',[0 1 2],'ylim', [0 2])
+%sig_values(csd_P(2), csd_P(1));
+%ylabel('CSD Dipole (uV)')
 
 
-title('Post-Ripple')
-ylim(ylims)
-% l = legend('db/+','db/db');
-% legend('boxoff')
-% legend('Location','northoutside')
-% age_sig = sig_check(csdP(2));
-% db_sig = sig_check(csdP(1));
-
-A = suplabel('Time (s)', 'x', [0.1, 0.1, 0.52, 0.5]);
-set(A, 'FontSize', 12, 'FontWeight', 'bold')
-
-%MS
-if strcmp(user, 'S')
-    T_Pre_Ripple = csdM_pre';
-    T_Pre_Ripple = [T_Pre_Ripple;Group_Ripple_Pre_Ns'];
-    Datetime_Pre_Ripple = string(datetime('now'));
-    cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
-    Filename_Pre_Ripple = sprintf('Pre_Ripple_CSD_%s.xlsx', Datetime_Pre_Ripple);
-    Filename_Pre_Ripple = regexprep(Filename_Pre_Ripple, ' ', '_');
-    Filename_Pre_Ripple = regexprep(Filename_Pre_Ripple, ':', '_');
-    xlswrite(Filename_Pre_Ripple,T_Pre_Ripple);
-    
-    T_Ripple = csdM';
-    T_Ripple = [T_Ripple;Group_Ripple_Dur_Ns'];
-    Datetime_Ripple = string(datetime('now'));
-    cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
-    Filename_Ripple = sprintf('Ripple_CSD_%s.xlsx', Datetime_Ripple);
-    Filename_Ripple = regexprep(Filename_Ripple, ' ', '_');
-    Filename_Ripple = regexprep(Filename_Ripple, ':', '_');
-    xlswrite(Filename_Ripple,T_Ripple);
-    
-    T_Post_Ripple = csdM_post';
-    T_Post_Ripple = [T_Post_Ripple;Group_Ripple_Post_Ns'];
-    Datetime_Post_Ripple = string(datetime('now'));
-    cd ('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
-    Filename_Post_Ripple = sprintf('Post_Ripple_CSD_%s.xlsx', Datetime_Post_Ripple);
-    Filename_Post_Ripple = regexprep(Filename_Post_Ripple, ' ', '_');
-    Filename_Post_Ripple = regexprep(Filename_Post_Ripple, ':', '_');
-    xlswrite(Filename_Post_Ripple,T_Post_Ripple);
-    
-    Datetime_NotyebookCSD = string(datetime('now'));
-    Filename_NotyebookCSD = sprintf('NotyebookCSD_Figure_%s.tiff', Datetime_NotyebookCSD);
-    Filename_NotyebookCSD = regexprep(Filename_NotyebookCSD, ' ', '_');
-    Filename_NotyebookCSD = regexprep(Filename_NotyebookCSD, ':', '_');
-    saveas(gcf, Filename_NotyebookCSD);
-end
-%ME
+% % Plot variance
+% figure
+% set(gcf,'Color','w','Position',[100 100 1200 600])
+% max_val = 120;
+% min_val = 0;
+% subplot(2,2,1)
+% h1 = pcolor(flipud(CSD.DB2v(:,2:end-1))');
+% set(h1,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+% title('200 d','FontSize',14)
+% ylabel('db/+','FontSize',14,'FontWeight','bold')
+% set(gca,'xtick',[])
+% caxis([min_val max_val])
+%
+% subplot(2,2,2)
+%
+% h2 = pcolor(flipud(CSD.DB4v(:,2:end-1)'));
+% set(h2,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+% title('400 d','FontSize',14)
+% set(gca,'xtick',[], 'ytick',[])
+% caxis([min_val max_val])
+%
+% subplot(2,2,3)
+% h3 = pcolor(flipud(CSD.DBDB2v(:,2:end-1)'));
+% set(h3,'EdgeColor','none'),shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+% ylabel('db/db','FontSize',14,'FontWeight','bold')
+% set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
+% caxis([min_val max_val])
+%
+%
+% subplot(2,2,4)
+% h4 = pcolor(flipud(CSD.DBDB4v(:,2:end-1)'));
+% shading interp, colormap(cubehelix(800,2.5,0.8,1.4,0.55))
+% set(gca,'xtick',[0 625 1250 1875],'xticklabels',[-0.5, 0, 0.5,1])
+% caxis([min_val max_val])
+% set(h4,'EdgeColor','none');
+% colorbar
