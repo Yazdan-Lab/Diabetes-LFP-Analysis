@@ -23,13 +23,13 @@ for group = 1:4
     %load H/L TD indexes
     % set files to load skipping animals with bad channels
     if group == 1
-        grouping = 3:9; % DB+ 200D
+        grouping = 3:9; % DB+ 200D 7 
     elseif group == 2
-        grouping = 10:14; % DB+ 400D
+        grouping = 10:14; % DB+ 400D 5 
     elseif group == 3
-        grouping = [15:18, 20, 21]; % DBDB 200D
+        grouping = [15:18, 20, 21]; % DBDB 200D 6 
     elseif group == 4
-        grouping = [22, 24:27]; % DBDB 400D
+        grouping = [22, 24:27]; % DBDB 400D 5
     end
 
     % run through the correct animals for each group
