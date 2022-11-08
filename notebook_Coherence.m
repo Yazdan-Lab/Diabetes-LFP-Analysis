@@ -1,20 +1,22 @@
 % load in spkinf and concise channel info
-clear all;
-close all;
-clc
 load('SpkInfo.mat')
 load('chans.mat')
 % file path for
-%filepath = 'C:\Users\ipzach\Documents\dbdb electrophy';
-filepath = 'C:\COM\ePhy\dbdb\Data\dbdb electrophy';
+user = 'Z'; %'Z' for Zach or 'S' for Shahram for path stuff
 
-cd(filepath)
+switch user
+    case 'Z'
+        cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy')
+    case 'S'
+        cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy'); % here is the data
+end
+
 animalList = dir;
 Fs = 1250; % Sampling Frequency; needed for filtering and plotting
 % Theta/Delta state to analyze
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Group, Band, recording, Animal, Layer/layer
-Co = NaN(4, 7, 2, 25, 3, 3);
+Co = NaN(4, 7, 2, 7, 3, 3);
 
 %% Stroke group to analyze
 % 1:4 6 ref Spk Info
@@ -27,13 +29,16 @@ for group = 1:4
     elseif group == 2
         grouping = 10:14; % DB+ 400D 5 
     elseif group == 3
-        grouping = [15:18, 20, 21]; % DBDB 200D 6 
+        grouping = 15:21; % DBDB 200D 6 
     elseif group == 4
-        grouping = [22, 24:27]; % DBDB 400D 5
+        grouping = 22:27; % DBDB 400D 5
     end
-
+    
+    counter = 0;
+    
     % run through the correct animals for each group
     for animal = grouping
+        counter = counter + 1;
         disp(['Animal: ', num2str(animal)])
         cd(animalList(animal).name)
         for i = 1:2
@@ -87,7 +92,7 @@ for group = 1:4
                     % Run coherence and average outputs for each frequency
                     % band
                     % Group, Band, recording, Animal, Layer/layer
-                    Co(group, iBand, i, animal-2, A, B) = nanmean(mscohere(A_LFP, B_LFP, hamming(12500), [], range, 1250));
+                    Co(group, iBand, i, counter, A, B) = nanmean(mscohere(A_LFP, B_LFP, hamming(12500), [], range, 1250));
                 end % frequency band
             end % layer
         end % LFP
@@ -235,19 +240,20 @@ for layComb = 1:2
 
         [cohP, cohT, cohStats] = anovan(vals, {dbLabs, ageLabs}, 'model', 'interaction', 'display', 'off');
         [cohC, cohM, ~, cohN] = multcompare(cohStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-        %          if layComb == 1
-
+        
         counter = counter + 1;
         subplot(2, 7, counter)
         UCSF_graph([cohM(1:2, 2), cohM(3:4, 2)]', [cohM(1:2, 1), cohM(3:4, 1)]', cohC);
         %MS
-        T_Chrnc = cohM';
-        Datetime_Chrnc = string(datetime('now'));
-        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence_Notebook')
-        Filename_Chrnc = sprintf('Coherence_data_animal_%d_%s_%s.xlsx', animal, compare, Datetime_Chrnc);
-        Filename_Chrnc = regexprep(Filename_Chrnc, ' ', '_');
-        Filename_Chrnc = regexprep(Filename_Chrnc, ':', '_');
-        xlswrite(Filename_Chrnc, T_Chrnc);
+        if strcmp(user,'S')
+            Datetime_Chrnc = string(datetime('now'));
+            
+            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence_Notebook')
+            Filename_Chrnc = sprintf('Coherence_data_animal_%d_%s_%s.xlsx', animal, compare, Datetime_Chrnc);
+            Filename_Chrnc = regexprep(Filename_Chrnc, ' ', '_');
+            Filename_Chrnc = regexprep(Filename_Chrnc, ':', '_');
+            xlswrite(Filename_Chrnc, T_Chrnc);
+        end
         %ME
 
         set(gca, 'ytick', [0, 0.5, 1])

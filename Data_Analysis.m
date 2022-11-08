@@ -89,9 +89,12 @@ for group = 1:4
             if ~isempty(rem(k).R) % Make sure recording exists
                 state_changes(group, counter) = state_changes(group, counter) + length(rem(k).R.start);
             else
-                disp(['Rem file missing for animal ' num2str(cur_animal)])
+                disp(['Rem file missing for animal ', num2str(cur_animal)])
             end % if REM not empty
+            load(char(LFP_files(k))); % Load LFP events
 
+            LFP = LFPs{1, 2} .* voltConv; % load LFP
+            full_LFP = [full_LFP; LFP];
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
                 % Load in animal data
                 %%%%%%
@@ -111,7 +114,7 @@ for group = 1:4
                 LTD_events(LTD_events >= length(LFP)-1250) = NaN;
                 LTD_events = rmmissing(LTD_events, 1);
                 if isempty(LTD_events)
-                    disp(['No LTD events for animal: ' num2str(cur_animal) ' recording: ' num2str(k)])
+                    disp(['No LTD events for animal: ', num2str(cur_animal), ' recording: ', num2str(k)])
                 end
                 % initialize temp storage variables
                 temp_gamma_pyr = zeros(1, length(LTD_events));
@@ -145,7 +148,7 @@ for group = 1:4
                     [rip.DBDB4, label.DBDB4] = label_ripples(rip.DBDB4, label.DBDB4, LTD_events, counter);
                 end
             else
-                disp(['SWRLTDIdx is empty/missing for animal ' num2str(cur_animal)])
+                disp(['SWRLTDIdx is empty/missing for animal ', num2str(cur_animal)])
             end %is empty SWRLTD
 
         end % for k SWRLTDIdx
@@ -243,7 +246,7 @@ for group = 1:4
                 end % frequency band
             end % layer
         else
-            disp(['LFP is empty for animal ' num2str(cur_animal)])
+            disp(['LFP is empty for animal ', num2str(cur_animal)])
         end % if
         cd ..
 
