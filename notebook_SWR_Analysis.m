@@ -2,19 +2,23 @@
 % This script will load all the SWRs the Gratianne catagorized and run
 % analysis on them. It will look at SWR count, duration, Power, IRI, and
 % CSD %M run the SPWRdetect first
-clear all, close all
-%addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
-%     'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
- addpath('C:\COM\ePhy\dbdb\code\utils-toolbox\utils-toolbox')
-  addpath('C:\COM\ePhy\dbdb\code\spectral-analysis-tools')
+user = 'Z'
 
+switch user
+    case 'Z'
+        addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach',...
+            'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+        cd('C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
+        load('SpkInfo.mat')
+        cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy');
+    case 'S'
+        addpath('C:\COM\ePhy\dbdb\code\utils-toolbox\utils-toolbox')
+        addpath('C:\COM\ePhy\dbdb\code\spectral-analysis-tools')
+        cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
+        load('SpkInfo.mat')
+        cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy');
+end
 
-
-% cd('C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
-cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
-load('SpkInfo.mat')
-% cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy');
-cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy');
 animals = dir;
 
 rip.DB2 = [];
@@ -37,23 +41,23 @@ for i = 1:4
     elseif i == 4
         grouping = [22, 24:27]; % DBDB 400D
     end
-
-
+    
+    
     counter = 0;
     for j = grouping
         cd(animals(j).name)
         % Load index file, containts H/LTD Dur SWRFreq and SWRIdx
         load('SWR_Index.mat');
-
+        
         % Find and load Full SWR files
         %         l_files = dir('SWR_L_*');
         %         l_files = {l_files.name};
         %
         r_files = dir('SWR_R_*');
         r_files = {r_files.name};
-
+        
         counter = counter + 1;
-
+        
         for k = 1:size(SWRLTDIdx, 2)
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
                 load(char(r_files(k)));
@@ -66,7 +70,7 @@ for i = 1:4
                 elseif i == 4
                     [rip.DBDB4, label.DBDB4] = label_ripples(rip.DBDB4, label.DBDB4, SWRevents, SWRLTDIdx, k, counter);
                 end
-
+                
             end
         end
         cd ..
@@ -213,7 +217,7 @@ for l = [1, 3, 2, 4]
             IRI_age = [IRI_age; {age}];
             IRI_treat = [IRI_treat; {treat}];
             IRI_big(l, m) = (group(m+1) - group(m));
-
+            
         end
     end
 end
@@ -337,7 +341,7 @@ figure
 set(gcf,'Color','w')
 [cBar] = UCSF_graph([cM(1:2,2),cM(3:4,2)]',[cM(1:2,1),cM(3:4,1)]',cC);
 %MS
-T_Eve = cM'; 
+T_Eve = cM';
 T_Eve = [T_Eve;Group_SPWR_Ns'];
 Datetime_Eve = string(datetime('now'));
 cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SPWRs')
@@ -360,7 +364,7 @@ if cP(2) <= 0.05
     set(A, 'FontSize', 12)
 end
 if cP(1) <= 0.05
-B = suplabel(['db effect: ' db_sig],'t',[0.8 0.08 0.01 0.75]);
-set(B,'FontSize',12)
+    B = suplabel(['db effect: ' db_sig],'t',[0.8 0.08 0.01 0.75]);
+    set(B,'FontSize',12)
 end
 

@@ -52,13 +52,13 @@ state_changes = NaN(4, 7);
 for group = 1:4
     % Grab indices of animals in a particular group
     if group == 1
-        grouping = 3:9; % DB+ 200D
+        grouping = 3:9; % DB+ 200D 7
     elseif group == 2
-        grouping = 10:14; % DB+ 400D
+        grouping = 10:14; % DB+ 400D 5
     elseif group == 3
-        grouping = [15:21]; % DBDB 200D
+        grouping = [15:18, 20, 21]; % DBDB 200D 6
     elseif group == 4
-        grouping = [22:27]; % DBDB 400D
+        grouping = [22, 24:27]; % DBDB 400D 5
     end
     counter = 0;
 
@@ -99,10 +99,6 @@ for group = 1:4
                 % Load in animal data
                 %%%%%%
                 load(char(SWR_files(k))); % Load SWR events
-                load(char(LFP_files(k))); % Load LFP events
-
-                LFP = LFPs{1, 2} .* voltConv; % load LFP
-                full_LFP = [full_LFP; LFP];
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%
                 %%% Per Ripple Analysis %%%
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%
