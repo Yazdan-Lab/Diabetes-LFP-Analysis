@@ -4,7 +4,7 @@ clear all
 %     'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
 addpath('C:\COM\ePhy\dbdb\code\utils-toolbox\utils-toolbox')
 addpath('C:\COM\ePhy\dbdb\code\spectral-analysis-tools')
-
+%test
 load('SpkInfo.mat'); %MS: Contains
 load('PyramChans.mat');
 Fs = 1250;
