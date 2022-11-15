@@ -168,6 +168,13 @@ disp('Slowing score')
 figure
 set(gcf, 'Position', [100, 100, 800, 400])
 for lay_comb = 2:3
+    switch lay_comb
+        case 2
+            layer = 'pyramidal';
+        case 3
+            layer = 'slm';
+    end
+
     % First we want to grab individual values, create 2-way labels for
     % them, then concatenate everything together
     SS_Ct200_w_nan = slowing_score(1, :, lay_comb)';
@@ -187,6 +194,9 @@ for lay_comb = 2:3
     summary_slow_score.SD    = [std(SS_Ct200)    std(SS_DB200)    std(SS_Ct400)    std(SS_DB400)];
     summary_slow_score.n     = [length(SS_Ct200) length(SS_DB200) length(SS_Ct400) length(SS_DB400)];
     disp(num2str(lay_comb))
+    if strcmp('S', user)
+        UCSF_create_excel('SlowingScore',summary_slow_score,['slow_score_' layer])
+    end
     [ssP, ssT, ssStats] = anovan(slow_score_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
     [ssC, ssM, ~, ssN] = multcompare(ssStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
     subplot(1, 2, lay_comb-1)
@@ -291,15 +301,7 @@ subplot(1, 2, 2)
 create_bar_figure(summary_SE.SD, summary_SE.means, seC);
 %MS
 if strcmp(user, 'S')
-    T_SpecExpoB = seM';
-    T_SpecExpoB = [T_SpecExpoB; Group_SP_Ns'];
-    Datetime_SpecExpoB = string(datetime('now'));
-    
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
-    Filename_SpecExpoB = sprintf('Spectral_Exponent_data_%s.xlsx', Datetime_SpecExpoB);
-    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
-    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
-    xlswrite(Filename_SpecExpoB, T_SpecExpoB);
+    UCSF_create_excel('SpecExpoB',summary_SE,'Spectral_Exponent')
 end
 %ME
 xtickangle(60)
@@ -382,15 +384,7 @@ for lay_comb = 1
         xtickangle(60)
         %MS
         if strcmp(user, 'S')
-            
-            T_PLI = pliM';
-            T_PLI = [T_PLI; Group_PLI_Ns'];
-            Datetime_PLI = string(datetime('now'));
-            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
-            Filename_PLI = sprintf('PLI_data_%s.xlsx', Datetime_PLI);
-            Filename_PLI = regexprep(Filename_PLI, ' ', '_');
-            Filename_PLI = regexprep(Filename_PLI, ':', '_');
-            xlswrite(Filename_PLI, T_PLI);
+            UCSF_create_excel('PLI',summary_PLI,'PLI')
             
             Datetime_PLI = string(datetime('now'));
             cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
@@ -505,14 +499,8 @@ for lay_comb = 1:2 % 1:3
         create_bar_figure(summary_Coh.SD , summary_Coh.means, cohC);
         %MS
         if strcmp(user, 'S')
-            T_coherence = cohM';
-            T_coherence = [T_coherence; Group_Coh_Ns'];
-            Datetime_coherence = string(datetime('now'));
-            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
-            Filename_coherence = sprintf('Coherence_data_%s.xlsx', Datetime_coherence);
-            Filename_coherence = regexprep(Filename_coherence, ' ', '_');
-            Filename_coherence = regexprep(Filename_coherence, ':', '_');
-            xlswrite(Filename_coherence, T_coherence);
+
+            UCSF_create_excel('Coherence',summary_Coh,[comb_name '_' group_name '_Coherence'])
             
             Datetime_coherence = string(datetime('now'));
             cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
@@ -554,12 +542,7 @@ dur_Ct400 = [rip.DB4(:, 2) - rip.DB4(:, 1)] ./1250;
 dur_DB400 = [rip.DBDB4(:, 2) - rip.DBDB4(:, 1)] ./ 1250;
 
 dur_vals =  [dur_Ct200; dur_DB200; dur_Ct400; dur_DB400]; 
-%ME
-if strcmp(user, 'S')
-    Group_SPWRs_Dur_Ns = [length(rip.DB2), length(rip.DBDB2), length(rip.DB4), length(rip.DBDB4)];
-    Group_SPWRs_IRI_Ns = [length(rip.DB2), length(rip.DBDB2), length(rip.DB4), length(rip.DBDB4)];
-end
-%MS
+
 [durP, durT, dur_stats] = anovan(dur_vals, {r_treat_Labs, r_age_Labs}, 'model', 'interaction', 'display', 'off');
 [durC, durM, ~, durNames] = multcompare(dur_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
 
@@ -573,6 +556,10 @@ sig_values(durP(2), durP(1));
 ylabel('SWR Duration (s)')
 set(gca, 'ytick', [0, 0.15, 0.3])
 ylim([0, 0.4])
+if strcmp('S', user)
+    UCSF_create_excel('SPWRs',summary_dur,'SPWR_Duration')
+end
+
 
 %% IRI
 [iriP, iriT, IRI_stats] = anovan(IRI_vals, {IRI_treat, IRI_age,}, 'model', 'interaction', 'display', 'off');
@@ -583,8 +570,16 @@ sig_values(iriP(2), iriP(1));
 ylabel('Inter-ripple interval (s)')
 %set(gca, 'ytick', [0, 3000, 6000])
 %ylim([0, 8500])
+if strcmp('S', user)
+    UCSF_create_excel('SPWRs',summary_IRI,'SPWR_IRI')
+end
 
 %% Gamma power
+%[clean_data, boolean] = rmoutliers(data);
+clean_gamma_DB2 = rmoutliers(Gamma.DB2_Pyr);
+clean_gamma_DBDB2 = rmoutliers(Gamma.DBDB2_Pyr);
+clean_gamma_DB4 = rmoutliers(Gamma.DB4_Pyr);
+clean_gamma_DBDB4 = rmoutliers(Gamma.DBDB4_Pyr);
 
 pyr_Vals = [Gamma.DB2_Pyr, Gamma.DBDB2_Pyr, Gamma.DB4_Pyr, Gamma.DBDB4_Pyr]';
 
@@ -599,10 +594,9 @@ figure
 create_bar_figure(summary_Gamma.SD , summary_Gamma.means, pyr_Comparions);
 sig_values(pyr_P(2), pyr_P(1));
 ylabel('Pyramidal Gamma power')
-% disp('Slm Gamma')
-% [slmP,slm_Table,slm_Stats] = anovan(slm_Vals,{treat_Labs age_Labs},'model','interaction','display','off');
-% [slmC,slmM,~,slmN] = multcompare(slm_Stats,'Dimension',[1 2],'CType','bonferroni','display','off');
-%
+if strcmp('S', user)
+    UCSF_create_excel('SPWRs',summary_Gamma,'SPWR_Gamma_Power')
+end
 
 %% Basic features of SPWRs
 both = 0.1;
@@ -665,9 +659,7 @@ axis off
 %Gamma power
 subplot('Position', [mw, toph, w, h])
 create_bar_figure(summary_Gamma.SD, summary_Gamma.means, pyr_Comparions);
-%MS
 
-%ME
 
 
 %ylabel('SWR Gamma power')
@@ -679,40 +671,7 @@ create_bar_figure(summary_Gamma.SD, summary_Gamma.means, pyr_Comparions);
 % Duration
 subplot('Position', [lw, both, w, h])
 dur_fig = create_bar_figure(summary_dur.SD, summary_dur.means, durC);
-%MS
-if strcmp(user, 'S')
-    T_SPWR_Power = pyr_Means';
-    T_SPWR_Power = [T_SPWR_Power; Group_SPWRs_Power_Ns];
-    Datetime_SPWRs = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Notebook_Statistics')
-    Filename_SPWRs = sprintf('SPWRs_Power_data_%s.xlsx', Datetime_SPWRs);
-    Filename_SPWRs = regexprep(Filename_SPWRs, ' ', '_');
-    Filename_SPWRs = regexprep(Filename_SPWRs, ':', '_');
-    xlswrite(Filename_SPWRs, T_SPWR_Power);
-    T_SPWR_Dur = durM';
-    T_SPWR_Dur = [T_SPWR_Dur; Group_SPWRs_Dur_Ns];
-    Datetime_SPWRs = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Notebook_Statistics')
-    Filename_Dur = sprintf('SPWRs_Duration_data_%s.xlsx', Datetime_SPWRs);
-    Filename_Dur = regexprep(Filename_Dur, ' ', '_');
-    Filename_Dur = regexprep(Filename_Dur, ':', '_');
-    xlswrite(Filename_Dur, T_SPWR_Dur);
-    
-    T_SPWR_IRI = iriM';
-    T_SPWR_IRI = [T_SPWR_IRI; Group_SPWRs_IRI_Ns];
-    Datetime_SPWRs = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Notebook_Statistics')
-    Filename_IRI = sprintf('SPWRs_IRI_data_%s.xlsx', Datetime_SPWRs);
-    Filename_IRI = regexprep(Filename_IRI, ' ', '_');
-    Filename_IRI = regexprep(Filename_IRI, ':', '_');
-    xlswrite(Filename_IRI, T_SPWR_IRI);
-    
-end
-%ME
-%sig_values(durP(2), durP(1));
-%ylabel('SWR Duration (s)')
-%set(gca,'ytick',[0 0.15 0.3])
-%ylim([0 0.4])
+
 
 %bottom right quad
 % IRI
@@ -769,6 +728,7 @@ dipole_vals_post = [dipole_DB2_post; dipole_DBDB2_post; dipole_DB4_post; dipole_
 summary_CSD_post.means = [mean(dipole_DB2_post)   mean(dipole_DBDB2_post)   mean(dipole_DB4_post)   mean(dipole_DBDB4_post)];
 summary_CSD_post.SD    = [std(dipole_DB2_post)    std(dipole_DBDB2_post)    std(dipole_DB4_post)    std(dipole_DBDB4_post)];
 summary_CSD_post.n     = [length(dipole_DB2_post) length(dipole_DBDB2_post) length(dipole_DB4_post) length(dipole_DBDB4_post)];
+
 
 
 %% Make labels
@@ -887,32 +847,9 @@ set(A, 'FontSize', 12, 'FontWeight', 'bold')
 
 %MS
 if strcmp(user, 'S')
-    T_Pre_Ripple = csdM_pre';
-    T_Pre_Ripple = [T_Pre_Ripple; Group_Ripple_Pre_Ns'];
-    Datetime_Pre_Ripple = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
-    Filename_Pre_Ripple = sprintf('Pre_Ripple_CSD_%s.xlsx', Datetime_Pre_Ripple);
-    Filename_Pre_Ripple = regexprep(Filename_Pre_Ripple, ' ', '_');
-    Filename_Pre_Ripple = regexprep(Filename_Pre_Ripple, ':', '_');
-    xlswrite(Filename_Pre_Ripple, T_Pre_Ripple);
-    
-    T_Ripple = csdM';
-    T_Ripple = [T_Ripple; Group_Ripple_Dur_Ns'];
-    Datetime_Ripple = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
-    Filename_Ripple = sprintf('Ripple_CSD_%s.xlsx', Datetime_Ripple);
-    Filename_Ripple = regexprep(Filename_Ripple, ' ', '_');
-    Filename_Ripple = regexprep(Filename_Ripple, ':', '_');
-    xlswrite(Filename_Ripple, T_Ripple);
-    
-    T_Post_Ripple = csdM_post';
-    T_Post_Ripple = [T_Post_Ripple; Group_Ripple_Post_Ns'];
-    Datetime_Post_Ripple = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\CSD_Notebook')
-    Filename_Post_Ripple = sprintf('Post_Ripple_CSD_%s.xlsx', Datetime_Post_Ripple);
-    Filename_Post_Ripple = regexprep(Filename_Post_Ripple, ' ', '_');
-    Filename_Post_Ripple = regexprep(Filename_Post_Ripple, ':', '_');
-    xlswrite(Filename_Post_Ripple, T_Post_Ripple);
+    UCSF_create_excel('CSD',summary_CSD_pre,'CSD_pre_ripple_dipole')
+    UCSF_create_excel('CSD',summary_CSD,'CSD_ripple_dipole')
+    UCSF_create_excel('CSD',summary_CSD_post,'CSD_post_ripple_dipole')
     
     Datetime_NotyebookCSD = string(datetime('now'));
     Filename_NotyebookCSD = sprintf('NotyebookCSD_Figure_%s.tiff', Datetime_NotyebookCSD);

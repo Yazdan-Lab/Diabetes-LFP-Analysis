@@ -7,7 +7,7 @@ Fs = 1250;
 kernel = gaussian(Fs, ceil(8*Fs));
 kernel2 = gaussian(10*Fs, ceil(80*Fs));
 %%%%%%
-user = 'Z'; %'Z' for Zach or 'S' for Shahram for path stuff
+user = 'S'; %'Z' for Zach or 'S' for Shahram for path stuff
 
 switch user
     case 'Z'
@@ -284,3 +284,20 @@ switch user
         cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
 end
 save('LFP Measures', 'Gamma', 'rip', 'rip_wav', 'label', 'CSD', 'Co', 'PLI', 'slowing_score', 'state_changes', 'intSlo0_Store', 'intSlo_Store', 'Pows_store')
+
+%MS
+if user == 'S'
+    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\LFPs');    
+    Animal_Number = unique(Animal_Number);
+    for i=1:length(Animal_Number)
+        TmpStr= sprintf("save('Full_LFPs_%d.mat',", Animal_Number(i));
+        TMPSTR1 = sprintf("'Save_Full_LFP_1_%d', ", Animal_Number(i));
+        TMPSTR2 = sprintf("'Save_Full_LFP_2_%d', ", Animal_Number(i));
+        TmpStr = append(TmpStr, TMPSTR1, TMPSTR2);
+        TmpStr = append(TmpStr, "'-v7.3')");
+        disp(['Saving LFP data for animal: ', num2str(Animal_Number(i))]);
+        eval(TmpStr);
+        disp(['Finished saving data for animal: ', num2str(Animal_Number(i))]);        
+    end
+end
+%ME
