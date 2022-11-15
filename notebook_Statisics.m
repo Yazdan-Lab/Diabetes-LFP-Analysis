@@ -332,7 +332,7 @@ for lay_comb = 1
             comb_name = 'Pyr-Slm';
     end % switch layComb
     %im bored
-    for band = 1:5
+    for band = 1:6
         switch band
             case 1
                 group_name = 'Delta ';
@@ -372,7 +372,7 @@ for lay_comb = 1
         summary_PLI.means    = [mean(PLI_Ct200)    mean(PLI_DB200)    mean(PLI_Ct400)    mean(PLI_DB400)];
         summary_PLI.SD    = [std(PLI_Ct200)    std(PLI_DB200)    std(PLI_Ct400)    std(PLI_DB400)];
         summary_PLI.n     = [length(PLI_Ct200) length(PLI_DB200) length(PLI_Ct400) length(PLI_DB400)];
-        subplot(1,5,band)
+        subplot(1,6,band)
         create_bar_figure(summary_PLI.SD, summary_PLI.means, pliC);
         title(group_name)
         
@@ -387,7 +387,7 @@ for lay_comb = 1
             T_PLI = [T_PLI; Group_PLI_Ns'];
             Datetime_PLI = string(datetime('now'));
             cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
-            Filename_PLI = sprintf('PLI_data_%s.xlsx', Datetime_PLI);
+            Filename_PLI = sprintf([group_name '_PLI_data_%s.xlsx'], Datetime_PLI);
             Filename_PLI = regexprep(Filename_PLI, ' ', '_');
             Filename_PLI = regexprep(Filename_PLI, ':', '_');
             xlswrite(Filename_PLI, T_PLI);
