@@ -111,7 +111,6 @@ state_changes_age_Labs = [state_changes_Ct2AgeLab; state_changes_Db2AgeLab; stat
 state_changes_db_Labs = [state_changes_Ct2DbLab; state_changes_Db2DbLab; state_changes_Ct4DbLab; state_changes_Db4DbLab];
 
 clear per_animal_Ct2AgeLab per_animal_Ct2DbLab per_animal_Ct4AgeLab per_animal_Ct4DbLab per_animal_Db2AgeLab per_animal_Db2DbLab per_animal_Db4AgeLab per_animal_Db4DbLab
-% Process CSD into single value
 
 %%
 IRI_vals = [];
@@ -167,8 +166,10 @@ disp('Slowing score')
 
 figure
 set(gcf, 'Position', [100, 100, 800, 400])
-for lay_comb = 2:3
+for lay_comb = 1:3
     switch lay_comb
+        case 1
+            layer = 'cortex';
         case 2
             layer = 'pyramidal';
         case 3
@@ -199,27 +200,24 @@ for lay_comb = 2:3
     end
     [ssP, ssT, ssStats] = anovan(slow_score_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
     [ssC, ssM, ~, ssN] = multcompare(ssStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-    subplot(1, 2, lay_comb-1)
+    
+    %MS subplot(1, 2, lay_comb-1) %This line was replaced by the next line
+    figure
     create_bar_figure(summary_slow_score.SD, summary_slow_score.means, ssC);
-    sig_values(ssP(2), ssP(1));
-    if lay_comb == 2
-        title('Pyramidal')
-        ylabel('Slowing Score')
-    elseif lay_comb == 3
-        title('SLM')
-    end
+    %sig_values(ssP(2), ssP(1));
     set(gcf, 'Color', 'w');
     set(gca, 'ytick', [0, 6, 12])
     ylim([0, 15])
     xtickangle(60)
-    %     switch lay_comb
-    %         case 1
-    %             title('Cortex')
-    %         case 2
-    %             title('Pyramidal')
-    %         case 3
-    %             title('SLM')
-    %     end
+        switch lay_comb
+            case 1
+                title('Cortex')
+                ylabel('Slowing Score')
+            case 2
+                title('Pyramidal')
+            case 3
+                title('SLM')
+        end
 end
 
 %% Spectral exponent
@@ -334,7 +332,7 @@ for lay_comb = 1
             comb_name = 'Pyr-Slm';
     end % switch layComb
     %im bored
-    for band = 1:5
+    for band = 1:6
         switch band
             case 1
                 group_name = 'Delta ';
@@ -374,7 +372,12 @@ for lay_comb = 1
         summary_PLI.means    = [mean(PLI_Ct200)    mean(PLI_DB200)    mean(PLI_Ct400)    mean(PLI_DB400)];
         summary_PLI.SD    = [std(PLI_Ct200)    std(PLI_DB200)    std(PLI_Ct400)    std(PLI_DB400)];
         summary_PLI.n     = [length(PLI_Ct200) length(PLI_DB200) length(PLI_Ct400) length(PLI_DB400)];
-        subplot(1,5,band)
+        %MS
+        if strcmp(user, 'S')
+            UCSF_create_excel('PLI',summary_SE,[group_name '_PLI'])
+        end
+%ME
+        subplot(1,6,band)
         create_bar_figure(summary_PLI.SD, summary_PLI.means, pliC);
         title(group_name)
         
@@ -382,17 +385,7 @@ for lay_comb = 1
         ylabel('Phase Locking Index')
         set(gcf, 'Color', 'w');
         xtickangle(60)
-        %MS
-        if strcmp(user, 'S')
-            UCSF_create_excel('PLI',summary_PLI,'PLI')
-            
-            Datetime_PLI = string(datetime('now'));
-            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
-            Filename_PLI = sprintf('PLI_Figure_%s.tiff', Datetime_PLI);
-            Filename_PLI = regexprep(Filename_PLI, ' ', '_');
-            Filename_PLI = regexprep(Filename_PLI, ':', '_');
-            saveas(gcf, Filename_PLI);
-        end
+        
         %ME
         %set(gca,'ytick',[0 1])
         %ylim([0 1])
@@ -406,6 +399,17 @@ for lay_comb = 1
         %         end
     end
 end
+%MS
+        if strcmp(user, 'S')
+            UCSF_create_excel('PLI',summary_PLI,'PLI')
+            
+            Datetime_PLI = string(datetime('now'));
+            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
+            Filename_PLI = sprintf('PLI_Figure_%s.tiff', Datetime_PLI);
+            Filename_PLI = regexprep(Filename_PLI, ' ', '_');
+            Filename_PLI = regexprep(Filename_PLI, ':', '_');
+            saveas(gcf, Filename_PLI);
+        end
 
 %% State changes
 SC_Ct200_w_nan = state_changes(1, :)';
@@ -450,7 +454,7 @@ for lay_comb = 1:2 % 1:3
             comb_name = 'Pyr-Slm';
     end % switch layComb
     disp(comb_name)
-    for band = 1:5 %1:7
+    for band = 1:6 %1:7
         switch band
             case 1
                 group_name = 'Delta';
@@ -495,7 +499,7 @@ for lay_comb = 1:2 % 1:3
         [cohP, cohT, cohStats] = anovan(coh_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
         [cohC, cohM, ~, cohN] = multcompare(cohStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
         %
-        subaxis(2, 5, count, 'SpacingHoriz', 0.01, 'SpacingVert', 0.12)
+        subaxis(2, 6, count, 'SpacingHoriz', 0.01, 'SpacingVert', 0.12)
         create_bar_figure(summary_Coh.SD , summary_Coh.means, cohC);
         %MS
         if strcmp(user, 'S')

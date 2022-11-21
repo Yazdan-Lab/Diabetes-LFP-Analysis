@@ -332,7 +332,7 @@ for lay_comb = 1
             comb_name = 'Pyr-Slm';
     end % switch layComb
     %im bored
-    for band = 1:6
+    for band = 1:5
         switch band
             case 1
                 group_name = 'Delta ';
@@ -372,7 +372,7 @@ for lay_comb = 1
         summary_PLI.means    = [mean(PLI_Ct200)    mean(PLI_DB200)    mean(PLI_Ct400)    mean(PLI_DB400)];
         summary_PLI.SD    = [std(PLI_Ct200)    std(PLI_DB200)    std(PLI_Ct400)    std(PLI_DB400)];
         summary_PLI.n     = [length(PLI_Ct200) length(PLI_DB200) length(PLI_Ct400) length(PLI_DB400)];
-        subplot(1,6,band)
+        subplot(1,5,band)
         create_bar_figure(summary_PLI.SD, summary_PLI.means, pliC);
         title(group_name)
         
@@ -387,10 +387,17 @@ for lay_comb = 1
             T_PLI = [T_PLI; Group_PLI_Ns'];
             Datetime_PLI = string(datetime('now'));
             cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
-            Filename_PLI = sprintf([group_name '_PLI_data_%s.xlsx'], Datetime_PLI);
+            Filename_PLI = sprintf('PLI_data_%s.xlsx', Datetime_PLI);
             Filename_PLI = regexprep(Filename_PLI, ' ', '_');
             Filename_PLI = regexprep(Filename_PLI, ':', '_');
             xlswrite(Filename_PLI, T_PLI);
+            
+            Datetime_PLI = string(datetime('now'));
+            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
+            Filename_PLI = sprintf('PLI_Figure_%s.tiff', Datetime_PLI);
+            Filename_PLI = regexprep(Filename_PLI, ' ', '_');
+            Filename_PLI = regexprep(Filename_PLI, ':', '_');
+            saveas(gcf, Filename_PLI);
         end
         %ME
         %set(gca,'ytick',[0 1])
@@ -405,14 +412,7 @@ for lay_comb = 1
         %         end
     end
 end
-if strcmp(user,'S')
-    Datetime_PLI = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
-    Filename_PLI = sprintf('PLI_Figure_%s.tiff', Datetime_PLI);
-    Filename_PLI = regexprep(Filename_PLI, ' ', '_');
-    Filename_PLI = regexprep(Filename_PLI, ':', '_');
-    saveas(gcf, Filename_PLI);
-end
+
 %% State changes
 SC_Ct200_w_nan = state_changes(1, :)';
 SC_Ct200 = SC_Ct200_w_nan(~isnan(SC_Ct200_w_nan));
@@ -456,7 +456,7 @@ for lay_comb = 1:2 % 1:3
             comb_name = 'Pyr-Slm';
     end % switch layComb
     disp(comb_name)
-    for band = 1:6 %1:7
+    for band = 1:5 %1:7
         switch band
             case 1
                 group_name = 'Delta';
@@ -501,7 +501,7 @@ for lay_comb = 1:2 % 1:3
         [cohP, cohT, cohStats] = anovan(coh_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
         [cohC, cohM, ~, cohN] = multcompare(cohStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
         %
-        subaxis(2, 6, count, 'SpacingHoriz', 0.01, 'SpacingVert', 0.12)
+        subaxis(2, 5, count, 'SpacingHoriz', 0.01, 'SpacingVert', 0.12)
         create_bar_figure(summary_Coh.SD , summary_Coh.means, cohC);
         %MS
         if strcmp(user, 'S')
@@ -509,18 +509,24 @@ for lay_comb = 1:2 % 1:3
             T_coherence = [T_coherence; Group_Coh_Ns'];
             Datetime_coherence = string(datetime('now'));
             cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
-            Filename_coherence = sprintf([comb_name '_' group_name '_Coherence_data_%s.xlsx'], Datetime_coherence);
+            Filename_coherence = sprintf('Coherence_data_%s.xlsx', Datetime_coherence);
             Filename_coherence = regexprep(Filename_coherence, ' ', '_');
             Filename_coherence = regexprep(Filename_coherence, ':', '_');
             xlswrite(Filename_coherence, T_coherence);
             
-           
+            Datetime_coherence = string(datetime('now'));
+            cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
+            Filename_coherence = sprintf('Coherence_Figure_%s.tiff', Datetime_coherence);
+            Filename_coherence = regexprep(Filename_coherence, ' ', '_');
+            Filename_coherence = regexprep(Filename_coherence, ':', '_');
+            saveas(gcf, Filename_coherence);
+            %ME
         end
         set(gca, 'ytick', [0, 1], 'fontsize', 12)
         %      sig_values(cohP(2), cohP(1));
         xtickangle(25)
         ylim([0, 1])
-        if count < 7
+        if count < 6
             title(group_name)
         end
         
@@ -531,15 +537,7 @@ for lay_comb = 1:2 % 1:3
         end
     end
 end
-if strcmp(user, 'S')
-    Datetime_coherence = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
-    Filename_coherence = sprintf('Coherence_Figure_%s.tiff', Datetime_coherence);
-    Filename_coherence = regexprep(Filename_coherence, ' ', '_');
-    Filename_coherence = regexprep(Filename_coherence, ':', '_');
-    saveas(gcf, Filename_coherence);
-    %ME
-end
+
 %% Not being used in manuscript anymore
 % disp('Power')
 % power_vals = [rip.DB2(:, 7); rip.DB4(:, 7); rip.DBDB2(:, 7); rip.DBDB4(:, 7)];

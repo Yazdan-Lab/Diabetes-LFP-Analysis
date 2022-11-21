@@ -53,12 +53,16 @@ for group = 1:4
     % Grab indices of animals in a particular group
     if group == 1
         grouping = 3:9; % DB+ 200D 7
+        gn = 'DB+ 200D';
     elseif group == 2
         grouping = 10:14; % DB+ 400D 5
+        gn = 'DB+ 400D';
     elseif group == 3
         grouping = [15:18, 20, 21]; % DBDB 200D 6
+        gn = 'DBDB 200D';
     elseif group == 4
         grouping = [22, 24:27]; % DBDB 400D 5
+        gn = 'DBDB 400D';
     end
     counter = 0;
 
@@ -95,6 +99,14 @@ for group = 1:4
 
             LFP = LFPs{1, 2} .* voltConv; % load LFP
             full_LFP = [full_LFP; LFP];
+
+               %%%%%
+               % initialize struct for data validation
+               single_animal_measures.gamma = [];
+               single_animal_measures.CSD = [];
+               single_animal_measures.events = [];
+
+
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
                 % Load in animal data
                 %%%%%%
@@ -104,6 +116,7 @@ for group = 1:4
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Preprocess signal
                 %%%%%%
+
                 gamma_LFP = BPfilter(LFP, 1250, 30, 60); % isolate gamma frequency band
                 LTD_events = SWRevents(SWRLTDIdx(k).R, 1:2); % grab SWRs that occur during this period
                 LTD_events(LTD_events <= 625) = NaN;
@@ -112,6 +125,7 @@ for group = 1:4
                 if isempty(LTD_events)
                     disp(['No LTD events for animal: ', num2str(cur_animal), ' recording: ', num2str(k)])
                 end
+                single_animal_measures.events = LTD_events;
                 % initialize temp storage variables
                 temp_gamma_pyr = zeros(1, length(LTD_events));
                 temp_avg_rip = zeros(1876, length(LTD_events));
@@ -121,10 +135,13 @@ for group = 1:4
                 for r = 1:size(LTD_events, 1)
                     % gamma power of each ripple
                     temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r, 1):LTD_events(r, 2), chans(2, cur_animal)), 1250);
+                    single_animal_measures.gamma = [single_animal_measures.gamma temp_gamma_pyr(r)];
                     temp_avg_rip(:, r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250, chans(2, cur_animal));
+                    
                     % Create CSD of each ripple
                     temp_CSD(:, :, r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250, chans(2, cur_animal)-5:chans(2, cur_animal)+6), Fs, 1e-4);
                     %csd = save_check(csd, temp_CSD);
+                    single_animal_measures.CSD = cat(3,single_animal_measures.CSD, temp_CSD(:,:,r));
                 end
                 % Concatenate temp variable to storage variable
                 %gamma_ctx = [gamma_ctx temp_gamma_ctx];
@@ -162,6 +179,7 @@ for group = 1:4
 
                 % Calculate ratio of signal powers
                 slowing_score(group, counter, layer) = SignalPower(low_freq, 1250) ./ SignalPower(high_freq, 1250);
+                single_animal_measures.SS = slowing_score(group, counter, layer);
                 % Group, Band, Animal, Layer
 
                 % calculate Spectral exponent
@@ -177,6 +195,7 @@ for group = 1:4
                 Pows_store(group, counter) = Pows;
                 intSlo_Store{group, counter} = intSlo;
                 intSlo0_Store{group, counter} = intSlo0;
+                single_animal_measures.SE = intSlo0(2);
                 % Coherence and PLI
                 %%%%%%%%%%%%%
                 switch layer
@@ -239,13 +258,17 @@ for group = 1:4
                     % comparison)
                     Co(group, counter, freq_band, layer) = nanmean(mscohere(A_LFP, B_LFP, hamming(12500), [], range, 1250));
                     PLI(group, counter, freq_band, layer) = PLV(angle(hilbert(A_filt))', angle(hilbert(B_filt))');
+                    single_animal_measures.Co(freq_band,layer) = Co(group, counter, freq_band, layer);
+                    single_animal_measures.PLI(freq_band, layer) = PLI(group, counter, freq_band, layer);
+                    single_animal_measures.LFP = full_LFP;
+                
                 end % frequency band
             end % layer
         else
             disp(['LFP is empty for animal ', num2str(cur_animal)])
         end % if
         cd ..
-
+        save(['C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal\' gn '_' num2str(counter) ],'single_animal_measures')
     end % animal
     % Save data to variable outside loop
     if group == 1
@@ -286,18 +309,18 @@ end
 save('LFP Measures', 'Gamma', 'rip', 'rip_wav', 'label', 'CSD', 'Co', 'PLI', 'slowing_score', 'state_changes', 'intSlo0_Store', 'intSlo_Store', 'Pows_store')
 
 %MS
-if user == 'S'
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\LFPs');    
-    Animal_Number = unique(Animal_Number);
-    for i=1:length(Animal_Number)
-        TmpStr= sprintf("save('Full_LFPs_%d.mat',", Animal_Number(i));
-        TMPSTR1 = sprintf("'Save_Full_LFP_1_%d', ", Animal_Number(i));
-        TMPSTR2 = sprintf("'Save_Full_LFP_2_%d', ", Animal_Number(i));
-        TmpStr = append(TmpStr, TMPSTR1, TMPSTR2);
-        TmpStr = append(TmpStr, "'-v7.3')");
-        disp(['Saving LFP data for animal: ', num2str(Animal_Number(i))]);
-        eval(TmpStr);
-        disp(['Finished saving data for animal: ', num2str(Animal_Number(i))]);        
-    end
-end
+% if user == 'S'
+%     cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\LFPs');    
+%     Animal_Number = unique(Animal_Number);
+%     for i=1:length(Animal_Number)
+%         TmpStr= sprintf("save('Full_LFPs_%d.mat',", Animal_Number(i));
+%         TMPSTR1 = sprintf("'Save_Full_LFP_1_%d', ", Animal_Number(i));
+%         TMPSTR2 = sprintf("'Save_Full_LFP_2_%d', ", Animal_Number(i));
+%         TmpStr = append(TmpStr, TMPSTR1, TMPSTR2);
+%         TmpStr = append(TmpStr, "'-v7.3')");
+%         disp(['Saving LFP data for animal: ', num2str(Animal_Number(i))]);
+%         eval(TmpStr);
+%         disp(['Finished saving data for animal: ', num2str(Animal_Number(i))]);        
+%     end
+% end
 %ME
