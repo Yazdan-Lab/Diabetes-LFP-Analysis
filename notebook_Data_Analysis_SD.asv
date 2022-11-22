@@ -50,7 +50,7 @@ state_changes = NaN(4, 7);
 
 % Begin parsing data
 %%%%%%
-for group = 3:4
+for group = 1:4
     % Grab indices of animals in a particular group
     if group == 1
         grouping = 3:9; % DB+ 200D 7
@@ -95,9 +95,6 @@ for group = 3:4
         single_animal_measures.gamma = [];
         single_animal_measures.CSD = [];
         single_animal_measures.events = [];
-        single_animal_measures.events = [];
-        single_animal_measures.dur = [];
-        single_animal_measures.IRI = [];
         for k = 1:length(SWRLTDIdx) % run through each of the LTD periods (where SWRs occur)
             if ~isempty(rem(k).R) % Make sure recording exists
                 state_changes(group, counter) = state_changes(group, counter) + length(rem(k).R.start);
@@ -164,7 +161,7 @@ for group = 3:4
                     [rip.DBDB4, label.DBDB4] = label_ripples(rip.DBDB4, label.DBDB4, LTD_events, counter);
                 end
             else
-                disp(['SWRLTDIdx is empty/missing for animal ', num2str(cur_animal) ' recording: ' num2str(k)])
+                disp(['SWRLTDIdx is empty/missing for animal ', num2str(cur_animal)])
             end %is empty SWRLTD
             
         end % for k SWRLTDIdx
