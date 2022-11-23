@@ -112,6 +112,49 @@ state_changes_db_Labs = [state_changes_Ct2DbLab; state_changes_Db2DbLab; state_c
 
 clear per_animal_Ct2AgeLab per_animal_Ct2DbLab per_animal_Ct4AgeLab per_animal_Ct4DbLab per_animal_Db2AgeLab per_animal_Db2DbLab per_animal_Db4AgeLab per_animal_Db4DbLab
 
+%%
+IRI_vals = [];
+IRI_age = [];
+IRI_treat = [];
+IRI_big = NaN(4, 2000);
+for l = 1:4
+    switch l
+        case 1
+            group = rip.DB2(:, 1);
+            age = "200";
+            treat = "Control";
+        case 2
+            group = rip.DB4(:, 1);
+            age = "400";
+            treat = "Control";
+        case 3
+            group = rip.DBDB2(:, 1);
+            age = "200";
+            treat = "DBDB";
+        case 4
+            group = rip.DBDB4(:, 1);
+            age = "400";
+            treat = "DBDB";
+    end
+    IRI_vals = diff(group)./1250;
+    
+    for m = 1:length(group) - 1
+        if group(m+1) > group(m)
+            temp_iri = (group(m+1) - group(m)) ./ 1250;
+            IRI_vals = [IRI_vals; (group(m+1) - group(m))];
+            IRI_age = [IRI_age; age];
+            IRI_treat = [IRI_treat; treat];
+            IRI_big(l, m) = (group(m+1) - group(m));
+
+        end
+    end
+end
+
+
+summary_IRI.means = [mean(IRICt2), mean(IRIDB2), mean(IRICt4), mean(IRIDB4)];
+summary_IRI.SD = [std(IRICt2), std(IRIDB2), std(IRICt4), std(IRIDB4)];
+summary_IRI.n = [length(IRICt2), length(IRIDB2), length(IRICt4), length(IRIDB4)];
+
 %% Slowing score
 disp('Slowing score')
 
@@ -510,31 +553,21 @@ UCSF_create_excel('SPWRs', summary_dur, 'SPWR_Duration', user)
 
 %% IRI
 
-IRICt2 = iri_all.DB2;
-IRICt4 = iri_all.DB4;
-IRIDB2 = iri_all.DBDB2;
-IRIDB4 = iri_all.DBDB4;
+IRICt2 = diff(rip.DB2(:,1));
+IRICt4 = diff(rip.DB4(:,1));
+IRIDB2 = diff(rip.DBDB2(:,1));
+IRIDB4 = diff(rip.DBDB4(:,1));
 
-IRI_vals = [IRICt2; IRIDB2; IRICt4; IRIDB4];
-IRI_treat = [repmat("Ctrl",length(IRICt2),1); repmat("DB",length(IRIDB2),1); repmat("Ctrl",length(IRICt4),1); repmat("DB",length(IRIDB4),1)];
-IRI_age = [repmat("200",length(IRICt2),1); repmat("200",length(IRIDB2),1); repmat("400",length(IRICt4),1); repmat("400",length(IRIDB4),1)];
-
+IRI_treat = [repmat("Ctrl",length(Ct2),1) repmat("DB",length(IRIDB2),1) repmat("Ctrl",length(IRICt4),1) repmat("DB",length(IRIDB4),1)];
+IRI_treat = [repmat("200",length(Ct2),1) repmat("200",length(IRIDB2),1) repmat("Ctrl",length(IRICt4),1) repmat("DB",length(IRIDB4),1)];
 [iriP, iriT, IRI_stats] = anovan(IRI_vals, {IRI_treat, IRI_age,}, 'model', 'interaction', 'display', 'off');
 [iriC, iriM, ~, iriNames] = multcompare(IRI_stats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-
-%set(gca, 'ytick', [0, 3000, 6000])
-%ylim([0, 8500])
-
-
-summary_IRI.means = [mean(IRICt2), mean(IRIDB2), mean(IRICt4), mean(IRIDB4)];
-summary_IRI.SD = [std(IRICt2), std(IRIDB2), std(IRICt4), std(IRIDB4)];
-summary_IRI.n = [length(IRICt2), length(IRIDB2), length(IRICt4), length(IRIDB4)];
-
 figure
 create_bar_figure(summary_IRI.SD, summary_IRI.means, iriC);
 sig_values(iriP(2), iriP(1));
 ylabel('Inter-ripple interval (s)')
-
+%set(gca, 'ytick', [0, 3000, 6000])
+%ylim([0, 8500])
 UCSF_create_excel('SPWRs', summary_IRI, 'SPWR_IRI', user)
 
 %% Gamma power

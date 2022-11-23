@@ -72,6 +72,8 @@ for group = 1:4
     gamma_ctx = [];
     avg_rip = [];
     csd = [];
+    dur = [];
+    iri = [];
     for cur_animal = grouping
         disp(['Animal: ', num2str(cur_animal)])
         cd(animal_list(cur_animal).name)
@@ -126,15 +128,12 @@ for group = 1:4
                 if isempty(LTD_events)
                     disp(['No LTD events for animal: ', num2str(cur_animal), ' recording: ', num2str(k)])
                 end
-                single_animal_measures.events = [single_animal_measures.events; LTD_events];
-                single_animal_measures.dur = [single_animal_measures.dur; LTD_events(:, 2) - LTD_events(:, 1)];
-                single_animal_measures.IRI = [single_animal_measures.IRI; diff(LTD_events(:, 1))];
+                
                 % initialize temp storage variables
                 temp_gamma_pyr = zeros(1, size(LTD_events,1));
                 temp_avg_rip = zeros(1876, size(LTD_events,1));
                 temp_CSD = zeros(1876, 12, size(LTD_events,1));
-                % For each event, create a spectrogram and store it in the
-                % temp variable
+                
                 for r = 1:size(LTD_events, 1)
                     % gamma power of each ripple
                     temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r, 1):LTD_events(r, 2), chans(2, cur_animal)), 1250);
@@ -152,7 +151,10 @@ for group = 1:4
                 %gamma_slm = [gamma_slm temp_gamma_slm];
                 avg_rip = [avg_rip, temp_avg_rip];
                 csd = cat(3, csd, temp_CSD);
-                
+                single_animal_measures.events = [single_animal_measures.events; LTD_events];
+                single_animal_measures.dur = [single_animal_measures.dur; LTD_events(:, 2) - LTD_events(:, 1)];
+                single_animal_measures.IRI = [single_animal_measures.IRI; diff(LTD_events(:, 1))];
+                iri = [iri; diff(LTD_events(:, 1))];
                 % Save all individual ripples for basic analysis
                 if group == 1
                     [rip.DB2, label.DB2] = label_ripples(rip.DB2, label.DB2, LTD_events, counter);
@@ -283,24 +285,28 @@ for group = 1:4
         %Gamma.DB2_SLM = gamma_slm;
         CSD.DB2 = csd;
         rip_wav.DB2 = avg_rip;
+        iri_all.DB2 = iri;
     elseif group == 2
         %Gamma.DB4_Ctx = gamma_ctx;
         Gamma.DB4_Pyr = gamma_pyr;
         %Gamma.DB4_SLM = gamma_slm;
         CSD.DB4 = csd;
         rip_wav.DB4 = avg_rip;
+        iri_all.DB4 = iri;
     elseif group == 3
         %Gamma.DBDB2_Ctx = gamma_ctx;
         Gamma.DBDB2_Pyr = gamma_pyr;
         %Gamma.DBDB2_SLM = gamma_slm;
         CSD.DBDB2 = csd;
         rip_wav.DBDB2 = avg_rip;
+        iri_all.DBDB2 = iri;
     elseif group == 4
         %Gamma.DBDB4_Ctx = gamma_ctx;
         Gamma.DBDB4_Pyr = gamma_pyr;
         %Gamma.DBDB4_SLM = gamma_slm;
         CSD.DBDB4 = csd;
         rip_wav.DBDB4 = avg_rip;
+        iri_all.DBDB4 = iri;
     end % if
 end % group
 % Group, Animal, freq_band, Layer
@@ -312,7 +318,7 @@ switch user
     case 'S'
         cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
 end
-save('LFP Measures', 'Gamma', 'rip', 'rip_wav', 'label', 'CSD', 'Co', 'PLI', 'slowing_score', 'state_changes', 'intSlo0_Store', 'intSlo_Store', 'Pows_store')
+save('LFP Measures', 'Gamma', 'rip', 'iri_all', 'rip_wav', 'label', 'CSD', 'Co', 'PLI', 'slowing_score', 'state_changes', 'intSlo0_Store', 'intSlo_Store', 'Pows_store')
 
 %MS
 % if user == 'S'
