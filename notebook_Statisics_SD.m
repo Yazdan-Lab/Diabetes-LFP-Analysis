@@ -320,7 +320,7 @@ for lay_comb = 1
         summary_PLI.SD = [std(PLI_Ct200), std(PLI_DB200), std(PLI_Ct400), std(PLI_DB400)];
         summary_PLI.n = [length(PLI_Ct200), length(PLI_DB200), length(PLI_Ct400), length(PLI_DB400)];
         %MS
-        UCSF_create_excel('PLI', summary_SE, [group_name, '_PLI'], user)
+        UCSF_create_excel('PLI', summary_PLI, [group_name, '_PLI'], user)
         %ME
         subplot(1, 6, band)
         create_bar_figure(summary_PLI.SD, summary_PLI.means, pliC);
@@ -345,7 +345,7 @@ for lay_comb = 1
     end
 end
 %MS
-UCSF_create_excel('PLI', summary_PLI, 'PLI', user)
+
 if strcmp(user, 'S')
 
 

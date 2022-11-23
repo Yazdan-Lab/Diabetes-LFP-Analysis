@@ -198,8 +198,8 @@ for group = 1:4
                 thisCol = [0, 0, 1];
                 [intSlo, stat, Pows, Deviants, stat0, intSlo0] = fitPowerLaw3steps(XX, YY, robRegMeth, doPlot, thisCol);
                 Pows_store(group, counter) = Pows;
-                intSlo_Store{group, counter} = intSlo;
-                intSlo0_Store{group, counter} = intSlo0;
+                intSlo_Store{group, counter, layer} = intSlo;
+                intSlo0_Store{group, counter, layer} = intSlo0;
                 single_animal_measures.SE(layer) = intSlo0(2);
                 % Coherence and PLI
                 %%%%%%%%%%%%%
