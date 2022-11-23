@@ -1,5 +1,5 @@
 %%%%%%
-user = 'S'; %'Z' for Zach or 'S' for Shahram for path stuff
+user = 'Z'; %'Z' for Zach or 'S' for Shahram for path stuff
 
 switch user
     case 'Z'
@@ -117,7 +117,7 @@ IRI_vals = [];
 IRI_age = [];
 IRI_treat = [];
 IRI_big = NaN(4, 2000);
-for l = [1, 3, 2, 4]
+for l = 1:4
     switch l
         case 1
             group = rip.DB2(:, 1);
@@ -136,6 +136,8 @@ for l = [1, 3, 2, 4]
             age = "400";
             treat = "DBDB";
     end
+    IRI_vals = diff(group)./1250;
+    
     for m = 1:length(group) - 1
         if group(m+1) > group(m)
             temp_iri = (group(m+1) - group(m)) ./ 1250;

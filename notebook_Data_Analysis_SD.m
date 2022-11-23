@@ -50,7 +50,7 @@ state_changes = NaN(4, 7);
 
 % Begin parsing data
 %%%%%%
-for group = 3:4
+for group = 1:4
     % Grab indices of animals in a particular group
     if group == 1
         grouping = 3:9; % DB+ 200D 7
@@ -98,7 +98,7 @@ for group = 3:4
         single_animal_measures.events = [];
         single_animal_measures.dur = [];
         single_animal_measures.IRI = [];
-        for k = 1:length(SWRLTDIdx) % run through each of the LTD periods (where SWRs occur)
+        for k = 1:size(SWRLTDIdx,2) % run through each of the LTD periods (where SWRs occur)
             if ~isempty(rem(k).R) % Make sure recording exists
                 state_changes(group, counter) = state_changes(group, counter) + length(rem(k).R.start);
             else
@@ -130,22 +130,22 @@ for group = 3:4
                 single_animal_measures.dur = [single_animal_measures.dur; LTD_events(:, 2) - LTD_events(:, 1)];
                 single_animal_measures.IRI = [single_animal_measures.IRI; diff(LTD_events(:, 1))];
                 % initialize temp storage variables
-                temp_gamma_pyr = zeros(1, length(LTD_events));
-                temp_avg_rip = zeros(1876, length(LTD_events));
-                temp_CSD = zeros(1876, 12, length(LTD_events));
+                temp_gamma_pyr = zeros(1, size(LTD_events,1));
+                temp_avg_rip = zeros(1876, size(LTD_events,1));
+                temp_CSD = zeros(1876, 12, size(LTD_events,1));
                 % For each event, create a spectrogram and store it in the
                 % temp variable
                 for r = 1:size(LTD_events, 1)
                     % gamma power of each ripple
                     temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r, 1):LTD_events(r, 2), chans(2, cur_animal)), 1250);
-                    single_animal_measures.gamma = [single_animal_measures.gamma, temp_gamma_pyr(r)];
                     temp_avg_rip(:, r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250, chans(2, cur_animal));
                     
                     % Create CSD of each ripple
                     temp_CSD(:, :, r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250, chans(2, cur_animal)-5:chans(2, cur_animal)+6), Fs, 1e-4);
                     %csd = save_check(csd, temp_CSD);
-                    single_animal_measures.CSD = cat(3, single_animal_measures.CSD, temp_CSD(:, :, r));
                 end
+                single_animal_measures.gamma = [single_animal_measures.gamma, temp_gamma_pyr];
+                single_animal_measures.CSD = cat(3, single_animal_measures.CSD, temp_CSD);
                 % Concatenate temp variable to storage variable
                 %gamma_ctx = [gamma_ctx temp_gamma_ctx];
                 gamma_pyr = [gamma_pyr, temp_gamma_pyr];
