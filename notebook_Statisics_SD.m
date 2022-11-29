@@ -1,14 +1,17 @@
 %%%%%%
 user = 'Z'; %'Z' for Zach or 'S' for Shahram for path stuff
 
+
 switch user
     case 'Z'
         cd('C:\Users\ipzach\Documents\MATLAB\output\Diabetes-Saved-Files')
+        addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach', ...
+            'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
     case 'S'
         cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
 end
-
 load('LFP Measures')
+
 hotcold = redblue();
 
 %% Make labels for stats
@@ -126,21 +129,21 @@ for lay_comb = 1:3
         case 3
             layer = 'slm';
     end
-
+    
     % First we want to grab individual values, create 2-way labels for
     % them, then concatenate everything together
     SS_Ct200_w_nan = slowing_score(1, :, lay_comb)';
     SS_Ct200 = SS_Ct200_w_nan(~isnan(SS_Ct200_w_nan));
-
+    
     SS_Ct400_w_nan = slowing_score(2, :, lay_comb)';
     SS_Ct400 = SS_Ct400_w_nan(~isnan(SS_Ct400_w_nan));
-
+    
     SS_DB200_w_nan = slowing_score(3, :, lay_comb)';
     SS_DB200 = SS_DB200_w_nan(~isnan(SS_DB200_w_nan));
-
+    
     SS_DB400_w_nan = slowing_score(4, :, lay_comb)';
     SS_DB400 = SS_DB400_w_nan(~isnan(SS_DB400_w_nan));
-
+    
     slow_score_vals = [SS_Ct200; SS_DB200; SS_Ct400; SS_DB400];
     summary_slow_score.means = [mean(SS_Ct200), mean(SS_DB200), mean(SS_Ct400), mean(SS_DB400)];
     summary_slow_score.SD = [std(SS_Ct200), std(SS_DB200), std(SS_Ct400), std(SS_DB400)];
@@ -149,13 +152,13 @@ for lay_comb = 1:3
     UCSF_create_excel('SlowingScore', summary_slow_score, ['slow_score_', layer], user)
     [ssP, ssT, ssStats] = anovan(slow_score_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
     [ssC, ssM, ~, ssN] = multcompare(ssStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-
+    
     %MS subplot(1, 2, lay_comb-1) %This line was replaced by the next line
     figure
     create_bar_figure(summary_slow_score.SD, summary_slow_score.means, ssC);
     %sig_values(ssP(2), ssP(1));
     set(gcf, 'Color', 'w');
-    set(gca, 'ytick', [0, 6, 12])
+    %set(gca, 'ytick', [0, 6, 12])
     ylim([0, 15])
     xtickangle(60)
     switch lay_comb
@@ -176,95 +179,97 @@ end
 idx = ~cellfun('isempty', intSlo_Store);
 SE = NaN(size(intSlo_Store));
 SE(idx) = cellfun(@(v)v(2), intSlo0_Store(idx));
-
-SE_Ct200_w_nan = SE(1, :)';
-SE_Ct200 = SE_Ct200_w_nan(~isnan(SE_Ct200_w_nan));
-
-SE_Ct400_w_nan = SE(2, :)';
-SE_Ct400 = SE_Ct400_w_nan(~isnan(SE_Ct400_w_nan));
-
-SE_DB200_w_nan = SE(3, :)';
-SE_DB200 = SE_DB200_w_nan(~isnan(SE_DB200_w_nan));
-
-SE_DB400_w_nan = SE(4, :)';
-SE_DB400 = SE_DB400_w_nan(~isnan(SE_DB400_w_nan));
-
-SE_vals = [SE_Ct200; SE_DB200; SE_Ct400; SE_DB400];
-
-summary_SE.means = [mean(SE_Ct200), mean(SE_DB200), mean(SE_Ct400), mean(SE_DB400)];
-summary_SE.SD = [std(SE_Ct200), std(SE_DB200), std(SE_Ct400), std(SE_DB400)];
-summary_SE.n = [length(SE_Ct200), length(SE_DB200), length(SE_Ct400), length(SE_DB400)];
-
-
-[seP, seT, seStats] = anovan(SE_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
-[seC, seM, ~, seN] = multcompare(seStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-
-%set(gca,'ytick',[0 6 12])
-%ylim([0 15])
-
-%% Spectral exponent figure
-XXi = Pows_store(1, 1).frex;
-YYi = NaN(7, 516);
-int_Slo = NaN(7, 2);
-figure
-set(gcf, 'Position', [100, 100, 800, 400])
-subplot(1, 2, 1)
-for i = [4, 3, 2, 1]
+for i = 1:3
     switch i
         case 1
-            %color = [194, 194, 194] ./255;
-            color = [0, 0, 204] ./ 255;
+            layer = 'ctx';
         case 2
-            %color = [128, 128, 128] ./255;
-            color = [204, 0, 0] ./ 255;
+            layer = 'pyr';
         case 3
-            %color = [247,149,114] ./255;
-            color = [0, 0, 204] ./ 255;
-        case 4
-            %color = [212, 120, 86] ./255;
-            color = [204, 0, 0] ./ 255;
+            layer = 'slm';
     end
-    for j = 1:7
-        try
-            YYi(j, :) = Pows_store(i, j).obs;
-            int_Slo(j, :) = intSlo0_Store{i, j};
-        catch
-            continue
+    SE_Ct200_w_nan = SE(1, :, i)';
+    SE_Ct200 = SE_Ct200_w_nan(~isnan(SE_Ct200_w_nan));
+    
+    SE_Ct400_w_nan = SE(2, :, i)';
+    SE_Ct400 = SE_Ct400_w_nan(~isnan(SE_Ct400_w_nan));
+    
+    SE_DB200_w_nan = SE(3, :, i)';
+    SE_DB200 = SE_DB200_w_nan(~isnan(SE_DB200_w_nan));
+    
+    SE_DB400_w_nan = SE(4, :, i)';
+    SE_DB400 = SE_DB400_w_nan(~isnan(SE_DB400_w_nan));
+    
+    SE_vals = [SE_Ct200; SE_DB200; SE_Ct400; SE_DB400];
+    
+    summary_SE.means = [mean(SE_Ct200), mean(SE_DB200), mean(SE_Ct400), mean(SE_DB400)];
+    summary_SE.SD = [std(SE_Ct200), std(SE_DB200), std(SE_Ct400), std(SE_DB400)];
+    summary_SE.n = [length(SE_Ct200), length(SE_DB200), length(SE_Ct400), length(SE_DB400)];
+    
+    
+    [seP, seT, seStats] = anovan(SE_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
+    [seC, seM, ~, seN] = multcompare(seStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
+
+    % Spectral exponent figure
+    XXi = Pows_store(1, 1).frex;
+    YYi = NaN(7, 516);
+    int_Slo = NaN(7, 2);
+    figure
+    set(gcf, 'Position', [100, 100, 800, 400])
+    subplot(1, 2, 1)
+    for j = [4, 3, 2, 1]
+        switch j
+            case 1
+                %color = [194, 194, 194] ./255;
+                color = [0, 0, 204] ./ 255;
+            case 2
+                %color = [128, 128, 128] ./255;
+                color = [204, 0, 0] ./ 255;
+            case 3
+                %color = [247,149,114] ./255;
+                color = [0, 0, 204] ./ 255;
+            case 4
+                %color = [212, 120, 86] ./255;
+                color = [204, 0, 0] ./ 255;
         end
+        for k = 1:7
+            try
+                YYi(k, :) = Pows_store(j, k, i).obs;
+                int_Slo(k, :) = intSlo0_Store{j, k, i};
+            catch
+                continue
+            end
+        end
+        YYi = rmmissing(YYi);
+        int = nanmean(int_Slo(:, 1));
+        slo = nanmean(int_Slo(:, 2));
+        Xi = log10(XXi);
+        
+        stdshade(log(YYi), 0.1, color, log(XXi)); hold on,
+        YYpred0 = 10.^(int + slo * (Xi))';
+        plot(log(XXi([1, end])), log(YYpred0([1, end])), 'LineWidth', 1.5, 'color', color);
+        set(gca, 'FontSize', 14, 'TickDir', 'out');
+        box off
+        xlim([0, 3.6])
+        xticks([0.2 1.2 2.2 3.2])
+        xticklabels({'1','5','10','50'});
     end
-    YYi = rmmissing(YYi);
-    int = nanmean(int_Slo(:, 1));
-    slo = nanmean(int_Slo(:, 2));
-    Xi = log10(XXi);
-
-    stdshade(log(YYi), 0.1, color, log(XXi)); hold on,
-    YYpred0 = 10.^(int + slo * (Xi))';
-    plot(log(XXi([1, end])), log(YYpred0([1, end])), 'LineWidth', 1.5, 'color', color);
-    set(gca, 'FontSize', 14, 'TickDir', 'out');
-    box off
-    xlim([0, 3.6])
+    subplot(1, 2, 2)
+    create_bar_figure(summary_SE.SD, summary_SE.means, seC);
+    UCSF_create_excel('SpecExpoB', summary_SE, 'Spectral_Exponent', user)
+    xtickangle(60)
+    set(gcf, 'Color', 'w');
+    
+    title(layer)
+    if strcmp(user, 'S')
+        Datetime_SpecExpoB = string(datetime('now'));
+        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
+        Filename_SpecExpoB = sprintf('Spectral_Exponent_Figure_%s.tiff', Datetime_SpecExpoB);
+        Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
+        Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
+        saveas(gcf, Filename_SpecExpoB);
+    end
 end
-subplot(1, 2, 2)
-create_bar_figure(summary_SE.SD, summary_SE.means, seC);
-%MS
-UCSF_create_excel('SpecExpoB', summary_SE, 'Spectral_Exponent', user)
-%ME
-xtickangle(60)
-
-%sig_values(seP(2), seP(1));
-%ylabel('Spectral Exponent')
-set(gcf, 'Color', 'w');
-%MS
-if strcmp(user, 'S')
-    Datetime_SpecExpoB = string(datetime('now'));
-    cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SpecExpoB')
-    Filename_SpecExpoB = sprintf('Spectral_Exponent_Figure_%s.tiff', Datetime_SpecExpoB);
-    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ' ', '_');
-    Filename_SpecExpoB = regexprep(Filename_SpecExpoB, ':', '_');
-    saveas(gcf, Filename_SpecExpoB);
-end
-%ME
-
 %% PLI
 % group,animal, band, layer
 figure
@@ -278,7 +283,6 @@ for lay_comb = 1
         case 3
             comb_name = 'Pyr-Slm';
     end % switch layComb
-    %im bored
     for band = 1:6
         switch band
             case 1
@@ -296,26 +300,26 @@ for lay_comb = 1
             case 7
                 group_name = 'Full ';
         end
-
+        
         % First we want to grab individual values, create 2-way labels for
         % them, then concatenate everything together
         PLI_Ct200_w_nan = PLI(1, :, band, lay_comb)';
         PLI_Ct200 = PLI_Ct200_w_nan(~isnan(PLI_Ct200_w_nan));
-
+        
         PLI_Ct400_w_nan = PLI(2, :, band, lay_comb)';
         PLI_Ct400 = PLI_Ct400_w_nan(~isnan(PLI_Ct400_w_nan));
-
+        
         PLI_DB200_w_nan = PLI(3, :, band, lay_comb)';
         PLI_DB200 = PLI_DB200_w_nan(~isnan(PLI_DB200_w_nan));
-
+        
         PLI_DB400_w_nan = PLI(4, :, band, lay_comb)';
         PLI_DB400 = PLI_DB400_w_nan(~isnan(PLI_DB400_w_nan));
-
+        
         PLI_vals = [PLI_Ct200; PLI_DB200; PLI_Ct400; PLI_DB400];
-
+        
         [pliP, pliT, pliStats] = anovan(PLI_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
         [pliC, pliM, ~, pliN] = multcompare(pliStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-
+        
         summary_PLI.means = [mean(PLI_Ct200), mean(PLI_DB200), mean(PLI_Ct400), mean(PLI_DB400)];
         summary_PLI.SD = [std(PLI_Ct200), std(PLI_DB200), std(PLI_Ct400), std(PLI_DB400)];
         summary_PLI.n = [length(PLI_Ct200), length(PLI_DB200), length(PLI_Ct400), length(PLI_DB400)];
@@ -325,12 +329,12 @@ for lay_comb = 1
         subplot(1, 6, band)
         create_bar_figure(summary_PLI.SD, summary_PLI.means, pliC);
         title(group_name)
-
+        
         sig_values(pliP(2), pliP(1));
         ylabel('Phase Locking Index')
         set(gcf, 'Color', 'w');
         xtickangle(60)
-
+        
         %ME
         %set(gca,'ytick',[0 1])
         %ylim([0 1])
@@ -347,8 +351,8 @@ end
 %MS
 
 if strcmp(user, 'S')
-
-
+    
+    
     Datetime_PLI = string(datetime('now'));
     cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\PLI')
     Filename_PLI = sprintf('PLI_Figure_%s.tiff', Datetime_PLI);
@@ -417,24 +421,24 @@ for lay_comb = 1:2 % 1:3
             case 7
                 group_name = 'Full';
         end
-
+        
         count = count + 1;
-
+        
         Coh_Ct200_w_nan = Co(1, :, band, lay_comb)';
         Coh_Ct200 = Coh_Ct200_w_nan(~isnan(Coh_Ct200_w_nan));
-
+        
         Coh_Ct400_w_nan = Co(2, :, band, lay_comb)';
         Coh_Ct400 = Coh_Ct400_w_nan(~isnan(Coh_Ct400_w_nan));
-
+        
         Coh_DB200_w_nan = Co(3, :, band, lay_comb)';
         Coh_DB200 = Coh_DB200_w_nan(~isnan(Coh_DB200_w_nan));
-
+        
         Coh_DB400_w_nan = Co(4, :, band, lay_comb)';
         Coh_DB400 = Coh_DB400_w_nan(~isnan(Coh_DB400_w_nan));
-
+        
         % First we want to grab individual values, create 2-way labels for
         % them, then concatenate everything together
-
+        
         coh_vals = [Coh_Ct200; Coh_DB200; Coh_Ct400; Coh_DB400];
         %MS
         summary_Coh.means = [mean(Coh_Ct200), mean(Coh_DB200), mean(Coh_Ct400), mean(Coh_DB400)];
@@ -448,8 +452,8 @@ for lay_comb = 1:2 % 1:3
         subaxis(2, 6, count, 'SpacingHoriz', 0.01, 'SpacingVert', 0.12)
         create_bar_figure(summary_Coh.SD, summary_Coh.means, cohC);
         %MS
-
-
+        
+        
         UCSF_create_excel('Coherence', summary_Coh, [comb_name, '_', group_name, '_Coherence'], user)
         if strcmp(user, 'S')
             Datetime_coherence = string(datetime('now'));
@@ -467,7 +471,7 @@ for lay_comb = 1:2 % 1:3
         if count < 6
             title(group_name)
         end
-
+        
         if band == 1
             ylabel({comb_name, 'Coherence'})
         else
@@ -605,7 +609,11 @@ axis off
 subplot('Position', [lw, toph, riph, riph])
 plot(mean(rip_wav.DB4, 2), 'color', control_400)
 ylim([-fig_lim, fig_lim])
-axis off
+yticks([-5e-6 -3e-6])
+yticklabels({'','2 uV'})
+xticks([0 250])
+xticklabels({'','200 ms'})
+box off
 vline(625, 'k:')
 
 
@@ -746,7 +754,7 @@ for i = 1:4
             subplot('Position', [x2start, toph, w, h])
             hand = pcolor(flipud(CSDm.DB4(:, 2:end-1)'));
             title('400 d', 'FontSize', 14) %M needs alteration
-
+            
         case 3
             subplot('Position', [xstart, both, w, h])
             hand = pcolor(flipud(CSDm.DBDB2(:, 2:end-1)'));
@@ -754,24 +762,28 @@ for i = 1:4
         case 4
             subplot('Position', [x2start, both, w, h])
             hand = pcolor(flipud(CSDm.DBDB4(:, 2:end-1)'));
+            
     end
     set(hand, 'EdgeColor', 'none'), colormap(flipud(hotcold)), shading interp
     rectangle('Position', [pre_win(1), 12 - high_chan(end), pre_win(end) - pre_win(1), 1])
     rectangle('Position', [pre_win(1), 12 - low_chan(end), pre_win(end) - pre_win(1), 1])
-
+    
     rectangle('Position', [win(1), 12 - high_chan(end), win(end) - win(1), 1])
     rectangle('Position', [win(1), 12 - low_chan(end), win(end) - win(1), 1])
-
+    
     rectangle('Position', [post_win(1), 12 - high_chan(end), post_win(end) - post_win(1), 1])
     rectangle('Position', [post_win(1), 12 - low_chan(end), post_win(end) - post_win(1), 1])
-
+    
     hline(6, 'k', 'Pyramidal')
     hline(2, 'k', 'Radiatum')
-
+    
     set(gca, 'xtick', [])
     caxis([-clim, clim])
+    
 end
-
+c = colorbar('Position',[0.69 0.35 0.015 0.4],'Ticks',[-4,0,4],'AxisLocation','in');
+c.Label.String = 'Current flow mA/mm^-^3';
+    %cb.Layout.Tile = 'west';
 subplot('Position', [0.75, both + 0.6, 0.2, 0.18])
 [csdBar] = create_bar_figure(summary_CSD_pre.SD, summary_CSD_pre.means, csdC_pre);
 
@@ -803,7 +815,7 @@ title('Post-Ripple')
 A = suplabel('Time (s)', 'x', [0.1, 0.1, 0.52, 0.5]);
 set(A, 'FontSize', 12, 'FontWeight', 'bold')
 
-%M
+%% M
 UCSF_create_excel('CSD', summary_CSD_pre, 'CSD_pre_ripple_dipole', user)
 UCSF_create_excel('CSD', summary_CSD, 'CSD_ripple_dipole', user)
 UCSF_create_excel('CSD', summary_CSD_post, 'CSD_post_ripple_dipole', user)

@@ -5,6 +5,11 @@ voltConv = 0.000000091555527603759401; % Neurolynx saves data in a unitless valu
 Fs = 1250;
 kernel = gaussian(Fs, ceil(8*Fs));
 kernel2 = gaussian(10*Fs, ceil(80*Fs));
+high_chan = 7; %pyramidal channel
+low_chan = 11; % Radiatum channel
+pre_win = 1:550; % pre indices
+win = 650:750; % ripple indices
+post_win = 850:1300; % post indices
 %%%%%%
 user = 'Z'; %'Z' for Zach or 'S' for Shahram for path stuff
 
@@ -50,6 +55,7 @@ state_changes = NaN(4, 7);
 
 % Begin parsing data
 %%%%%%
+COUNT = 0;
 for group = 1:4
     % Grab indices of animals in a particular group
     if group == 1
@@ -88,18 +94,21 @@ for group = 1:4
         LFP_files = {LFP_files.name}; % throw away useless info
         
         counter = counter + 1;
+        COUNT = COUNT +1;
         full_LFP = [];
         state_changes(group, counter) = 0;
         % Check Data fidelity
         %%%%%%
         %%%%%
         % initialize struct for data validation
-        single_animal_measures.gamma = [];
-        single_animal_measures.CSD = [];
-        single_animal_measures.events = [];
-        single_animal_measures.events = [];
-        single_animal_measures.dur = [];
-        single_animal_measures.IRI = [];
+        single_animal_measures(COUNT).gamma = [];
+        single_animal_measures(COUNT).CSD = [];
+        single_animal_measures(COUNT).CSD_pre = [];
+        single_animal_measures(COUNT).CSD_post = [];
+        single_animal_measures(COUNT).events = [];
+        single_animal_measures(COUNT).events = [];
+        single_animal_measures(COUNT).dur = [];
+        single_animal_measures(COUNT).IRI = [];
         for k = 1:size(SWRLTDIdx,2) % run through each of the LTD periods (where SWRs occur)
             if ~isempty(rem(k).R) % Make sure recording exists
                 state_changes(group, counter) = state_changes(group, counter) + length(rem(k).R.start);
@@ -128,18 +137,11 @@ for group = 1:4
                 if isempty(LTD_events)
                     disp(['No LTD events for animal: ', num2str(cur_animal), ' recording: ', num2str(k)])
                 end
-                single_animal_measures.events = [single_animal_measures.events; LTD_events];
-                single_animal_measures.dur = [single_animal_measures.dur; LTD_events(:, 2) - LTD_events(:, 1)];
-                single_animal_measures.IRI = [single_animal_measures.IRI; diff(LTD_events(:, 1))];
                 
-                dur = [dur; single_animal_measures.dur];
-                iri = [iri; single_animal_measures.IRI];
                 % initialize temp storage variables
                 temp_gamma_pyr = zeros(1, size(LTD_events,1));
                 temp_avg_rip = zeros(1876, size(LTD_events,1));
-                temp_CSD = zeros(1876, 12, size(LTD_events,1));
-                % For each event, create a spectrogram and store it in the
-                % temp variable
+                
                 for r = 1:size(LTD_events, 1)
                     % gamma power of each ripple
                     temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r, 1):LTD_events(r, 2), chans(2, cur_animal)), 1250);
@@ -149,15 +151,26 @@ for group = 1:4
                     temp_CSD(:, :, r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250, chans(2, cur_animal)-5:chans(2, cur_animal)+6), Fs, 1e-4);
                     %csd = save_check(csd, temp_CSD);
                 end
-                single_animal_measures.gamma = [single_animal_measures.gamma, temp_gamma_pyr];
-                single_animal_measures.CSD = cat(3, single_animal_measures.CSD, temp_CSD);
+                
+                temp_dipole_pre = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, pre_win)';
+                temp_dipole_post = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, post_win)';
+                temp_dipole = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, win)';
+                
+                single_animal_measures(COUNT).CSD_pre = [single_animal_measures(COUNT).CSD_pre; temp_dipole_pre];
+                single_animal_measures(COUNT).CSD = [single_animal_measures(COUNT).CSD; temp_dipole];
+                single_animal_measures(COUNT).CSD_post = [single_animal_measures(COUNT).CSD_post; temp_dipole_post];
+                
+                single_animal_measures(COUNT).gamma = [single_animal_measures(COUNT).gamma, temp_gamma_pyr];
                 % Concatenate temp variable to storage variable
                 %gamma_ctx = [gamma_ctx temp_gamma_ctx];
                 gamma_pyr = [gamma_pyr, temp_gamma_pyr];
                 %gamma_slm = [gamma_slm temp_gamma_slm];
                 avg_rip = [avg_rip, temp_avg_rip];
                 csd = cat(3, csd, temp_CSD);
-                
+                single_animal_measures(COUNT).events = [single_animal_measures(COUNT).events; LTD_events];
+                single_animal_measures(COUNT).dur = [single_animal_measures(COUNT).dur; LTD_events(:, 2) - LTD_events(:, 1)];
+                single_animal_measures(COUNT).IRI = [single_animal_measures(COUNT).IRI; diff(LTD_events(:, 1))];
+                iri = [iri; diff(LTD_events(:, 1))];
                 % Save all individual ripples for basic analysis
                 if group == 1
                     [rip.DB2, label.DB2] = label_ripples(rip.DB2, label.DB2, LTD_events, counter);
@@ -187,7 +200,7 @@ for group = 1:4
                 
                 % Calculate ratio of signal powers
                 slowing_score(group, counter, layer) = SignalPower(low_freq, 1250) ./ SignalPower(high_freq, 1250);
-                single_animal_measures.SS(layer) = slowing_score(group, counter, layer);
+                single_animal_measures(COUNT).SS(layer) = slowing_score(group, counter, layer);
                 % Group, Band, Animal, Layer
                 
                 % calculate Spectral exponent
@@ -200,10 +213,10 @@ for group = 1:4
                 doPlot = 00; %figure
                 thisCol = [0, 0, 1];
                 [intSlo, stat, Pows, Deviants, stat0, intSlo0] = fitPowerLaw3steps(XX, YY, robRegMeth, doPlot, thisCol);
-                Pows_store(group, counter) = Pows;
-                intSlo_Store{group, counter} = intSlo;
-                intSlo0_Store{group, counter} = intSlo0;
-                single_animal_measures.SE(layer) = intSlo0(2);
+                Pows_store(group, counter,layer) = Pows;
+                intSlo_Store{group, counter, layer} = intSlo;
+                intSlo0_Store{group, counter, layer} = intSlo0;
+                single_animal_measures(COUNT).SE(layer) = intSlo0(2);
                 % Coherence and PLI
                 %%%%%%%%%%%%%
                 switch layer
@@ -266,9 +279,9 @@ for group = 1:4
                     % comparison)
                     Co(group, counter, freq_band, layer) = nanmean(mscohere(A_LFP, B_LFP, hamming(12500), [], range, 1250));
                     PLI(group, counter, freq_band, layer) = PLV(angle(hilbert(A_filt))', angle(hilbert(B_filt))');
-                    single_animal_measures.Co(layer, freq_band) = Co(group, counter, freq_band, layer);
-                    single_animal_measures.PLI(layer, freq_band) = PLI(group, counter, freq_band, layer);
-                    single_animal_measures.LFP = full_LFP;
+                    single_animal_measures(COUNT).Co(layer, freq_band) = Co(group, counter, freq_band, layer);
+                    single_animal_measures(COUNT).PLI(layer, freq_band) = PLI(group, counter, freq_band, layer);
+                    single_animal_measures(COUNT).LFP = full_LFP;
                     
                 end % frequency band
             end % layer
@@ -276,10 +289,10 @@ for group = 1:4
             disp(['LFP is empty for animal ', num2str(cur_animal)])
         end % if
         cd ..
-        UCSF_single_animal_excel(single_animal_measures, [gn, '_', num2str(counter)], user);
+        %UCSF_single_animal_excel(single_animal_measures(COUNT), [gn, '_', num2str(counter)], user);
         
         
-        %save(['C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal\' gn '_' num2str(counter) ],'single_animal_measures')
+        %save(['C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal\' gn '_' num2str(counter) ],'single_animal_measures(COUNT)')
     end % animal
     % Save data to variable outside loop
     if group == 1
@@ -288,32 +301,28 @@ for group = 1:4
         %Gamma.DB2_SLM = gamma_slm;
         CSD.DB2 = csd;
         rip_wav.DB2 = avg_rip;
-        dur.DB2 = dur;
-        iri.DB2 = iri;
+        iri_all.DB2 = iri;
     elseif group == 2
         %Gamma.DB4_Ctx = gamma_ctx;
         Gamma.DB4_Pyr = gamma_pyr;
         %Gamma.DB4_SLM = gamma_slm;
         CSD.DB4 = csd;
         rip_wav.DB4 = avg_rip;
-        dur.DB4 = dur;
-        iri.DB4 = iri;
+        iri_all.DB4 = iri;
     elseif group == 3
         %Gamma.DBDB2_Ctx = gamma_ctx;
         Gamma.DBDB2_Pyr = gamma_pyr;
         %Gamma.DBDB2_SLM = gamma_slm;
         CSD.DBDB2 = csd;
         rip_wav.DBDB2 = avg_rip;
-        dur.DBDB2 = dur;
-        iri.DBDB2 = iri;
+        iri_all.DBDB2 = iri;
     elseif group == 4
         %Gamma.DBDB4_Ctx = gamma_ctx;
         Gamma.DBDB4_Pyr = gamma_pyr;
         %Gamma.DBDB4_SLM = gamma_slm;
         CSD.DBDB4 = csd;
         rip_wav.DBDB4 = avg_rip;
-        dur.DB2 = dur;
-        iri.DB2 = iri;
+        iri_all.DBDB4 = iri;
     end % if
 end % group
 % Group, Animal, freq_band, Layer
@@ -325,21 +334,147 @@ switch user
     case 'S'
         cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
 end
-save('LFP Measures', 'Gamma', 'rip', 'rip_wav', 'label', 'CSD', 'Co', 'PLI', 'slowing_score', 'state_changes', 'intSlo0_Store', 'intSlo_Store', 'Pows_store')
+save('LFP Measures', 'Gamma', 'rip', 'iri_all', 'rip_wav', 'label', 'CSD', 'Co', 'PLI', 'slowing_score', 'state_changes', 'intSlo0_Store', 'intSlo_Store', 'Pows_store')
 
-%MS
-% if user == 'S'
-%     cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\LFPs');
-%     Animal_Number = unique(Animal_Number);
-%     for i=1:length(Animal_Number)
-%         TmpStr= sprintf("save('Full_LFPs_%d.mat',", Animal_Number(i));
-%         TMPSTR1 = sprintf("'Save_Full_LFP_1_%d', ", Animal_Number(i));
-%         TMPSTR2 = sprintf("'Save_Full_LFP_2_%d', ", Animal_Number(i));
-%         TmpStr = append(TmpStr, TMPSTR1, TMPSTR2);
-%         TmpStr = append(TmpStr, "'-v7.3')");
-%         disp(['Saving LFP data for animal: ', num2str(Animal_Number(i))]);
-%         eval(TmpStr);
-%         disp(['Finished saving data for animal: ', num2str(Animal_Number(i))]);
-%     end
-% end
-%ME
+%% Create excel files
+ripple_measures = {'gamma','CSD','dur','IRI','CSD_pre','CSD_post'};
+
+
+animal_num = 23;
+% ripple measures
+
+for i = 1:length(ripple_measures)
+    storage = NaN(995,animal_num);
+    disp(['i: ' num2str(i)])
+    for j = 1:animal_num
+        disp(['j: ' num2str(j)])
+        switch i
+            case 1
+                storage(1:length(single_animal_measures(j).gamma),j) = single_animal_measures(j).gamma;
+                disp('test')
+            case 2
+                storage(1:length(single_animal_measures(j).CSD),j) = single_animal_measures(j).CSD;
+            case 3
+                storage(1:length(single_animal_measures(j).dur),j) = single_animal_measures(j).dur;
+            case 4
+                storage(1:length(single_animal_measures(j).IRI),j) = single_animal_measures(j).IRI;
+            case 5
+                storage(1:length(single_animal_measures(j).CSD_pre),j) = single_animal_measures(j).CSD_pre;
+            case 6
+                storage(1:length(single_animal_measures(j).CSD_post),j) = single_animal_measures(j).CSD_post;
+        end % switch
+        
+    end % animal num
+    
+    return_path = pwd;
+    Datetime = string(datetime('now'));
+    if strcmp(user,'S')
+        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal');
+    else
+        cd('C:\Users\ipzach\Documents\MATLAB\output\excel');
+    end
+    Filename = sprintf([ripple_measures{i} '_data_%s.xlsx'], Datetime);
+    Filename = regexprep(Filename, {' ', ':', '-'}, {'_', '_', '_'});
+    xlswrite(Filename, storage);
+    cd(return_path)
+end % ripple measure
+
+%% single measures
+single_measures = {'SS','SE'};
+for i = 1:length(single_measures)
+    storage = NaN(1,animal_num);
+    for layer = 1:3
+        switch layer
+            case 1
+                layer_n = '_cortex';
+            case 2
+                layer_n = '_pyr';
+            case 3
+                layer_n = '_slm';
+        end %switch
+        for j = 1:animal_num
+            switch i
+                case 1
+                    storage(j) = single_animal_measures(j).SS(layer);
+                case 2
+                    storage(j) = single_animal_measures(j).SE(layer);
+            end % switch
+            
+        end % animal num
+    end %layer
+    return_path = pwd;
+    Datetime = string(datetime('now'));
+    if strcmp(user,'S')
+        cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal');
+    else
+        cd('C:\Users\ipzach\Documents\MATLAB\output\excel');
+    end
+    Filename = sprintf([single_measures{i} layer_n '_data_%s.xlsx'], Datetime);
+    Filename = regexprep(Filename, {' ', ':', '-'}, {'_', '_', '_'});
+    xlswrite(Filename, storage);
+    cd(return_path)
+    
+end % single measures
+block_measures = {'Co','PLI'};
+%% block measures
+for i = 1:length(block_measures)
+    
+    for freq = 1:7
+        switch freq
+            case 1
+                freq_n = '_delta';
+            case 2
+                freq_n = '_theta';
+            case 3
+                freq_n = '_alpha';
+            case 4
+                freq_n = '_beta';
+            case 5
+                freq_n = '_gamma';
+            case 6 
+                freq_n = '_hgamma';
+            case 7
+                freq_n = '_broadband';
+        end
+        for layer = 1:3
+            storage = NaN(1,animal_num);
+            switch layer
+                case 1
+                    layer_n = '_ctx_pyr';
+                case 2
+                    layer_n = '_ctx_slm';
+                case 3
+                    layer_n = '_pyr_slm';
+            end
+            for j = 1:animal_num
+                switch i
+                    case 1
+                        storage(j) = single_animal_measures(j).Co(layer,freq);
+                    case 2
+                        storage(j) = single_animal_measures(j).PLI(layer,freq);
+                end % switch
+                
+            end % animal num
+            
+            return_path = pwd;
+            Datetime = string(datetime('now'));
+            if strcmp(user,'S')
+                cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal');
+            else
+                cd('C:\Users\ipzach\Documents\MATLAB\output\excel');
+            end
+            Filename = sprintf([block_measures{i} layer_n freq_n '_data_%s.xlsx'], Datetime);
+            Filename = regexprep(Filename, {' ', ':', '-'}, {'_', '_', '_'});
+            xlswrite(Filename, storage);
+            cd(return_path)
+            
+            
+            
+            
+            
+        end %layer
+        
+    end %freq
+    
+    
+end % block measures
