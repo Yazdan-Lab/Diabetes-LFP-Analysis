@@ -256,7 +256,7 @@ for i = 1:3
     end
     subplot(1, 2, 2)
     create_bar_figure(summary_SE.SD, summary_SE.means, seC);
-    UCSF_create_excel('SpecExpoB', summary_SE, 'Spectral_Exponent', user)
+%    UCSF_create_excel('SpecExpoB', summary_SE, 'Spectral_Exponent', user)
     xtickangle(60)
     set(gcf, 'Color', 'w');
     
