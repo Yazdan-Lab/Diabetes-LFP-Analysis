@@ -176,7 +176,7 @@ end
 
 % First we want to grab individual values, create 2-way labels for
 % them, then concatenate everything together
-idx = ~cellfun('isempty', intSlo_Store);
+idx = ~cellfun('isempty', intSlo0_Store);
 SE = NaN(size(intSlo_Store));
 SE(idx) = cellfun(@(v)v(2), intSlo0_Store(idx));
 for i = 1:3
