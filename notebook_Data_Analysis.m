@@ -1,19 +1,28 @@
-% Load in initializing variables
+% Last edited by Zachary Ip 3/7/23
+% This script loads in LFP files from folder structure and saves isolated
+% measures of the LFP for further statistical processing.
+% This code was designed for use in both the UW NERD lab and Jialing Liu's
+% UCSF, as designated by `USER` variable. 
 
 
-voltConv = 0.000000091555527603759401; % Neurolynx saves data in a unitless value, we need this to convert it to volts
-Fs = 1250;
-kernel = gaussian(Fs, ceil(8*Fs));
-kernel2 = gaussian(10*Fs, ceil(80*Fs));
-high_chan = 7; %pyramidal channel
-low_chan = 11; % Radiatum channel
-pre_win = 1:550; % pre indices
-win = 650:750; % ripple indices
-post_win = 850:1300; % post indices
+%% Global variables
+% For LFP processing
+VOLTCONV = 0.000000091555527603759401; % Neurolynx saves data in a unitless value, we need this to convert it to volts
+FS = 1250;
+
+% For signal smoothing (Ripple detection)
+KERNEL = gaussian(FS, ceil(8*FS));
+
+% For CSD, after centering on pyramidal channel
+HIGH_CHAN = 7; %pyramidal channel
+LOW_CHAN = 11; % Radiatum channel
+PRE_WIN = 1:550; % pre indices
+WIN = 650:750; % ripple indices
+POST_WIN = 850:1300; % post indices
 %%%%%%
-user = 'Z'; %'Z' for Zach or 'S' for Shahram for path stuff
+USER = 'Z'; %'Z' for Zach or 'S' for Shahram for path stuff
 
-switch user
+switch USER
     case 'Z'
         cd('C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
         addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach', ...
@@ -22,29 +31,28 @@ switch user
     case 'S'
         cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
 end
-%
+
+% Load reference 
 load('SpkInfo.mat')
 load('chans.mat')
-switch user
+switch USER
     case 'Z'
         cd('C:\Users\ipzach\Documents\MATLAB\Data\dbdb electrophy')
     case 'S'
         cd('C:\COM\ePhy\dbdb\Data\dbdb electrophy'); % here is the data
 end
 
-
+% Find animal LFP Data
 animal_list = dir; % create a list of every folder (each one is one animal)
 
-
+% Initialize storage variable for final measures
 rip.DB2 = []; rip.DB4 = []; rip.DBDB2 = []; rip.DBDB4 = [];
-
 label.DB2 = []; label.DB4 = []; label.DBDB2 = []; label.DBDB4 = [];
-
 intSlo_Store = cell(4, 7); intSlo0_Store = cell(4, 7);
 Co = NaN(4, 7, 7, 3); PLI = NaN(4, 7, 7, 3);
 powers = NaN(4,7,7,3);
 GR_powers = NaN(4,7,7,3);
-% Group, Animal, freq_band, Layer_comb
+% Data structure Group, Animal, freq_band, Layer_comb
 slowing_score = NaN(4, 7, 3);
 state_changes = NaN(4, 7);
 % Group,Animal,Layer_comb
@@ -52,23 +60,26 @@ state_changes = NaN(4, 7);
 % Begin parsing data
 %%%%%%
 counter = 0;
+% Separate animals by group first
 for group = 1:4
     % Grab indices of animals in a particular group
     if group == 1
-        grouping = 3:9; % DB+ 200D 7
+        grouping = 3:9; % DB+ 200D #7
         gn = 'DB+ 200D';
     elseif group == 2
-        grouping = 10:14; % DB+ 400D 5
+        grouping = 10:14; % DB+ 400D #5
         gn = 'DB+ 400D';
     elseif group == 3
-        grouping = [15:18, 20, 21]; % DBDB 200D 6
+        grouping = [15:18, 20, 21]; % DBDB 200D #6
         gn = 'DBDB 200D';
     elseif group == 4
-        grouping = [22, 24:27]; % DBDB 400D 5
+        grouping = [22, 24:27]; % DBDB 400D #5
         gn = 'DBDB 400D';
     end
+    % start iterator since group number is based on place in directory
     counter = 0;
     
+    % Initialize temp storage variables for group
     gamma_pyr = [];
     gamma_slm = [];
     gamma_ctx = [];
@@ -76,7 +87,7 @@ for group = 1:4
     csd = [];
     dur = [];
     iri = [];
-    % initialize struct for data validation
+    % initialize struct for data validation and saving for UCSF 
     single_animal_measures.gamma = [];
     single_animal_measures.CSD = [];
     single_animal_measures.CSD_pre = [];
@@ -86,6 +97,7 @@ for group = 1:4
     single_animal_measures.dur = [];
     single_animal_measures.IRI = [];
     
+    % Start Processing single animals
     for cur_animal = grouping
         disp(['Animal: ', num2str(cur_animal)])
         [SWR_files, LFP_files, SWRLTDIdx, rem] = initalize_animal(cur_animal, animal_list);
@@ -93,7 +105,10 @@ for group = 1:4
         counter = counter + 1;
         full_LFP = [];
         state_changes(group, counter) = 0;
-        
+        % Each animal has multiple sequential recordings, they must first
+        % be concatenated for full LFP measures (signal power, coherence,
+        % etc), however, ripple timings are saved per recording, so they
+        % are processed first, and then added together
         for k = 1:size(SWRLTDIdx,2) % run through each of the LTD periods (where SWRs occur)
             if ~isempty(rem(k).R) % Make sure recording exists
                 state_changes(group, counter) = state_changes(group, counter) + length(rem(k).R.start);
@@ -102,24 +117,28 @@ for group = 1:4
             end % if REM not empty
             load(char(LFP_files(k))); % Load LFP events
             
-            LFP = LFPs{1, 2} .* voltConv *1000; % load LFP, convert to mV
+            %create consistent LFP variable
+            LFP = LFPs{1, 2} .* VOLTCONV *1000; % load LFP, convert to mV
             full_LFP = [full_LFP; LFP];
+            
+            % To detect ripples, must get theta state index first, and look
+            % during non-theta. Theta states were recorded by Gratianne and
+            % given as part of meta data for each animal
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
                 % Load in animal data
                 %%%%%%
                 [gamma_LFP, LTD_events] = pre_process(LFP, char(SWR_files(k)), k, SWRLTDIdx); % Load SWR events
                 
-                [temp_gamma_pyr, temp_avg_rip, temp_CSD] = process_events(LFP,gamma_LFP, LTD_events, cur_animal,chans, Fs);
+                [temp_gamma_pyr, temp_avg_rip, temp_CSD] = process_events(LFP,gamma_LFP, LTD_events, cur_animal,chans, FS);
                
                 
-                temp_dipole_pre = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, pre_win)';
-                temp_dipole_post = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, post_win)';
-                temp_dipole = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, win)';
+                temp_dipole_pre = calculate_CSD_dipole(temp_CSD, HIGH_CHAN, LOW_CHAN, PRE_WIN)';
+                temp_dipole_post = calculate_CSD_dipole(temp_CSD, HIGH_CHAN, LOW_CHAN, POST_WIN)';
+                temp_dipole = calculate_CSD_dipole(temp_CSD, HIGH_CHAN, LOW_CHAN, WIN)';
                 
 %                 single_animal_measures(counter).CSD_pre = [single_animal_measures(counter).CSD_pre, temp_dipole_pre];
 %                 single_animal_measures(counter).CSD = [single_animal_measures(counter).CSD, temp_dipole];
 %                 single_animal_measures(counter).CSD_post = [single_animal_measures(counter).CSD_post, temp_dipole_post];
-%                 
 %                 single_animal_measures(counter).gamma = [single_animal_measures(counter).gamma, temp_gamma_pyr];
                 % Concatenate temp variable to storage variable
                 %gamma_ctx = [gamma_ctx temp_gamma_ctx];
@@ -164,7 +183,7 @@ for group = 1:4
                 % Group, Band, Animal, Layer
                 
                 % calculate Spectral exponent
-                [PSD, frex] = pwelch(single_channel, 2*Fs, Fs, [], Fs);
+                [PSD, frex] = pwelch(single_channel, 2*FS, FS, [], FS);
                 frBand = [1, 40];
                 frBins = dsearchn(frex, frBand(1)):dsearchn(frex, frBand(2));
                 XX = frex(frBins);
@@ -229,13 +248,13 @@ for group = 1:4
                     % comparison)
                     Co(group, counter, freq_band, layer) = nanmean(mscohere(A_LFP, B_LFP, hamming(12500), [], range, 1250));
                     PLI(group, counter, freq_band, layer) = PLV(angle(hilbert(A_filt))', angle(hilbert(B_filt))');
-                    powers(group, counter, freq_band, layer) = SignalPower(BPfilter(full_LFP(:,chans(layer, cur_animal)), Fs, lower, upper),Fs);
+                    powers(group, counter, freq_band, layer) = SignalPower(BPfilter(full_LFP(:,chans(layer, cur_animal)), FS, lower, upper),FS);
                     
-                    filtered = BPfilter(full_LFP(:,chans(layer, cur_animal)), Fs, lower, upper);
+                    filtered = BPfilter(full_LFP(:,chans(layer, cur_animal)), FS, lower, upper);
                     normalized = ((filtered - mean(filtered))/std(filtered));
                     envelope = abs(hilbert(filtered));
-                    smoothed = smoothvect(envelope, kernel);
-                    GR_powers(group, counter, freq_band, layer) = SignalPower(smoothed, Fs);
+                    smoothed = smoothvect(envelope, KERNEL);
+                    GR_powers(group, counter, freq_band, layer) = SignalPower(smoothed, FS);
                     
 %                     single_animal_measures(counter).Co(layer, freq_band) = Co(group, counter, freq_band, layer);
 %                     single_animal_measures(counter).PLI(layer, freq_band) = PLI(group, counter, freq_band, layer);
@@ -286,7 +305,7 @@ end % group
 % Group, Animal, freq_band, Layer
 
 %% save processed data
-switch user
+switch USER
     case 'Z'
         cd('C:\Users\ipzach\Documents\MATLAB\output\Diabetes-Saved-Files')
     case 'S'
@@ -326,7 +345,7 @@ for i = 1:length(ripple_measures)
     
     return_path = pwd;
     Datetime = string(datetime('now'));
-    if strcmp(user,'S')
+    if strcmp(USER,'S')
         cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal');
     else
         cd('C:\Users\ipzach\Documents\MATLAB\output\excel');
@@ -361,7 +380,7 @@ for i = 1:length(single_measures)
         end % animal num
     return_path = pwd;
     Datetime = string(datetime('now'));
-    if strcmp(user,'S')
+    if strcmp(USER,'S')
         cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal');
     else
         cd('C:\Users\ipzach\Documents\MATLAB\output\excel');
@@ -415,7 +434,7 @@ for i = 1:length(block_measures)
             
             return_path = pwd;
             Datetime = string(datetime('now'));
-            if strcmp(user,'S')
+            if strcmp(USER,'S')
                 cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\SingleAnimal');
             else
                 cd('C:\Users\ipzach\Documents\MATLAB\output\excel');
