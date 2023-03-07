@@ -7,6 +7,8 @@ switch user
         cd('C:\Users\ipzach\Documents\MATLAB\output\Diabetes-Saved-Files')
         addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach', ...
             'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+        load('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach\Colors.mat');
+        
     case 'S'
         cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
 end
@@ -149,27 +151,32 @@ for lay_comb = 1:3
     summary_slow_score.SD = [std(SS_Ct200), std(SS_DB200), std(SS_Ct400), std(SS_DB400)];
     summary_slow_score.n = [length(SS_Ct200), length(SS_DB200), length(SS_Ct400), length(SS_DB400)];
     disp(num2str(lay_comb))
+    
     UCSF_create_excel('SlowingScore', summary_slow_score, ['slow_score_', layer], user)
     [ssP, ssT, ssStats] = anovan(slow_score_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
     [ssC, ssM, ~, ssN] = multcompare(ssStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-    
+    disp(ssP)
     %MS subplot(1, 2, lay_comb-1) %This line was replaced by the next line
     figure
-    create_bar_figure(summary_slow_score.SD, summary_slow_score.means, ssC);
+    set(gcf, 'Color', 'w', 'Position',[100 100 300 450]);
+    pli_data = NaN(7,4);
+    pli_data(:,1) = SS_Ct200';
+    pli_data(1:6,2) = SS_DB200';
+    pli_data(1:5,3) = SS_Ct400';
+    pli_data(1:5,4) = SS_DB400';
+    plot_bee(pli_data,...
+        {'Ctrl 200','DB 200','Ctrl 400','DB 400'},...
+        ssC,...
+        [RGB.c200; RGB.db200; RGB.c400; RGB.db400]);
+    title(layer)
+    ylabel('Slowing Score')
+    % create_bar_figure(summary_slow_score.SD, summary_slow_score.means, ssC);
     %sig_values(ssP(2), ssP(1));
-    set(gcf, 'Color', 'w');
+    
     %set(gca, 'ytick', [0, 6, 12])
-    ylim([0, 15])
+    ylim([0, 25])
     xtickangle(60)
-    switch lay_comb
-        case 1
-            title('Cortex')
-            ylabel('Slowing Score')
-        case 2
-            title('Pyramidal')
-        case 3
-            title('SLM')
-    end
+    
 end
 
 %% Spectral exponent
@@ -209,28 +216,29 @@ for i = 1:3
     
     [seP, seT, seStats] = anovan(SE_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
     [seC, seM, ~, seN] = multcompare(seStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
-
+    disp(layer)
+    disp(seT)
     % Spectral exponent figure
     XXi = Pows_store(1, 1).frex;
     YYi = NaN(7, 516);
     int_Slo = NaN(7, 2);
     figure
-    set(gcf, 'Position', [100, 100, 800, 400])
+    set(gcf, 'Position', [100, 100, 700, 300])
     subplot(1, 2, 1)
     for j = [4, 3, 2, 1]
         switch j
             case 1
                 %color = [194, 194, 194] ./255;
-                color = [0, 0, 204] ./ 255;
+                color = RGB.c200;
             case 2
                 %color = [128, 128, 128] ./255;
-                color = [204, 0, 0] ./ 255;
+                color = RGB.c400;
             case 3
                 %color = [247,149,114] ./255;
-                color = [0, 0, 204] ./ 255;
+                color = RGB.db200;
             case 4
                 %color = [212, 120, 86] ./255;
-                color = [204, 0, 0] ./ 255;
+                color = RGB.db400;
         end
         for k = 1:7
             try
@@ -245,7 +253,7 @@ for i = 1:3
         slo = nanmean(int_Slo(:, 2));
         Xi = log10(XXi);
         
-        stdshade(log(YYi), 0.1, color, log(XXi)); hold on,
+        stdshade(log(YYi), 0.2, color, log(XXi)); hold on,
         YYpred0 = 10.^(int + slo * (Xi))';
         plot(log(XXi([1, end])), log(YYpred0([1, end])), 'LineWidth', 1.5, 'color', color);
         set(gca, 'FontSize', 14, 'TickDir', 'out');
@@ -255,9 +263,18 @@ for i = 1:3
         xticklabels({'1','5','10','50'});
     end
     subplot(1, 2, 2)
-    create_bar_figure(summary_SE.SD, summary_SE.means, seC);
-%    UCSF_create_excel('SpecExpoB', summary_SE, 'Spectral_Exponent', user)
-    xtickangle(60)
+    se_data = NaN(7,4);
+    se_data(:,1) = SE_Ct200';
+    se_data(1:6,2) = SE_DB200';
+    se_data(1:5,3) = SE_Ct400';
+    se_data(1:5,4) = SE_DB400';
+    plot_bee(se_data,...
+        {'Ctrl 200','DB 200','Ctrl 400','DB 400'},...
+        seC,...
+        [RGB.c200; RGB.db200; RGB.c400; RGB.db400]);
+    %create_bar_figure(summary_SE.SD, summary_SE.means, seC);
+    %    UCSF_create_excel('SpecExpoB', summary_SE, 'Spectral_Exponent', user)
+    %xtickangle(60)
     set(gcf, 'Color', 'w');
     
     title(layer)
@@ -272,9 +289,8 @@ for i = 1:3
 end
 %% PLI
 % group,animal, band, layer
-figure
-set(gcf, 'Position', [100, 100, 1300, 350])
-for lay_comb = 1
+
+for lay_comb = 1:3
     switch lay_comb
         case 1
             comb_name = 'Ctx-Pyr';
@@ -283,6 +299,8 @@ for lay_comb = 1
         case 3
             comb_name = 'Pyr-Slm';
     end % switch layComb
+    figure
+set(gcf, 'Position', [100, 100, 900, 200])
     for band = 1:6
         switch band
             case 1
@@ -324,14 +342,29 @@ for lay_comb = 1
         summary_PLI.SD = [std(PLI_Ct200), std(PLI_DB200), std(PLI_Ct400), std(PLI_DB400)];
         summary_PLI.n = [length(PLI_Ct200), length(PLI_DB200), length(PLI_Ct400), length(PLI_DB400)];
         %MS
-        UCSF_create_excel('PLI', summary_PLI, [group_name, '_PLI'], user)
+        %UCSF_create_excel('PLI', summary_PLI, [group_name, '_PLI'], user)
         %ME
-        subplot(1, 6, band)
-        create_bar_figure(summary_PLI.SD, summary_PLI.means, pliC);
-        title(group_name)
+        subaxis(1, 6, band, 'SpacingHoriz', 0.01)
+        pli_data = NaN(7,4);
+        pli_data(:,1) = PLI_Ct200';
+        pli_data(1:6,2) = PLI_DB200';
+        pli_data(1:5,3) = PLI_Ct400';
+        pli_data(1:5,4) = PLI_DB400';
+        plot_bee(pli_data,...
+            {'Ctrl 200','DB 200','Ctrl 400','DB 400'},...
+            pliC,...
+            [RGB.c200; RGB.db200; RGB.c400; RGB.db400]);
+        set(gca, 'ytick',[0 1],'XColor', 'none')
+        ylim([0 1])
+        % create_bar_figure(summary_PLI.SD, summary_PLI.means, pliC);
+        %title(group_name)
         
-        sig_values(pliP(2), pliP(1));
-        ylabel('Phase Locking Index')
+        %sig_values(pliP(2), pliP(1));
+        if band == 1
+        ylabel(comb_name)
+        else
+            set(gca, 'YColor', 'none')
+        end
         set(gcf, 'Color', 'w');
         xtickangle(60)
         
@@ -393,7 +426,7 @@ ylabel('Number of states')
 disp('Coherence')
 count = 0;
 figure
-set(gcf, 'Color', 'w', 'Position', [100, 100, 1400, 650])
+set(gcf, 'Color', 'w', 'Position', [100, 100, 900, 450])
 for lay_comb = 1:2 % 1:3
     switch lay_comb
         case 1
@@ -404,7 +437,7 @@ for lay_comb = 1:2 % 1:3
             comb_name = 'Pyr-Slm';
     end % switch layComb
     disp(comb_name)
-    for band = 1:6 %1:7
+    for band = 1:6
         switch band
             case 1
                 group_name = 'Delta';
@@ -449,12 +482,23 @@ for lay_comb = 1:2 % 1:3
         [cohP, cohT, cohStats] = anovan(coh_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
         [cohC, cohM, ~, cohN] = multcompare(cohStats, 'Dimension', [1, 2], 'CType', 'bonferroni', 'display', 'off');
         %
-        subaxis(2, 6, count, 'SpacingHoriz', 0.01, 'SpacingVert', 0.12)
-        create_bar_figure(summary_Coh.SD, summary_Coh.means, cohC);
-        %MS
+        disp(cohP)
+        coh_data = NaN(7,4);
+        coh_data(:,1) = Coh_Ct200';
+        coh_data(1:6,2) = Coh_DB200';
+        coh_data(1:5,3) = Coh_Ct400';
+        coh_data(1:5,4) = Coh_DB400';
+        
+        subaxis(2, 6, count, 'SpacingHoriz', 0.01, 'SpacingVert', 0.05)
+        % create_bar_figure(summary_Coh.SD, summary_Coh.means, cohC);
+        plot_bee(coh_data,...
+            {'Ctrl 200','DB 200','Ctrl 400','DB 400'},...
+            cohC,...
+            [RGB.c200; RGB.db200; RGB.c400; RGB.db400]);
+        ylim([0 1])
         
         
-        UCSF_create_excel('Coherence', summary_Coh, [comb_name, '_', group_name, '_Coherence'], user)
+        %UCSF_create_excel('Coherence', summary_Coh, [comb_name, '_', group_name, '_Coherence'], user)
         if strcmp(user, 'S')
             Datetime_coherence = string(datetime('now'));
             cd('C:\COM\ePhy\dbdb\Data\Outputs\Data\Coherence')
@@ -468,12 +512,13 @@ for lay_comb = 1:2 % 1:3
         %      sig_values(cohP(2), cohP(1));
         xtickangle(25)
         ylim([0, 1])
-        if count < 6
+        if count <= 6
             title(group_name)
+            set(gca, 'XColor','none')
         end
         
         if band == 1
-            ylabel({comb_name, 'Coherence'})
+            ylabel(comb_name)
         else
             set(gca, 'YColor', 'none')
         end
@@ -573,13 +618,13 @@ w = 0.35;
 riph = 0.174;
 mod = 0.175;
 
-control_200 = [0, 0, 204] ./ 255;
-control_400 = [0, 0, 204] ./ 255;
-DB_200 = [204, 0, 0] ./ 255;
-DB_400 = [204, 0, 0] ./ 255;
+control_200 = RGB.c200;
+control_400 = RGB.c400;
+DB_200 = RGB.db200;
+DB_400 = RGB.db400;
 
 
-fig_lim = 5e-6;
+fig_lim = 5e-3;
 % [][] |    |
 % [][] |____|
 %|    ||    |
@@ -609,8 +654,8 @@ axis off
 subplot('Position', [lw, toph, riph, riph])
 plot(mean(rip_wav.DB4, 2), 'color', control_400)
 ylim([-fig_lim, fig_lim])
-yticks([-5e-6 -3e-6])
-yticklabels({'','2 uV'})
+yticks([-5e-3 -3e-3])
+yticklabels({'','2 mV'})
 xticks([0 250])
 xticklabels({'','200 ms'})
 box off
@@ -783,7 +828,7 @@ for i = 1:4
 end
 c = colorbar('Position',[0.69 0.35 0.015 0.4],'Ticks',[-4,0,4],'AxisLocation','in');
 c.Label.String = 'Current flow mA/mm^-^3';
-    %cb.Layout.Tile = 'west';
+%cb.Layout.Tile = 'west';
 subplot('Position', [0.75, both + 0.6, 0.2, 0.18])
 [csdBar] = create_bar_figure(summary_CSD_pre.SD, summary_CSD_pre.means, csdC_pre);
 
@@ -814,7 +859,109 @@ title('Post-Ripple')
 
 A = suplabel('Time (s)', 'x', [0.1, 0.1, 0.52, 0.5]);
 set(A, 'FontSize', 12, 'FontWeight', 'bold')
-
+%% Signal power
+% powers(group, counter, freq_band, layer)
+current_power = powers;
+figure
+set(gcf, 'Position',[100 100 100 100])
+count = 0;
+for band = [2 5 6] %2:6
+    for lay_comb = 2% :3 % 1:3
+        switch lay_comb
+            case 1
+                comb_name = 'Ctx';
+            case 2
+                comb_name = 'Pyr';
+            case 3
+                comb_name = 'Slm';
+        end % switch layComb
+        disp(comb_name)
+        
+        switch band
+            case 1
+                group_name = 'Delta';
+            case 2
+                group_name = 'Theta';
+            case 3
+                group_name = 'Alpha';
+            case 4
+                group_name = 'Beta';
+            case 5
+                group_name = 'Gamma';
+            case 6
+                group_name = 'High Gamma';
+            case 7
+                group_name = 'Full';
+        end
+        
+        count = count + 1;
+        % powers(group, counter, freq_band, layer)
+        powers_Ct200_w_nan = current_power(1, :, band, lay_comb)';
+        powers_Ct200 = powers_Ct200_w_nan(~isnan(powers_Ct200_w_nan));
+        
+        powers_Ct400_w_nan = current_power(2, :, band, lay_comb)';
+        powers_Ct400 = powers_Ct400_w_nan(~isnan(powers_Ct400_w_nan));
+        
+        powers_DB200_w_nan = current_power(3, :, band, lay_comb)';
+        powers_DB200 = powers_DB200_w_nan(~isnan(powers_DB200_w_nan));
+        
+        powers_DB400_w_nan = current_power(4, :, band, lay_comb)';
+        powers_DB400 = powers_DB400_w_nan(~isnan(powers_DB400_w_nan));
+        
+        % First we want to grab individual values, create 2-way labels for
+        % them, then concatenate everything together
+        
+        powers_vals = [powers_Ct200; powers_DB200; powers_Ct400; powers_DB400];
+        %MS
+        summary_powers.means = [mean(powers_Ct200), mean(powers_DB200), mean(powers_Ct400), mean(powers_DB400)];
+        summary_powers.SD = [std(powers_Ct200), std(powers_DB200), std(powers_Ct400), std(powers_DB400)];
+        summary_powers.n = [length(powers_Ct200), length(powers_DB200), length(powers_Ct400), length(powers_DB400)];
+        %ME
+        disp(group_name)
+        [powersP, powersT, powersStats] = anovan(powers_vals, {slowing_score_db_Labs, slowing_score_age_Labs}, 'model', 'interaction', 'display', 'off');
+        [powersC, powersM, ~, powersN] = multcompare(powersStats, 'Dimension', [1, 2], 'CType', 'hsd', 'display', 'off');
+        disp(powersP)
+        powers_data = NaN(7,4);
+        powers_data(:,1) = powers_Ct200';
+        powers_data(1:6,2) = powers_DB200';
+        powers_data(1:5,3) = powers_Ct400';
+        powers_data(1:5,4) = powers_DB400';
+        groups = {'Ctrl 200','DB 200','Ctrl 400','DB 400'};
+        subaxis(1,3 , count, 'SpacingHoriz', 0.05, 'SpacingVert', 0.05)
+%         UCSF_graph(powersM(:,2),powersM(:,1),powersC);
+        plot_bee(powers_data,...
+            {'Ctrl 200','DB 200','Ctrl 400','DB 400'},...
+            powersC,...
+            [RGB.c200; RGB.db200; RGB.c400; RGB.db400]);
+        %      sig_values(cohP(2), cohP(1));
+        xtickangle(25)
+        set(gca,'FontSize',14)
+        title(group_name)
+        %ylim([0, 5e-6])
+%         if count <= 3
+%             title(comb_name)
+%             
+%         end
+%         
+%         if count <= 12
+%             set(gca, 'XColor', 'none')
+%         end
+%         
+%         if lay_comb == 1
+%             ylabel(group_name)
+%         else
+%             set(gca, 'YColor', 'none')
+%         end
+        %ylim([0 1])
+        
+        
+        
+        
+        % UCSF_create_excel('Coherence', summary_Coh, [comb_name, '_', group_name, '_Coherence'], user)
+        
+        
+    end
+end
 %% M
 UCSF_create_excel('CSD', summary_CSD_pre, 'CSD_pre_ripple_dipole', user)
 UCSF_create_excel('CSD', summary_CSD, 'CSD_ripple_dipole', user)

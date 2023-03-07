@@ -17,7 +17,8 @@ switch user
     case 'Z'
         cd('C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
         addpath('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach', ...
-            'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools')
+            'C:\Users\ipzach\Documents\MATLAB\spectral-analysis-tools',...
+            'C:\Users\ipzach\Documents\MATLAB\Diabetes-Data-Analysis')
     case 'S'
         cd('C:\COM\ePhy\dbdb\code\Diabetes-LFP-Analysis')
 end
@@ -35,19 +36,14 @@ end
 animal_list = dir; % create a list of every folder (each one is one animal)
 
 
-rip.DB2 = [];
-rip.DB4 = [];
-rip.DBDB2 = [];
-rip.DBDB4 = [];
+rip.DB2 = []; rip.DB4 = []; rip.DBDB2 = []; rip.DBDB4 = [];
 
-label.DB2 = [];
-label.DB4 = [];
-label.DBDB2 = [];
-label.DBDB4 = [];
-intSlo_Store = cell(4, 7);
-intSlo0_Store = cell(4, 7);
-Co = NaN(4, 7, 7, 3);
-PLI = NaN(4, 7, 7, 3);
+label.DB2 = []; label.DB4 = []; label.DBDB2 = []; label.DBDB4 = [];
+
+intSlo_Store = cell(4, 7); intSlo0_Store = cell(4, 7);
+Co = NaN(4, 7, 7, 3); PLI = NaN(4, 7, 7, 3);
+powers = NaN(4,7,7,3);
+GR_powers = NaN(4,7,7,3);
 % Group, Animal, freq_band, Layer_comb
 slowing_score = NaN(4, 7, 3);
 state_changes = NaN(4, 7);
@@ -55,7 +51,7 @@ state_changes = NaN(4, 7);
 
 % Begin parsing data
 %%%%%%
-COUNT = 0;
+counter = 0;
 for group = 1:4
     % Grab indices of animals in a particular group
     if group == 1
@@ -80,35 +76,24 @@ for group = 1:4
     csd = [];
     dur = [];
     iri = [];
+    % initialize struct for data validation
+    single_animal_measures.gamma = [];
+    single_animal_measures.CSD = [];
+    single_animal_measures.CSD_pre = [];
+    single_animal_measures.CSD_post = [];
+    single_animal_measures.events = [];
+    single_animal_measures.events = [];
+    single_animal_measures.dur = [];
+    single_animal_measures.IRI = [];
+    
     for cur_animal = grouping
         disp(['Animal: ', num2str(cur_animal)])
-        cd(animal_list(cur_animal).name)
-        % Get file names of specific animals relevant files
-        %%%%%%
-        load('SWR_Index.mat'); % load SWR HTD/LTD  indices
-        load('REM.mat'); % load HTD/LTD State times
-        SWR_files = dir('SWR_R_*'); % Grab the number of files that have SWR event timings (usually 2, sometimes 1 or 3)
-        SWR_files = {SWR_files.name}; % throw away useless info
-        
-        LFP_files = dir('LFP*'); % grab number of LFP files (sometimes 1 or 3 as well)
-        LFP_files = {LFP_files.name}; % throw away useless info
-        
+        [SWR_files, LFP_files, SWRLTDIdx, rem] = initalize_animal(cur_animal, animal_list);
+       
         counter = counter + 1;
-        COUNT = COUNT +1;
         full_LFP = [];
         state_changes(group, counter) = 0;
-        % Check Data fidelity
-        %%%%%%
-        %%%%%
-        % initialize struct for data validation
-        single_animal_measures(COUNT).gamma = [];
-        single_animal_measures(COUNT).CSD = [];
-        single_animal_measures(COUNT).CSD_pre = [];
-        single_animal_measures(COUNT).CSD_post = [];
-        single_animal_measures(COUNT).events = [];
-        single_animal_measures(COUNT).events = [];
-        single_animal_measures(COUNT).dur = [];
-        single_animal_measures(COUNT).IRI = [];
+        
         for k = 1:size(SWRLTDIdx,2) % run through each of the LTD periods (where SWRs occur)
             if ~isempty(rem(k).R) % Make sure recording exists
                 state_changes(group, counter) = state_changes(group, counter) + length(rem(k).R.start);
@@ -117,59 +102,34 @@ for group = 1:4
             end % if REM not empty
             load(char(LFP_files(k))); % Load LFP events
             
-            LFP = LFPs{1, 2} .* voltConv; % load LFP
+            LFP = LFPs{1, 2} .* voltConv *1000; % load LFP, convert to mV
             full_LFP = [full_LFP; LFP];
             if ~isempty(SWRLTDIdx(k).R) % makes sure ripple occured during this period
                 % Load in animal data
                 %%%%%%
-                load(char(SWR_files(k))); % Load SWR events
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%
-                %%% Per Ripple Analysis %%%
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%
-                % Preprocess signal
-                %%%%%%
+                [gamma_LFP, LTD_events] = pre_process(LFP, char(SWR_files(k)), k, SWRLTDIdx); % Load SWR events
                 
-                gamma_LFP = BPfilter(LFP, 1250, 30, 60); % isolate gamma frequency band
-                LTD_events = SWRevents(SWRLTDIdx(k).R, 1:2); % grab SWRs that occur during this period
-                LTD_events(LTD_events <= 625) = NaN;
-                LTD_events(LTD_events >= length(LFP)-1250) = NaN;
-                LTD_events = rmmissing(LTD_events, 1);
-                if isempty(LTD_events)
-                    disp(['No LTD events for animal: ', num2str(cur_animal), ' recording: ', num2str(k)])
-                end
-                
-                % initialize temp storage variables
-                temp_gamma_pyr = zeros(1, size(LTD_events,1));
-                temp_avg_rip = zeros(1876, size(LTD_events,1));
-                temp_CSD = zeros(1876,12, size(LTD_events,1));
-                for r = 1:size(LTD_events, 1)
-                    % gamma power of each ripple
-                    temp_gamma_pyr(r) = SignalPower(gamma_LFP(LTD_events(r, 1):LTD_events(r, 2), chans(2, cur_animal)), 1250);
-                    temp_avg_rip(:, r) = gamma_LFP(LTD_events(r)-625:LTD_events(r)+1250, chans(2, cur_animal));
-                    
-                    % Create CSD of each ripple
-                    temp_CSD(:, :, r) = CSDlite(LFP(LTD_events(r)-625:LTD_events(r)+1250, chans(2, cur_animal)-5:chans(2, cur_animal)+6), Fs, 1e-4);
-                    %csd = save_check(csd, temp_CSD);
-                end
+                [temp_gamma_pyr, temp_avg_rip, temp_CSD] = process_events(LFP,gamma_LFP, LTD_events, cur_animal,chans, Fs);
+               
                 
                 temp_dipole_pre = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, pre_win)';
                 temp_dipole_post = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, post_win)';
                 temp_dipole = calculate_CSD_dipole(temp_CSD, high_chan, low_chan, win)';
                 
-                single_animal_measures(COUNT).CSD_pre = [single_animal_measures(COUNT).CSD_pre, temp_dipole_pre];
-                single_animal_measures(COUNT).CSD = [single_animal_measures(COUNT).CSD, temp_dipole];
-                single_animal_measures(COUNT).CSD_post = [single_animal_measures(COUNT).CSD_post, temp_dipole_post];
-                
-                single_animal_measures(COUNT).gamma = [single_animal_measures(COUNT).gamma, temp_gamma_pyr];
+%                 single_animal_measures(counter).CSD_pre = [single_animal_measures(counter).CSD_pre, temp_dipole_pre];
+%                 single_animal_measures(counter).CSD = [single_animal_measures(counter).CSD, temp_dipole];
+%                 single_animal_measures(counter).CSD_post = [single_animal_measures(counter).CSD_post, temp_dipole_post];
+%                 
+%                 single_animal_measures(counter).gamma = [single_animal_measures(counter).gamma, temp_gamma_pyr];
                 % Concatenate temp variable to storage variable
                 %gamma_ctx = [gamma_ctx temp_gamma_ctx];
                 gamma_pyr = [gamma_pyr, temp_gamma_pyr];
                 %gamma_slm = [gamma_slm temp_gamma_slm];
                 avg_rip = [avg_rip, temp_avg_rip];
                 csd = cat(3, csd, temp_CSD);
-                single_animal_measures(COUNT).events = [single_animal_measures(COUNT).events; LTD_events];
-                single_animal_measures(COUNT).dur = [single_animal_measures(COUNT).dur; LTD_events(:, 2) - LTD_events(:, 1)];
-                single_animal_measures(COUNT).IRI = [single_animal_measures(COUNT).IRI; diff(LTD_events(:, 1))];
+%                 single_animal_measures(counter).events = [single_animal_measures(counter).events; LTD_events];
+%                 single_animal_measures(counter).dur = [single_animal_measures(counter).dur; LTD_events(:, 2) - LTD_events(:, 1)];
+%                 single_animal_measures(counter).IRI = [single_animal_measures(counter).IRI; diff(LTD_events(:, 1))];
                 iri = [iri; diff(LTD_events(:, 1))];
                 % Save all individual ripples for basic analysis
                 if group == 1
@@ -200,7 +160,7 @@ for group = 1:4
                 
                 % Calculate ratio of signal powers
                 slowing_score(group, counter, layer) = SignalPower(low_freq, 1250) ./ SignalPower(high_freq, 1250);
-                single_animal_measures(COUNT).SS(layer) = slowing_score(group, counter, layer);
+%                 single_animal_measures(counter).SS(layer) = slowing_score(group, counter, layer);
                 % Group, Band, Animal, Layer
                 
                 % calculate Spectral exponent
@@ -216,7 +176,7 @@ for group = 1:4
                 Pows_store(group, counter,layer) = Pows;
                 intSlo_Store{group, counter, layer} = intSlo;
                 intSlo0_Store{group, counter, layer} = intSlo0;
-                single_animal_measures(COUNT).SE(layer) = intSlo0(2);
+%                 single_animal_measures(counter).SE(layer) = intSlo0(2);
                 % Coherence and PLI
                 %%%%%%%%%%%%%
                 switch layer
@@ -243,34 +203,24 @@ for group = 1:4
                 for freq_band = 1:7
                     switch freq_band
                         case 1
-                            range = linspace(0.1, 3, 20);
-                            A_filt = BPfilter(A_LFP, 1250, 0.1, 3);
-                            B_filt = BPfilter(B_LFP, 1250, 0.1, 3);
+                            lower = 0.1;    upper = 3;
                         case 2
-                            range = linspace(4, 7, 20);
-                            A_filt = BPfilter(A_LFP, 1250, 4, 7);
-                            B_filt = BPfilter(B_LFP, 1250, 4, 7);
+                            lower = 4;      upper = 7;
                         case 3
-                            range = linspace(8, 13, 20);
-                            A_filt = BPfilter(A_LFP, 1250, 8, 13);
-                            B_filt = BPfilter(B_LFP, 1250, 8, 13);
+                            lower = 8;      upper = 13;
                         case 4
-                            range = linspace(13, 30, 20);
-                            A_filt = BPfilter(A_LFP, 1250, 13, 30);
-                            B_filt = BPfilter(B_LFP, 1250, 13, 30);
+                            lower = 13;     upper = 30;
                         case 5
-                            range = linspace(30, 58, 20);
-                            A_filt = BPfilter(A_LFP, 1250, 30, 58);
-                            B_filt = BPfilter(B_LFP, 1250, 30, 58);
+                            lower = 30;     upper = 58;
                         case 6
-                            range = linspace(62, 200, 20);
-                            A_filt = BPfilter(A_LFP, 1250, 62, 200);
-                            B_filt = BPfilter(B_LFP, 1250, 62, 200);
+                            lower = 62;     upper = 200;
                         case 7
-                            range = linspace(0, 200, 50);
-                            A_filt = BPfilter(A_LFP, 1250, 0.1, 200);
-                            B_filt = BPfilter(B_LFP, 1250, 0.1, 200);
+                            lower = 0.1;    upper = 200;
                     end % switch iBand
+                    
+                    range = linspace(lower, upper, 20);
+                    A_filt = BPfilter(A_LFP, 1250, lower, upper);
+                    B_filt = BPfilter(B_LFP, 1250, lower, upper);
                     % Run coherence and average outputs for each frequency
                     % band
                     % Group, Band, recording, Animal, Layer/layer
@@ -279,9 +229,17 @@ for group = 1:4
                     % comparison)
                     Co(group, counter, freq_band, layer) = nanmean(mscohere(A_LFP, B_LFP, hamming(12500), [], range, 1250));
                     PLI(group, counter, freq_band, layer) = PLV(angle(hilbert(A_filt))', angle(hilbert(B_filt))');
-                    single_animal_measures(COUNT).Co(layer, freq_band) = Co(group, counter, freq_band, layer);
-                    single_animal_measures(COUNT).PLI(layer, freq_band) = PLI(group, counter, freq_band, layer);
-                    single_animal_measures(COUNT).LFP = full_LFP;
+                    powers(group, counter, freq_band, layer) = SignalPower(BPfilter(full_LFP(:,chans(layer, cur_animal)), Fs, lower, upper),Fs);
+                    
+                    filtered = BPfilter(full_LFP(:,chans(layer, cur_animal)), Fs, lower, upper);
+                    normalized = ((filtered - mean(filtered))/std(filtered));
+                    envelope = abs(hilbert(filtered));
+                    smoothed = smoothvect(envelope, kernel);
+                    GR_powers(group, counter, freq_band, layer) = SignalPower(smoothed, Fs);
+                    
+%                     single_animal_measures(counter).Co(layer, freq_band) = Co(group, counter, freq_band, layer);
+%                     single_animal_measures(counter).PLI(layer, freq_band) = PLI(group, counter, freq_band, layer);
+%                     single_animal_measures(counter).LFP = full_LFP;
                     
                 end % frequency band
             end % layer
@@ -334,7 +292,7 @@ switch user
     case 'S'
         cd('C:\COM\ePhy\dbdb\Data\Outputs\Data')
 end
-save('LFP Measures', 'Gamma', 'rip', 'iri_all', 'rip_wav', 'label', 'CSD', 'Co', 'PLI', 'slowing_score', 'state_changes', 'intSlo0_Store', 'intSlo_Store', 'Pows_store')
+save('LFP Measures', 'Gamma', 'rip', 'iri_all', 'rip_wav', 'label', 'CSD', 'Co', 'PLI', 'slowing_score', 'state_changes', 'intSlo0_Store', 'intSlo_Store', 'Pows_store','powers', 'GR_powers')
 
 %% Create excel files
 ripple_measures = {'gamma','CSD','dur','IRI','CSD_pre','CSD_post'};

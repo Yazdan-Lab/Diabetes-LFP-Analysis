@@ -1,5 +1,5 @@
 % Manually copying data from Prism files to create figures.
-  
+load('C:\Users\ipzach\Documents\MATLAB\Toolbox Zach\Colors.mat');
 age_labs = [200 200 200 200 200 200 200 200 200 200 200 200 200 400 400 400 400 400 400 400 400 400 400]';
 db_labs = [{'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'}]';
 
@@ -80,7 +80,7 @@ brdu_svz_labs = {'ctrl','DB'};
 
 [brdu_svz_Comp,brdu_svz_Means,~,brdu_svz_Names] = multcompare(brdu_svz_S,'CType','bonferroni','Display','off');
 
-
+%%
 figure
 set(gcf,'color','w','position',[100  100 1550 300])
 subplot(1,3,1)
@@ -173,7 +173,7 @@ title('Theta')
 % ylabel('Signal power')
 xtickangle(60)
 %% Modulation index
-
+% 7 6 5 4
 CA1_ctx_DHG_vals = [-3.41 -2.93 -3 -3.43 -3.77 -3.02 -3.35 -2.91 -2.248 -2.95731 -3.1 -3.53 -2.42 -3.02 -3.05 -2.51 -3.19 -2.89 -2.76 -1.92 -2.1 -2.62]';
 CA1_ctx_DLG_vals = [-2.91 -2.09 -2.69 -3.07 -3.58 -2.75 -3.02 -2.5 -2.08301 -3.09798 -2.62 -3.63 -2.15 -2.56 -2.61 -2.15 -2.76 -2.54 -2.59 -1.8 -1.79 -2.36]';
 
@@ -194,24 +194,24 @@ CA1_ctx_TLG_vals = [-3.88 -3.28 -3.02 -3.35 -3 -2.93 -3.42 -3.22 -3.86646 -4.086
 
 [CA1_ctx_TLG_P, CA1_ctx_TLG_T, CA1_ctx_TLG_stats] = anovan(CA1_ctx_TLG_vals,{mi_db_labs, mi_age_labs}, 'model', 'interaction','display','off');
 [CA1_ctx_TLG_C,CA1_ctx_TLG_M,~,CA1_ctx_TLG_N] = multcompare(CA1_ctx_TLG_stats, 'Dimension', [1 2], 'CType', 'bonferroni','display','off');
-
+%%
 figure
 create_bar_figure(CA1_ctx_DHG_M(:,2), CA1_ctx_DHG_M(:,1), CA1_ctx_DHG_C);
-sig_values(CA1_ctx_DHG_P(2), CA1_ctx_DHG_P(1));
+%sig_values(CA1_ctx_DHG_P(2), CA1_ctx_DHG_P(1));
 title('DHG')
 figure
 create_bar_figure(CA1_ctx_DLG_M(:,2), CA1_ctx_DLG_M(:,1), CA1_ctx_DLG_C);
-sig_values(CA1_ctx_DLG_P(2), CA1_ctx_DLG_P(1));
+%sig_values(CA1_ctx_DLG_P(2), CA1_ctx_DLG_P(1));
 title('DLG')
 figure
 create_bar_figure(CA1_ctx_THG_M(:,2), CA1_ctx_THG_M(:,1), CA1_ctx_THG_C);
-sig_values(CA1_ctx_THG_P(2), CA1_ctx_THG_P(1));
+%sig_values(CA1_ctx_THG_P(2), CA1_ctx_THG_P(1));
 title('THG')
 figure
 create_bar_figure(CA1_ctx_TLG_M(:,2), CA1_ctx_TLG_M(:,1), CA1_ctx_TLG_C);
-sig_values(CA1_ctx_TLG_P(2), CA1_ctx_TLG_P(1));
+%sig_values(CA1_ctx_TLG_P(2), CA1_ctx_TLG_P(1));
 title('TLG')
-
+%%
 figure
 subplot(2,2,1)
 create_bar_figure(CA1_ctx_DHG_M(:,2), CA1_ctx_DHG_M(:,1), CA1_ctx_DHG_C);
@@ -243,12 +243,26 @@ create_bar_figure(CA1_ctx_TLG_M(:,2), CA1_ctx_TLG_M(:,1), CA1_ctx_TLG_C);
 % xlabel('SLM Phase')
 
 %% TD ratio
+age_labs = [200 200 200 200 200 200 200 200 200 200 200 200 200 400 400 400 400 400 400 400 400 400 400]';
+db_labs = [{'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'ctrl'} {'DB'} {'DB'} {'DB'} {'DB'} {'DB'}]';
+
 td_vals = [0.602 0.31 1.11 0.774 0.969 0.506 0.553 0.531 0.923932 0.628 0.633 0.78 0.392 0.453 0.666 0.395 0.552 0.3 0.292 0.306 0.273 0.553 0.569]';
+%td_anti_log = 10 .^td_vals;
+td_data = NaN(7,4);
+td_data(:,1) = td_vals(1:7)';
+td_data(1:6,2) = td_vals(8:13)';
+td_data(1:5,3) = td_vals(14:18)';
+td_data(1:5,4) = td_vals(19:end)';
+groups = {'Ctrl 200','DB 200','Ctrl 400','DB 400'};
 
 [td_P, td_T, td_Stats] = anovan(td_vals,{db_labs, age_labs}, 'model', 'interaction','display','off');
 [td_C,td_M,~,td_N] = multcompare(td_Stats, 'Dimension', [1 2], 'CType', 'bonferroni','display','off');
+
+
 figure
+%plot_bee(td_data, groups, td_C, [RGB.c200; RGB.db200; RGB.c400; RGB.db400]);
 create_bar_figure(td_M(:,2), td_M(:,1), td_C);
+ylim([0 1])
 sig_values(td_P(2), td_P(1));
 ylabel('Time in HTD (%)')
 
